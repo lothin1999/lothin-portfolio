@@ -97,7 +97,7 @@ export function HeroSection() {
 
           <div className="flex flex-wrap gap-3 items-center">
             <a href={profile.website} target="_blank" rel="noopener noreferrer"
-              className="hero-cta inline-flex items-center gap-1.5 px-5 py-2.5 border border-rule text-white text-[13px] font-medium rounded hover:bg-accent transition-colors">
+              className="hero-cta inline-flex items-center gap-1.5 px-5 py-2.5 border border-rule text-ink text-[13px] font-medium rounded hover:border-ink hover:bg-tag-bg transition-colors">
               <ArrowUpRight size={14} />
               {profile.website.replace("https://", "")}
             </a>
