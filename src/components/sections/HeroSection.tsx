@@ -29,11 +29,11 @@ export function HeroSection() {
       ], { opacity: 0, y: 20 });
 
       tl.to(".hero-eyebrow", { opacity: 1, y: 0, duration: 0.6 })
-        .to(".hero-name",    { opacity: 1, y: 0, duration: 0.7 }, "-=0.3")
+        .to(".hero-name", { opacity: 1, y: 0, duration: 0.7 }, "-=0.3")
         .to(".hero-tagline", { opacity: 1, y: 0, duration: 0.5 }, "-=0.4")
-        .to(".hero-desc",    { opacity: 1, y: 0, duration: 0.5 }, "-=0.3")
-        .to(".hero-chip",    { opacity: 1, y: 0, duration: 0.4, stagger: 0.05 }, "-=0.2")
-        .to(".hero-cta",     { opacity: 1, y: 0, duration: 0.5, stagger: 0.08 }, "-=0.2");
+        .to(".hero-desc", { opacity: 1, y: 0, duration: 0.5 }, "-=0.3")
+        .to(".hero-chip", { opacity: 1, y: 0, duration: 0.4, stagger: 0.05 }, "-=0.2")
+        .to(".hero-cta", { opacity: 1, y: 0, duration: 0.5, stagger: 0.08 }, "-=0.2");
     }, containerRef);
 
     return () => ctx.revert();
@@ -97,7 +97,7 @@ export function HeroSection() {
 
           <div className="flex flex-wrap gap-3 items-center">
             <a href={profile.website} target="_blank" rel="noopener noreferrer"
-              className="hero-cta inline-flex items-center gap-1.5 px-5 py-2.5 bg-ink text-white text-[13px] font-medium rounded hover:bg-accent transition-colors">
+              className="hero-cta inline-flex items-center gap-1.5 px-5 py-2.5 border border-rule text-white text-[13px] font-medium rounded hover:bg-accent transition-colors">
               <ArrowUpRight size={14} />
               {profile.website.replace("https://", "")}
             </a>
