@@ -9,6 +9,8 @@ export interface Profile {
   website: string;
   telegram: string;
   telegramHandle: string;
+  facebook?: string;
+  facebookHandle?: string;
   linkedin: string;
   phones: string[];
   photoUrl?: string;

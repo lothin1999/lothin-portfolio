@@ -127,6 +127,16 @@ export function HeroSection() {
                 LinkedIn
               </a>
             )}
+            {profile.facebook && (
+              <a
+                href={profile.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hero-cta link-underline inline-flex items-center gap-1.5 px-4 py-2 border border-rule text-ink text-xs font-mono rounded bg-surface transition-all hover:border-ink hover:shadow-sm"
+              >
+                Facebook
+              </a>
+            )}
           </div>
         </div>
 

@@ -74,6 +74,13 @@ export function Footer() {
                   </a>
                 </li>
               )}
+              {profile.facebook && (
+                <li>
+                  <a href={profile.facebook} target="_blank" rel="noopener noreferrer" className="font-sans text-xs text-ink hover:text-accent transition-colors">
+                    Facebook ({profile.facebookHandle || "@lothinny"})
+                  </a>
+                </li>
+              )}
               {profile.linkedin && (
                 <li>
                   <a href={profile.linkedin} target="_blank" rel="noopener noreferrer" className="font-sans text-xs text-ink hover:text-accent transition-colors">

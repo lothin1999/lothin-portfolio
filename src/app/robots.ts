@@ -2,7 +2,7 @@
 import type { MetadataRoute } from "next";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://lothin-dev.pages.dev";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://lothin-portfolio.pages.dev";
 
 export default function robots(): MetadataRoute.Robots {
   return {

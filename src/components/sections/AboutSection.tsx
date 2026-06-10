@@ -144,6 +144,7 @@ export function AboutSection() {
               { label: "Telegram", value: profile.telegramHandle, href: profile.telegram },
               { label: "Phone", value: profile.phones.filter(Boolean).join(" / "), href: null },
               { label: "LinkedIn", value: "linkedin.com/in/lothin-dev", href: profile.linkedin },
+              { label: "Facebook", value: profile.facebookHandle, href: profile.facebook },
             ].filter(item => item.value).map((item) => (
               <div key={item.label} className="flex flex-col gap-0.5">
                 <span className="font-mono text-[9px] tracking-[1.5px] uppercase text-muted">

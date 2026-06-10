@@ -10,7 +10,7 @@ function AdminHandler() {
   const { isAdmin } = useCVData();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const hasEditParam = searchParams.has("edit");
+  const hasEditParam = searchParams?.has("edit") ?? false;
 
   const [showLogin, setShowLogin] = useState(false);
   const [showEdit, setShowEdit] = useState(false);

@@ -40,6 +40,7 @@ export function StatusBar() {
 
   // Determine path label
   const getPathLabel = () => {
+    if (!pathname) return "system";
     if (pathname === "/") {
       return activePathSegment;
     }

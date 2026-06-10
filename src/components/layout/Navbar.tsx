@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -9,21 +9,18 @@ import { DarkModeToggle } from "@/components/ui/DarkModeToggle";
 import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar";
 
 const navLinks = [
-  { href: "/", label: "Home", sectionId: "home" },
-  { href: "/#experience", label: "Work", sectionId: "experience" },
-  { href: "/#skills", label: "Skills", sectionId: "skills" },
-  { href: "/#education", label: "Education", sectionId: "education" },
-  { href: "/#about", label: "About", sectionId: "about" },
-  { href: "/articles", label: "Writing", sectionId: "writing" },
+  { href: "/", label: "Home", sectionId: "home", pathMatch: "/" },
+  { href: "/experience", label: "Work", sectionId: "work", pathMatch: "/experience" },
+  { href: "/skills", label: "Skills", sectionId: "skills", pathMatch: "/skills" },
+  { href: "/education", label: "Education", sectionId: "education", pathMatch: "/education" },
+  { href: "/about", label: "About", sectionId: "about", pathMatch: "/about" },
+  { href: "/articles", label: "Writing", sectionId: "writing", pathMatch: "/articles" },
 ];
-
-const SECTION_IDS = ["home", "experience", "skills", "education", "about"];
 
 export function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
 
   // Track scroll shadow
   useEffect(() => {
@@ -38,79 +35,16 @@ export function Navbar() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  // IntersectionObserver to highlight active section while on homepage
-  useEffect(() => {
-    if (pathname !== "/") return;
+  // No anchor-based intersection observers needed — all sections are now separate pages.
+  // (previously: IntersectionObserver to highlight active section on homepage)
 
-    const observers: IntersectionObserver[] = [];
-    const sectionMap = new Map<string, number>(); // sectionId -> intersectionRatio
-
-    const updateActive = () => {
-      // Pick the section with highest ratio that's in view
-      let best = "home";
-      let bestRatio = -1;
-      sectionMap.forEach((ratio, id) => {
-        if (ratio > bestRatio) {
-          bestRatio = ratio;
-          best = id;
-        }
-      });
-      setActiveSection(best);
-    };
-
-    SECTION_IDS.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            sectionMap.set(id, entry.intersectionRatio);
-          });
-          updateActive();
-        },
-        { threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0], rootMargin: "-58px 0px 0px 0px" }
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
-
-    return () => observers.forEach((obs) => obs.disconnect());
-  }, [pathname]);
-
-  // Smooth scroll to section on anchor click
-  const handleNavClick = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
-      if (sectionId === "writing") {
-        setMobileOpen(false);
-        return; // normal navigate
-      }
-      if (pathname === "/") {
-        e.preventDefault();
-        const el = document.getElementById(sectionId);
-        if (el) {
-          const navHeight = 58;
-          const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
-          if ((window as any).lenis) {
-            (window as any).lenis.scrollTo(el, { offset: -navHeight, duration: 1.2 });
-          } else {
-            window.scrollTo({ top, behavior: "smooth" });
-          }
-          setActiveSection(sectionId);
-        }
-      }
-      setMobileOpen(false);
-    },
-    [pathname]
-  );
+  const handleNavClick = () => setMobileOpen(false);
 
   const isActive = (link: (typeof navLinks)[0]) => {
-    if (link.sectionId === "writing") {
-      return pathname.startsWith("/articles");
-    }
-    if (pathname === "/") {
-      return activeSection === link.sectionId;
-    }
-    return link.href === "/" && pathname === "/";
+    if (!pathname) return false;
+    if (link.pathMatch === "/") return pathname === "/";
+    if (link.pathMatch === "/articles") return pathname.startsWith("/articles");
+    return pathname.startsWith(link.pathMatch);
   };
 
   return (
@@ -129,22 +63,13 @@ export function Navbar() {
             <ul className="flex items-center gap-6 list-none" role="list">
               {navLinks.map((link) => (
                 <li key={link.sectionId}>
-                  {link.sectionId === "writing" ? (
-                    <Link
-                      href={link.href}
-                      className={cn("nav-link font-sans text-xs uppercase tracking-wider", isActive(link) && "active")}
-                    >
-                      {link.label}
-                    </Link>
-                  ) : (
-                    <a
-                      href={link.href}
-                      onClick={(e) => handleNavClick(e, link.sectionId)}
-                      className={cn("nav-link font-sans text-xs uppercase tracking-wider", isActive(link) && "active")}
-                    >
-                      {link.label}
-                    </a>
-                  )}
+                  <Link
+                    href={link.href}
+                    onClick={handleNavClick}
+                    className={cn("nav-link font-sans text-xs uppercase tracking-wider", isActive(link) && "active")}
+                  >
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -176,29 +101,16 @@ export function Navbar() {
           <ul className="list-none flex flex-col gap-1" role="list">
             {navLinks.map((link) => (
               <li key={link.sectionId}>
-                {link.sectionId === "writing" ? (
-                  <Link
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      "block py-3 text-[16px] text-ink hover:text-accent transition-colors border-b border-rule font-sans font-light",
-                      isActive(link) && "text-accent"
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <a
-                    href={link.href}
-                    onClick={(e) => handleNavClick(e, link.sectionId)}
-                    className={cn(
-                      "block py-3 text-[16px] text-ink hover:text-accent transition-colors border-b border-rule font-sans font-light",
-                      isActive(link) && "text-accent"
-                    )}
-                  >
-                    {link.label}
-                  </a>
-                )}
+                <Link
+                  href={link.href}
+                  onClick={handleNavClick}
+                  className={cn(
+                    "block py-3 text-[16px] text-ink hover:text-accent transition-colors border-b border-rule font-sans font-light",
+                    isActive(link) && "text-accent"
+                  )}
+                >
+                  {link.label}
+                </Link>
               </li>
             ))}
           </ul>
