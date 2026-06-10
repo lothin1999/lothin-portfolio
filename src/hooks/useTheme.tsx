@@ -1,52 +1,133 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  ThemeProvider as NextThemesProvider,
+  useTheme as useNextTheme,
+} from "next-themes";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  type ReactNode,
+} from "react";
 
-type Theme = "light" | "dark";
-
-interface ThemeContextValue {
-  theme: Theme;
-  toggleTheme: () => void;
+interface RippleContextValue {
+  registerToggle: (el: HTMLElement | null) => void;
+  triggerRipple: (toDark: boolean, onMidpoint: () => void) => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue>({
-  theme: "light",
-  toggleTheme: () => {},
-});
+const RippleContext = createContext<RippleContextValue | null>(null);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
+export function useRipple() {
+  const ctx = useContext(RippleContext);
+  if (!ctx) throw new Error("useRipple must be used inside ThemeProvider");
+  return ctx;
+}
 
-  useEffect(() => {
-    setMounted(true);
-    // Read from localStorage or system preference
-    const stored = localStorage.getItem("theme") as Theme | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initial = stored ?? (prefersDark ? "dark" : "light");
-    setTheme(initial);
-    document.documentElement.setAttribute("data-theme", initial);
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const toggleRef = useRef<HTMLElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const busyRef = useRef(false);
+
+  const registerToggle = useCallback((el: HTMLElement | null) => {
+    toggleRef.current = el;
   }, []);
 
-  const toggleTheme = () => {
-    setTheme((prev) => {
-      const next = prev === "light" ? "dark" : "light";
-      localStorage.setItem("theme", next);
-      document.documentElement.setAttribute("data-theme", next);
-      return next;
-    });
-  };
+  const triggerRipple = useCallback(
+    (toDark: boolean, onMidpoint: () => void) => {
+      if (busyRef.current) return;
+      busyRef.current = true;
+      let canvas = canvasRef.current;
+      if (!canvas) {
+        canvas = document.createElement("canvas");
+        canvas.style.cssText = [
+          "position:fixed",
+          "inset:0",
+          "pointer-events:none",
+          "z-index:9999",
+          "width:100vw",
+          "height:100vh",
+        ].join(";");
+        document.body.appendChild(canvas);
+        canvasRef.current = canvas;
+      }
 
-  // Prevent flash of wrong theme
-  if (!mounted) return <>{children}</>;
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      canvas.width = W;
+      canvas.height = H;
+      canvas.style.display = "block";
+
+      const ctx = canvas.getContext("2d")!;
+      let ox = W * 0.9;
+      let oy = 28;
+      if (toggleRef.current) {
+        const r = toggleRef.current.getBoundingClientRect();
+        ox = r.left + r.width / 2;
+        oy = r.top + r.height / 2;
+      }
+      const maxR = Math.max(
+        Math.hypot(ox, oy),
+        Math.hypot(W - ox, oy),
+        Math.hypot(ox, H - oy),
+        Math.hypot(W - ox, H - oy),
+      );
+
+      const fillColor = toDark ? "hsl(20 14% 7%)" : "hsl(0 0% 100%)";
+      const DURATION = 640;
+      const MIDPOINT = 0.42;
+
+      let midpointFired = false;
+      const start = performance.now();
+
+      function easeInOut(t: number) {
+        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      }
+
+      function tick(now: number) {
+        const raw = Math.min((now - start) / DURATION, 1);
+        const t = easeInOut(raw);
+        const r = t * maxR;
+
+        ctx.clearRect(0, 0, W, H);
+        ctx.beginPath();
+        ctx.arc(ox, oy, r, 0, Math.PI * 2);
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+
+        if (raw >= MIDPOINT && !midpointFired) {
+          midpointFired = true;
+          onMidpoint();
+        }
+
+        if (raw < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          canvas!.style.display = "none";
+          ctx.clearRect(0, 0, W, H);
+          busyRef.current = false;
+        }
+      }
+
+      requestAnimationFrame(tick);
+    },
+    [],
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
+    <RippleContext.Provider value={{ registerToggle, triggerRipple }}>
+      <NextThemesProvider
+        attribute="data-theme"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange={false}
+        storageKey="theme"
+      >
+        {children}
+      </NextThemesProvider>
+    </RippleContext.Provider>
   );
 }
 
-export function useTheme() {
-  return useContext(ThemeContext);
-}
+export { useNextTheme as useTheme };
