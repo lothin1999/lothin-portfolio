@@ -52,6 +52,14 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
       description,
       siteName: defaultTitle,
       locale: "en_US",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: defaultTitle,
+        },
+      ],
     },
 
     // Twitter Card
@@ -60,6 +68,7 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
       title,
       description,
       creator: "@lothindev",
+      images: ["/og-image.png"],
     },
 
     // Canonical
@@ -79,6 +88,9 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
             "max-snippet": -1,
           },
         },
+    verification: {
+      google: "mhvos7F8eyGCieFWQXyxKZ3W6EnIrV5Sk6c4a0yWnVg",
+    },
   };
 }
 
