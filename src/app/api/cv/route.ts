@@ -1,11 +1,8 @@
-// src/app/api/cv/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getCVData, saveCVData } from "@/lib/cvStore";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
-
-/** GET /api/cv — public, returns current CV data */
 export async function GET() {
   const data = await getCVData();
   return NextResponse.json(data, {
@@ -14,8 +11,6 @@ export async function GET() {
     },
   });
 }
-
-/** PUT /api/cv — protected, updates CV data */
 export async function PUT(req: NextRequest) {
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (!token || !(await verifySessionToken(token))) {

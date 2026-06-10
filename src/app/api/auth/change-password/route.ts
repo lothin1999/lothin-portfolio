@@ -1,4 +1,3 @@
-// src/app/api/auth/change-password/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { verifyPassword, hashPassword, verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
 import { z } from "zod";

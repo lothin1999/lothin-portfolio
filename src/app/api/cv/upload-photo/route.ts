@@ -1,4 +1,3 @@
-// src/app/api/cv/upload-photo/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
 

@@ -1,6 +1,3 @@
-// src/lib/data.ts — Default CV data (seed values)
-// At runtime, API routes read/write from KV (Cloudflare) or localStorage (dev)
-
 import type { CVData } from "@/types/cv";
 
 export const defaultCV: CVData = {
