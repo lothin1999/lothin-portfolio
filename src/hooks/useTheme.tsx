@@ -9,6 +9,7 @@ import {
   useCallback,
   useContext,
   useRef,
+  useEffect,
   type ReactNode,
 } from "react";
 
@@ -29,6 +30,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const toggleRef = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const busyRef = useRef(false);
+
+  // Clean up canvas from body on unmount
+  useEffect(() => {
+    return () => {
+      if (canvasRef.current) {
+        canvasRef.current.remove();
+        canvasRef.current = null;
+      }
+    };
+  }, []);
 
   const registerToggle = useCallback((el: HTMLElement | null) => {
     toggleRef.current = el;
@@ -59,7 +70,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       canvas.height = H;
       canvas.style.display = "block";
 
-      const ctx = canvas.getContext("2d")!;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        busyRef.current = false;
+        canvas.style.display = "none";
+        onMidpoint();
+        return;
+      }
+
       let ox = W * 0.9;
       let oy = 28;
       if (toggleRef.current) {
@@ -86,26 +104,38 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       }
 
       function tick(now: number) {
-        const raw = Math.min((now - start) / DURATION, 1);
-        const t = easeInOut(raw);
-        const r = t * maxR;
+        try {
+          const raw = Math.min((now - start) / DURATION, 1);
+          const t = easeInOut(raw);
+          const r = t * maxR;
 
-        ctx.clearRect(0, 0, W, H);
-        ctx.beginPath();
-        ctx.arc(ox, oy, r, 0, Math.PI * 2);
-        ctx.fillStyle = fillColor;
-        ctx.fill();
+          ctx!.clearRect(0, 0, W, H);
+          ctx!.beginPath();
+          ctx!.arc(ox, oy, r, 0, Math.PI * 2);
+          ctx!.fillStyle = fillColor;
+          ctx!.fill();
 
-        if (raw >= MIDPOINT && !midpointFired) {
-          midpointFired = true;
-          onMidpoint();
-        }
+          if (raw >= MIDPOINT && !midpointFired) {
+            midpointFired = true;
+            try {
+              onMidpoint();
+            } catch (err) {
+              console.error("Theme transition midpoint error:", err);
+            }
+          }
 
-        if (raw < 1) {
-          requestAnimationFrame(tick);
-        } else {
-          canvas!.style.display = "none";
-          ctx.clearRect(0, 0, W, H);
+          if (raw < 1) {
+            requestAnimationFrame(tick);
+          } else {
+            canvas!.style.display = "none";
+            ctx!.clearRect(0, 0, W, H);
+            busyRef.current = false;
+          }
+        } catch (err) {
+          console.error("Theme transition tick error:", err);
+          if (canvas) {
+            canvas.style.display = "none";
+          }
           busyRef.current = false;
         }
       }

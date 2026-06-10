@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSettings } from "../layout/SettingsContext";
 
 interface ScrambleTextProps {
@@ -12,7 +12,7 @@ interface ScrambleTextProps {
   as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "span" | "p" | "div";
 }
 
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+{}[]|;:,.<>?";
+const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 export function ScrambleText({
   text,
@@ -25,32 +25,37 @@ export function ScrambleText({
   const { scrambleText: isGlobalScrambleEnabled } = useSettings();
   const [displayText, setDisplayText] = useState(text);
   const isAnimating = useRef(false);
-  const timeoutId = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const startScramble = useCallback(() => {
-    if (!isGlobalScrambleEnabled || isAnimating.current) return;
+  const startScramble = () => {
+    if (!isGlobalScrambleEnabled) {
+      setDisplayText(text);
+      return;
+    }
+
+    if (intervalRef.current) clearInterval(intervalRef.current);
     isAnimating.current = true;
 
     const length = text.length;
     let frame = 0;
     const totalFrames = Math.max(10, Math.floor(duration / 30));
-    
-    const interval = setInterval(() => {
+
+    intervalRef.current = setInterval(() => {
       frame++;
-      
+
       const scrambled = text
         .split("")
         .map((char, index) => {
           if (char === " ") return " ";
-          
-          // Settle index based on progress
+
           const progress = frame / totalFrames;
           const letterSettleFrame = (index / length) * totalFrames * 0.8;
-          
+
           if (frame >= letterSettleFrame + (totalFrames - letterSettleFrame) * progress) {
             return char;
           }
-          
+
           return CHARS[Math.floor(Math.random() * CHARS.length)];
         })
         .join("");
@@ -58,21 +63,21 @@ export function ScrambleText({
       setDisplayText(scrambled);
 
       if (frame >= totalFrames) {
-        clearInterval(interval);
+        if (intervalRef.current) clearInterval(intervalRef.current);
         setDisplayText(text);
         isAnimating.current = false;
       }
     }, 30);
-
-    return () => clearInterval(interval);
-  }, [text, duration, isGlobalScrambleEnabled]);
+  };
 
   useEffect(() => {
+    setDisplayText(text);
+
     if (!isGlobalScrambleEnabled) {
-      setDisplayText(text);
       return;
     }
 
+    // Set initial dashes
     setDisplayText(
       text
         .split("")
@@ -80,14 +85,20 @@ export function ScrambleText({
         .join("")
     );
 
-    timeoutId.current = setTimeout(() => {
+    // Clean up previous triggers
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    isAnimating.current = false;
+
+    timeoutRef.current = setTimeout(() => {
       startScramble();
     }, delay);
 
     return () => {
-      if (timeoutId.current) clearTimeout(timeoutId.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [text, delay, isGlobalScrambleEnabled, startScramble]);
+  }, [text, delay, isGlobalScrambleEnabled]);
 
   const handleMouseEnter = () => {
     if (scrambleOnHover && !isAnimating.current) {
@@ -101,3 +112,4 @@ export function ScrambleText({
     </Component>
   );
 }
+

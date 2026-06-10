@@ -102,7 +102,7 @@ export function DarkModeToggle() {
                   ? { ...MOON_MASK_DARK, fillOpacity: 1 }
                   : { ...MOON_MASK_LIGHT, fillOpacity: 1 }
               }
-              transition={bodySpring}
+              transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
               fill="black"
             />
           </mask>
