@@ -47,11 +47,23 @@ export interface Reference {
   contact: string;
 }
 
+export interface Article {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  content: string; // Markdown text content
+  tags: string[];
+  featured?: boolean;
+  readingTime?: string;
+}
+
 export interface CVData {
   profile: Profile;
   experiences: Experience[];
   skillGroups: SkillGroup[];
   educations: Education[];
   references: Reference[];
+  articles?: Article[];
   updatedAt?: string;
 }

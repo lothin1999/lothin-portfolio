@@ -10,10 +10,11 @@ import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar";
 
 const navLinks = [
   { href: "/", label: "Home", sectionId: "home" },
-  { href: "/#experience", label: "Experience", sectionId: "experience" },
+  { href: "/#experience", label: "Work", sectionId: "experience" },
   { href: "/#skills", label: "Skills", sectionId: "skills" },
   { href: "/#education", label: "Education", sectionId: "education" },
   { href: "/#about", label: "About", sectionId: "about" },
+  { href: "/articles", label: "Writing", sectionId: "writing" },
 ];
 
 const SECTION_IDS = ["home", "experience", "skills", "education", "about"];
@@ -79,53 +80,71 @@ export function Navbar() {
   // Smooth scroll to section on anchor click
   const handleNavClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+      if (sectionId === "writing") {
+        setMobileOpen(false);
+        return; // normal navigate
+      }
       if (pathname === "/") {
         e.preventDefault();
         const el = document.getElementById(sectionId);
         if (el) {
           const navHeight = 58;
           const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
-          window.scrollTo({ top, behavior: "smooth" });
+          if ((window as any).lenis) {
+            (window as any).lenis.scrollTo(el, { offset: -navHeight, duration: 1.2 });
+          } else {
+            window.scrollTo({ top, behavior: "smooth" });
+          }
           setActiveSection(sectionId);
         }
       }
-      // If not on homepage, let Next.js navigate normally (the hash will scroll after load)
       setMobileOpen(false);
     },
     [pathname]
   );
 
   const isActive = (link: (typeof navLinks)[0]) => {
+    if (link.sectionId === "writing") {
+      return pathname.startsWith("/articles");
+    }
     if (pathname === "/") {
       return activeSection === link.sectionId;
     }
-    // On other pages, match by pathname prefix
-    return pathname.startsWith(`/${link.sectionId}`) || (link.href === "/" && pathname === "/");
+    return link.href === "/" && pathname === "/";
   };
 
   return (
     <>
       <ScrollProgressBar />
       <nav className={cn(
-        "sticky top-0 z-50 h-[58px] bg-bg border-b border-rule transition-shadow duration-200",
+        "sticky top-0 z-40 h-[58px] bg-bg border-b border-rule transition-shadow duration-200",
         scrolled && "shadow-sm"
       )} aria-label="Main navigation">
-        <div className="max-w-content mx-auto px-6 h-full flex items-center justify-between gap-6">
-          <Link href="/" className="font-serif text-[17px] text-ink hover:text-accent transition-colors shrink-0">
-            <span className="italic text-accent">Thoeun</span> Lothin
+        <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between gap-6">
+          <Link href="/" className="font-mono text-[14px] text-ink font-semibold tracking-tight hover:text-accent transition-colors shrink-0">
+            lothin.dev
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
             <ul className="flex items-center gap-6 list-none" role="list">
               {navLinks.map((link) => (
                 <li key={link.sectionId}>
-                  <a
-                    href={link.href}
-                    onClick={(e) => handleNavClick(e, link.sectionId)}
-                    className={cn("nav-link font-sans", isActive(link) && "active")}
-                  >
-                    {link.label}
-                  </a>
+                  {link.sectionId === "writing" ? (
+                    <Link
+                      href={link.href}
+                      className={cn("nav-link font-sans text-xs uppercase tracking-wider", isActive(link) && "active")}
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      onClick={(e) => handleNavClick(e, link.sectionId)}
+                      className={cn("nav-link font-sans text-xs uppercase tracking-wider", isActive(link) && "active")}
+                    >
+                      {link.label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
@@ -146,8 +165,8 @@ export function Navbar() {
         <div className="fixed inset-0 z-[200] bg-bg flex flex-col p-6"
           role="dialog" aria-modal="true">
           <div className="flex items-center justify-between mb-10">
-            <span className="font-serif text-[17px] text-ink">
-              <span className="italic text-accent">Thoeun</span> Lothin
+            <span className="font-mono text-[14px] text-ink font-semibold">
+              lothin.dev
             </span>
             <button className="p-1.5 text-ink hover:text-accent transition-colors"
               aria-label="Close menu" onClick={() => setMobileOpen(false)}>
@@ -157,16 +176,29 @@ export function Navbar() {
           <ul className="list-none flex flex-col gap-1" role="list">
             {navLinks.map((link) => (
               <li key={link.sectionId}>
-                <a
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.sectionId)}
-                  className={cn(
-                    "block py-3 text-[16px] text-ink hover:text-accent transition-colors border-b border-rule font-sans font-light",
-                    isActive(link) && "text-accent"
-                  )}
-                >
-                  {link.label}
-                </a>
+                {link.sectionId === "writing" ? (
+                  <Link
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "block py-3 text-[16px] text-ink hover:text-accent transition-colors border-b border-rule font-sans font-light",
+                      isActive(link) && "text-accent"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.sectionId)}
+                    className={cn(
+                      "block py-3 text-[16px] text-ink hover:text-accent transition-colors border-b border-rule font-sans font-light",
+                      isActive(link) && "text-accent"
+                    )}
+                  >
+                    {link.label}
+                  </a>
+                )}
               </li>
             ))}
           </ul>

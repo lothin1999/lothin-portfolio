@@ -5,6 +5,12 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CVProvider } from "@/hooks/useCVData";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { SettingsProvider } from "@/components/layout/SettingsContext";
+import { SmoothScrollProvider } from "@/components/layout/SmoothScrollProvider";
+import { CustomCursor } from "@/components/layout/CustomCursor";
+import { StatusBar } from "@/components/layout/StatusBar";
+import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
+import { SettingsModal } from "@/components/layout/SettingsModal";
 import { AdminButton } from "@/components/admin/AdminButton";
 import { getCVData } from "@/lib/cvStore";
 import { buildMetadata, personJsonLd } from "@/lib/seo";
@@ -66,12 +72,20 @@ export default async function RootLayout({
         </a>
         <ThemeProvider>
           <CVProvider>
-            <CVContentWrapper>
-              <Navbar />
-              <main id="main">{children}</main>
-              <Footer />
-              <AdminButton />
-            </CVContentWrapper>
+            <SettingsProvider>
+              <SmoothScrollProvider>
+                <CVContentWrapper>
+                  <CustomCursor />
+                  <Navbar />
+                  <main id="main">{children}</main>
+                  <Footer />
+                  <StatusBar />
+                  <ShortcutsModal />
+                  <SettingsModal />
+                  <AdminButton />
+                </CVContentWrapper>
+              </SmoothScrollProvider>
+            </SettingsProvider>
           </CVProvider>
         </ThemeProvider>
       </body>

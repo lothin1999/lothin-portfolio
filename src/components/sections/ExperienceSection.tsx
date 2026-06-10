@@ -6,55 +6,34 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useCVData } from "@/hooks/useCVData";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Chip } from "@/components/ui/Chip";
+import { Glyph } from "@/components/ui/Glyph";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import type { Experience } from "@/types/cv";
 
 if (typeof window !== "undefined") gsap.registerPlugin(ScrollTrigger);
 
+// Custom patterns for each job card to represent retro-tech nodes
+const JOB_GLYPHS = [
+  "101111101", // IDG 2025
+  "111010111", // IDG 2024
+  "010111010", // IDG 2023
+];
+
 function ExperienceCard({ exp, index }: { exp: Experience; index: number }) {
   const ref = useRef<HTMLElement>(null);
+  const glyphPattern = JOB_GLYPHS[index % JOB_GLYPHS.length];
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const ctx = gsap.context(() => {
       gsap.fromTo(el,
-        { opacity: 0, x: index % 2 === 0 ? -40 : 40, y: 20 },
+        { opacity: 0, y: 30 },
         {
-          opacity: 1, x: 0, y: 0,
-          duration: 0.7,
-          ease: "power3.out",
-          scrollTrigger: { trigger: el, start: "top 88%", toggleActions: "play none none none" },
-        }
-      );
-
-      // Animate the period badge
-      gsap.fromTo(el.querySelector(".exp-period"),
-        { opacity: 0, scale: 0.8 },
-        {
-          opacity: 1, scale: 1, duration: 0.5, delay: 0.2,
-          ease: "back.out(1.4)",
-          scrollTrigger: { trigger: el, start: "top 88%", toggleActions: "play none none none" },
-        }
-      );
-
-      // Stagger bullets
-      gsap.fromTo(el.querySelectorAll(".exp-bullet"),
-        { opacity: 0, x: -16 },
-        {
-          opacity: 1, x: 0, duration: 0.4, stagger: 0.08, delay: 0.3,
+          opacity: 1, y: 0,
+          duration: 0.6,
           ease: "power2.out",
-          scrollTrigger: { trigger: el, start: "top 88%", toggleActions: "play none none none" },
-        }
-      );
-
-      // Stagger tags
-      gsap.fromTo(el.querySelectorAll(".exp-tag"),
-        { opacity: 0, y: 8, scale: 0.9 },
-        {
-          opacity: 1, y: 0, scale: 1, duration: 0.3, stagger: 0.05, delay: 0.5,
-          ease: "back.out(1.2)",
-          scrollTrigger: { trigger: el, start: "top 88%", toggleActions: "play none none none" },
+          scrollTrigger: { trigger: el, start: "top 90%", toggleActions: "play none none none" },
         }
       );
     }, el);
@@ -64,30 +43,56 @@ function ExperienceCard({ exp, index }: { exp: Experience; index: number }) {
   return (
     <article
       ref={ref}
-      className="grad-card grid grid-cols-[100px_1fr] gap-x-7 py-7 px-5 mb-4 border border-rule bg-surface max-sm:grid-cols-1 max-sm:gap-y-2"
+      className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 border-b border-rule bg-surface hover:bg-[var(--color-surface-subtle)] transition-colors duration-200"
     >
-      <div className="exp-period pt-0.5">
-        <span className="inline-block font-mono text-[11px] text-muted leading-[1.6] bg-tag-bg px-2 py-0.5 rounded">
+      {/* Date period column */}
+      <div className="md:col-span-3 flex md:flex-col items-start gap-3 justify-between md:justify-start">
+        <span className="font-mono text-[11px] text-muted tracking-wider leading-none uppercase">
           {exp.period}
         </span>
+        <div className="hidden md:block mt-3">
+          <Glyph
+            pattern={glyphPattern}
+            hoverPattern="111111111"
+            size={18}
+            gap={1.5}
+            color="var(--accent)"
+          />
+        </div>
       </div>
-      <div>
-        <h3 className="text-[15px] font-semibold text-ink mb-0.5">{exp.title}</h3>
-        <p className="font-mono text-[12px] text-accent tracking-[0.3px] mb-4">
-          {exp.company}{exp.location ? ` · ${exp.location}` : ""}
-        </p>
-        <ul className="space-y-2 mb-4 list-none">
+
+      {/* Main info column */}
+      <div className="md:col-span-9 flex flex-col">
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <div>
+            <h3 className="text-[16px] font-sans font-medium text-ink leading-tight">
+              {exp.title}
+            </h3>
+            <p className="font-mono text-[12px] text-accent tracking-[0.3px] mt-0.5">
+              {exp.company}
+              {exp.location ? <span className="text-muted font-sans font-light"> · {exp.location}</span> : ""}
+            </p>
+          </div>
+        </div>
+
+        {/* Bullets list */}
+        <ul className="space-y-2 mb-5 list-none">
           {exp.bullets.map((bullet, i) => (
-            <li key={i} className="exp-bullet text-[14px] text-ink2 leading-[1.7] font-light pl-4 relative before:content-['–'] before:absolute before:left-0 before:text-accent2">
+            <li
+              key={i}
+              className="text-[13.5px] text-ink2 leading-relaxed font-sans font-light pl-4 relative before:content-['–'] before:absolute before:left-0 before:text-accent-orange"
+            >
               {bullet}
             </li>
           ))}
         </ul>
-        <div className="flex flex-wrap gap-1.5">
+
+        {/* Technologies */}
+        <div className="flex flex-wrap gap-1.5 mt-auto">
           {exp.tags.map((tag) => (
-            <span key={tag} className="exp-tag">
-              <Chip className="chip-glow">{tag}</Chip>
-            </span>
+            <Chip key={tag} className="chip-glow text-[10px] py-0.5 px-2">
+              {tag}
+            </Chip>
           ))}
         </div>
       </div>
@@ -101,10 +106,14 @@ export function ExperienceSection({ compact }: { compact?: boolean }) {
   const list = compact ? cv.experiences.slice(0, 2) : cv.experiences;
 
   return (
-    <section className="max-w-content mx-auto px-6 py-16 border-b border-rule">
-      <div ref={headRef}><SectionLabel label="Work" heading="Experience" /></div>
-      <div className="space-y-1">
-        {list.map((exp, i) => <ExperienceCard key={exp.id} exp={exp} index={i} />)}
+    <section className="max-w-6xl mx-auto px-6 py-16">
+      <div ref={headRef}>
+        <SectionLabel label="Work" heading="Experience" />
+      </div>
+      <div className="border border-rule rounded divide-y divide-rule bg-surface overflow-hidden">
+        {list.map((exp, i) => (
+          <ExperienceCard key={exp.id} exp={exp} index={i} />
+        ))}
       </div>
     </section>
   );

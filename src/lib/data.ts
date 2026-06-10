@@ -142,4 +142,285 @@ export const defaultCV: CVData = {
       contact: "+855 93 259 390",
     },
   ],
+  articles: [
+    {
+      slug: "css-architecture-bem-methodology",
+      title: "Why I Choose BEM Over CSS Modules (Most of the Time)",
+      excerpt: "CSS architecture is a decision with long-term consequences. Here is why I often reach for BEM methodology over CSS Modules in enterprise codebases.",
+      date: "Dec 15, 2025",
+      readingTime: "5 min read",
+      featured: true,
+      tags: ["CSS", "Architecture", "Design Systems"],
+      content: `## The Long-term Impact of CSS Architecture
+
+In large frontend codebases, CSS can easily become a bottleneck. Class name collisions, bloated selectors, and nested cascade paths often make updates risky. While modern frameworks offer encapsulated solutions like **CSS Modules** or **CSS-in-JS**, I frequently find myself choosing the classic **BEM (Block, Element, Modifier)** methodology.
+
+Here is why BEM remains highly practical in large-scale projects, and where encapsulation utilities are best left behind.
+
+---
+
+### 1. Readability and Predictability
+
+With BEM, the class name itself describes the purpose and structure of the styles. 
+
+\`\`\`css
+/* Block */
+.card {}
+
+/* Element */
+.card__title {}
+.card__image {}
+
+/* Modifier */
+.card--featured {}
+\`\`\`
+
+When inspecting elements in browser developer tools, BEM classes tell you exactly where the style originates and what relations exist. CSS Modules, on the other hand, generate hashed class names like \`_card_1u9z8_5\`, making debugging and visual audits much harder for design QA teams.
+
+---
+
+### 2. Zero Build-time Overhead
+
+CSS Modules require specific bundler configurations (Webpack, Vite, Rollup) and JS runtimes to parse and map module tables. BEM is pure vanilla CSS. It works on every platform, every framework, and in static layouts without requiring a compilation step. This makes it perfect for edge environments, server-side rendering, and performance-critical landing pages.
+
+---
+
+### 3. Modifiers are First-Class Citizens
+
+Styling elements dynamically in CSS Modules often results in complex JS template strings:
+
+\`\`\`javascript
+// CSS Modules approach
+className={\`\${styles.card} \${isFeatured ? styles.featured : ''}\`}
+\`\`\`
+
+With BEM, modifiers are clean and explicit:
+
+\`\`\`javascript
+// BEM approach
+className={\`card \${isFeatured ? 'card--featured' : ''}\`}
+\`\`\`
+
+---
+
+### Summary Table
+
+| Metric | BEM Methodology | CSS Modules |
+| :--- | :--- | :--- |
+| **Debuggability** | Excellent (clear naming structure) | Hard (hashed class names) |
+| **Build dependency** | None (pure CSS) | High (requires bundler plug) |
+| **Styles Leakage** | Possible (relic on naming discipline) | Impossible (encapsulated) |
+| **Performance** | Maximum (zero parse overhead) | Medium (requires JS mapping) |
+
+While BEM requires discipline from team members to avoid naming violations, its utility, simplicity, and debugging efficiency make it my go-to choice for enterprise CSS architecture.`
+    },
+    {
+      slug: "khqr-bakong-payment-nestjs",
+      title: "Bakong KHQR Payment Integration in NestJS",
+      excerpt: "A technical guide for integrating Cambodia's national payment platform KHQR into NestJS backends, handling deep links, signatures, and webhook verification.",
+      date: "Nov 12, 2025",
+      readingTime: "8 min read",
+      featured: true,
+      tags: ["NestJS", "Bakong", "KHQR", "Cambodia"],
+      content: `## Integrating Cambodia's National QR Standard
+
+Cambodia's **Bakong KHQR** system, launched by the National Bank of Cambodia, has completely unified digital payments across the country. For local developers, integrating KHQR is a standard requirement for rental platforms, booking engines, and e-commerce platforms.
+
+Here is a step-by-step walkthrough of integrating Bakong KHQR into a backend built with **NestJS**.
+
+---
+
+### 1. Generating the KHQR String
+
+The KHQR code is built on the EMVCo merchant QR standard. To generate it, you combine the merchant ID, acquirer bank ID, transaction currency (USD/KHR), amount, and order ID into a payload, then append a CRC16 checksum.
+
+The official Bakong SDK makes this simple:
+
+\`\`\`typescript
+import { Injectable } from '@nestjs/common';
+import { BakongKHQR, IndividualInfo } from 'bakong-khqr';
+
+@Injectable()
+export class PaymentService {
+  async generateQR(orderId: string, amount: number, isUsd: boolean) {
+    const info = new IndividualInfo();
+    info.accountId = 'merchant_account_id@acleda';
+    info.merchantName = 'Thoeun Lothin Shop';
+    info.merchantCity = 'Phnom Penh';
+    info.amount = amount;
+    info.currency = isUsd ? 'USD' : 'KHR';
+    info.billNumber = orderId;
+    info.storeLabel = 'Main Branch';
+    
+    const qrResult = BakongKHQR.generateIndividual(info);
+    return {
+      qrString: qrResult.data.qrString,
+      md5: qrResult.data.md5,
+    };
+  }
+}
+\`\`\`
+
+---
+
+### 2. Creating Webhooks for Payment Status
+
+Because KHQR payments happen peer-to-peer on the Bakong blockchain, the merchant server must verify that the transaction has successfully settled. The most reliable way is setting up a Webhook endpoint that Bakong or the acquiring bank pings once they confirm settlement:
+
+\`\`\`typescript
+@Controller('api/payments')
+export class PaymentController {
+  constructor(private readonly paymentService: PaymentService) {}
+
+  @Post('webhook')
+  async handleWebhook(@Body() payload: any, @Headers('x-signature') signature: string) {
+    // 1. Verify acquirer certificate signature
+    const isValid = this.paymentService.verifySignature(payload, signature);
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid transaction signature');
+    }
+
+    // 2. Process transaction state
+    await this.paymentService.settleOrder(payload.billNumber, payload.amount);
+    return { status: 'SUCCESS' };
+  }
+}
+\`\`\`
+
+---
+
+### 3. Polling Fallback
+
+If webhooks fail due to network instability, you should implement a short polling controller in NestJS using RxJS intervals or standard cron timers to verify status against the bank's transaction lookup API.
+
+Integrating Bakong KHQR simplifies user checkouts, enabling Cambodian customers to scan and pay in seconds.`
+    },
+    {
+      slug: "real-time-websockets-vs-pusher",
+      title: "Building Real-Time Web Apps: WebSockets vs Pusher",
+      excerpt: "A deep dive comparing standard WebSockets, server-sent events, and hosted channels like Pusher for building real-time collaboration engines.",
+      date: "Oct 25, 2025",
+      readingTime: "6 min read",
+      featured: false,
+      tags: ["WebSockets", "Pusher", "Real-Time"],
+      content: `## Choosing Your Real-Time Communication Stack
+
+For features like live notifications, messaging, or pool hall table booking systems, real-time sync is essential. Developers generally choose between **raw WebSockets (ws/Socket.io)** or hosted subscription services like **Pusher**.
+
+Here is a breakdown of the differences to help you select the right tool for your next project.
+
+---
+
+### 1. Complexity of Setup and Maintenance
+
+Implementing raw WebSockets requires managing connection lifecycle, heartbeats (pings/pongs), reconnection strategies, and horizontal scaling. If you deploy your backend on multiple server instances, you must spin up a Redis adapter (Redis PubSub) to synchronise sockets across servers.
+
+Pusher is completely serverless. You trigger a REST call to Pusher, and their infrastructure broadcasts it to all connected clients. It handles scaling, backpressure, and reconnections automatically.
+
+---
+
+### 2. Costs
+
+| Feature | Raw WebSockets | Pusher (Hosted) |
+| :--- | :--- | :--- |
+| **Server Costs** | Low (runs on your existing servers) | High (charged by connections and messages) |
+| **Maintenance** | High (requires DevOps monitoring) | Zero (completely managed) |
+| **Scalability** | Manual clustering / Redis adapter | Automatic scaling to millions of clients |
+
+---
+
+### 3. Code Comparison: Client Connection
+
+**Pusher Client:**
+\`\`\`javascript
+import Pusher from 'pusher-js';
+
+const pusher = new Pusher('APP_KEY', { cluster: 'ap1' });
+const channel = pusher.subscribe('order-channel');
+channel.bind('status-updated', (data) => {
+  console.log('Order status update:', data);
+});
+\`\`\`
+
+**Standard WebSocket Client:**
+\`\`\`javascript
+const socket = new WebSocket('wss://api.lothin-dev.app/ws');
+
+socket.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.event === 'order.status') {
+    console.log('Order status update:', data.payload);
+  }
+};
+
+socket.onclose = () => {
+  // Manual reconnection loop logic needed here
+};
+\`\`\`
+
+If time-to-market is your main priority, hosted channels like Pusher are unbeatable. However, for high-volume, cost-sensitive production architectures, deploying custom WebSocket nodes on Cloudflare or Node servers is the best long-term investment.`
+    },
+    {
+      slug: "nuxt-4-migration-report",
+      title: "Migrating Large Projects to Nuxt 4",
+      excerpt: "Nuxt 4 introduces a restructured directory layout, strict typing, and rendering updates. Here is a migration report and debugging checklist.",
+      date: "Aug 04, 2025",
+      readingTime: "7 min read",
+      featured: false,
+      tags: ["Nuxt", "Vue", "Migration", "Web Dev"],
+      content: `## Upgrading Vue Enterprise Projects to Nuxt 4
+
+Migrating enterprise projects is always challenging, particularly when dealing with major version shifts like Nuxt 2 → Nuxt 3, and now the streamlined directory shifts in **Nuxt 4**. 
+
+In my work at IDG, I led migration operations resolving breaking changes and adapting layouts to composition syntax. Here is a checklist of critical factors to watch for.
+
+---
+
+### 1. The Directory Restructure
+
+Nuxt 4 consolidates code files inside a unified \`app/\` folder structure by default (pages, components, layouts, middleware, composables), leaving configs and public resources in the root.
+
+\`\`\`bash
+# Nuxt 4 structure
+├── app/
+│   ├── components/
+│   ├── layouts/
+│   ├── pages/
+│   └── app.vue
+├── public/
+├── server/
+├── nuxt.config.ts
+└── package.json
+\`\`\`
+
+To preserve the old directory layout during migration, you can configure compatibility mode in \`nuxt.config.ts\`:
+
+\`\`\`typescript
+export default defineNuxtConfig({
+  future: {
+    compatibilityVersion: 4
+  }
+})
+\`\`\`
+
+---
+
+### 2. Smart Component Resolution
+
+Nuxt 4 has updated component autoloading properties. Nested folders now auto-resolve prefixing parent folder names to components. For instance:
+
+- Components inside \`components/dashboard/Sidebar.vue\` must be called as \`<DashboardSidebar />\` in views instead of just \`<Sidebar />\`.
+
+---
+
+### Summary Checklist
+
+- [x] Configure compatibility version variables in configuration files.
+- [x] Rename imports referencing nested components to use prefix names.
+- [x] Audit global composables: ensure standard imports are explicitly defined.
+- [x] Test Server-Side Rendering (SSR) page-load performance and hydrate states.
+
+Migrating early ensures you benefit from Vite's updated hot-reload speeds, reduced build bundle sizes, and optimal TypeScript compilation checks.`
+    }
+  ]
 };
