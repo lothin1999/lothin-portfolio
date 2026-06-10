@@ -9,6 +9,9 @@ import { AdminButton } from "@/components/admin/AdminButton";
 import { getCVData } from "@/lib/cvStore";
 import { buildMetadata, personJsonLd } from "@/lib/seo";
 
+export const dynamic = "force-dynamic";
+
+
 const dmSans = DM_Sans({
   subsets: ["latin"], weight: ["300","400","500","600"],
   variable: "--font-dm-sans", display: "swap",

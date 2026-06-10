@@ -3,12 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCVData, saveCVData } from "@/lib/cvStore";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 /** GET /api/cv — public, returns current CV data */
 export async function GET() {
   const data = await getCVData();
   return NextResponse.json(data, {
     headers: {
-      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
     },
   });
 }

@@ -1,15 +1,11 @@
 // src/lib/cvStore.ts
 // Abstraction over CV data persistence.
-// - Dev / Vercel: JSON file in /tmp or in-memory cache
-// - Cloudflare Pages: use KV binding (set NEXT_PUBLIC_USE_KV=true)
-//
-// For Cloudflare KV:
-//   1. Create KV namespace in Cloudflare dashboard
-//   2. Add binding "CV_STORE" in wrangler.toml / Pages settings
-//   3. Set NEXT_PUBLIC_USE_KV=true in env
+// - Dev / Fallback: Local memory cache or environment variables
+// - Supabase: Persistent cloud PostgreSQL storage
 
 import { defaultCV } from "./data";
 import type { CVData } from "@/types/cv";
+import { supabase } from "./supabase";
 
 // In-memory cache for serverless (resets on cold start, but fine for single user)
 let memCache: CVData | null = null;
@@ -20,7 +16,27 @@ export async function getCVData(): Promise<CVData> {
   // 1. Try in-memory cache first
   if (memCache) return memCache;
 
-  // 2. Try env-injected data (set at build time or via Cloudflare KV in a real setup)
+  // 2. Try fetching from Supabase database
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("portfolio_data")
+        .select("value")
+        .eq("key", STORAGE_KEY)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Supabase error fetching CV data:", error);
+      } else if (data && data.value) {
+        memCache = data.value as CVData;
+        return memCache;
+      }
+    } catch (err) {
+      console.error("Unexpected error fetching CV data from Supabase:", err);
+    }
+  }
+
+  // 3. Try env-injected data
   try {
     const raw = process.env.CV_JSON_DATA;
     if (raw) {
@@ -32,13 +48,35 @@ export async function getCVData(): Promise<CVData> {
     // ignore
   }
 
-  // 3. Fall back to default seed data
+  // 4. Fall back to default seed data
   memCache = { ...defaultCV, updatedAt: new Date().toISOString() };
   return memCache;
 }
 
 export async function saveCVData(data: CVData): Promise<void> {
-  memCache = { ...data, updatedAt: new Date().toISOString() };
-  // In production with Cloudflare KV you'd do:
-  //   await env.CV_STORE.put(STORAGE_KEY, JSON.stringify(memCache));
+  const updatedData = { ...data, updatedAt: new Date().toISOString() };
+  memCache = updatedData;
+
+  // 1. Write to Supabase database
+  if (supabase) {
+    try {
+      const { error } = await supabase
+        .from("portfolio_data")
+        .upsert(
+          { key: STORAGE_KEY, value: updatedData, updated_at: new Date().toISOString() },
+          { onConflict: "key" }
+        );
+      if (error) {
+        console.error("Supabase error saving CV data:", error);
+        throw error;
+      }
+      return;
+    } catch (err) {
+      console.error("Unexpected error saving CV data to Supabase:", err);
+    }
+  }
+
+  // 2. Fallback to process.env
+  process.env.CV_JSON_DATA = JSON.stringify(updatedData);
 }
+

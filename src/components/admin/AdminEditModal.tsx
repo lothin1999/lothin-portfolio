@@ -149,7 +149,7 @@ export function AdminEditModal({ onClose }: Props) {
   }
 
   // ── Profile Tab ──
-  const ProfileTab = () => (
+  const renderProfileTab = () => (
     <div className="space-y-4">
       <SectionHeading>Identity</SectionHeading>
       <div className="grid grid-cols-2 gap-3">
@@ -234,7 +234,7 @@ export function AdminEditModal({ onClose }: Props) {
   );
 
   // ── Experience Tab ──
-  const ExperienceTab = () => (
+  const renderExperienceTab = () => (
     <div className="space-y-6">
       {draft.experiences.map((exp, i) => (
         <div key={exp.id} className="border border-rule rounded-md p-4 space-y-3">
@@ -289,7 +289,7 @@ export function AdminEditModal({ onClose }: Props) {
   );
 
   // ── Skills Tab ──
-  const SkillsTab = () => (
+  const renderSkillsTab = () => (
     <div className="space-y-5">
       {draft.skillGroups.map((group, gi) => (
         <div key={gi} className="border border-rule rounded-md p-4 space-y-3">
@@ -318,7 +318,7 @@ export function AdminEditModal({ onClose }: Props) {
   );
 
   // ── Education Tab ──
-  const EducationTab = () => (
+  const renderEducationTab = () => (
     <div className="space-y-5">
       {draft.educations.map((edu, i) => (
         <div key={edu.id} className="border border-rule rounded-md p-4 space-y-3">
@@ -358,7 +358,7 @@ export function AdminEditModal({ onClose }: Props) {
   );
 
   // ── References Tab ──
-  const ReferencesTab = () => (
+  const renderReferencesTab = () => (
     <div className="space-y-4">
       {draft.references.map((ref, i) => (
         <div key={i} className="border border-rule rounded-md p-4 space-y-3">
@@ -389,7 +389,7 @@ export function AdminEditModal({ onClose }: Props) {
   );
 
   // ── Password Tab ──
-  const PasswordTab = () => (
+  const renderPasswordTab = () => (
     <div className="space-y-4 max-w-sm">
       <SectionHeading>Change Password</SectionHeading>
       <form onSubmit={handleChangePw} className="space-y-3">
@@ -420,12 +420,12 @@ export function AdminEditModal({ onClose }: Props) {
   );
 
   const tabContent: Record<Tab, React.ReactNode> = {
-    profile: <ProfileTab />,
-    experience: <ExperienceTab />,
-    skills: <SkillsTab />,
-    education: <EducationTab />,
-    references: <ReferencesTab />,
-    password: <PasswordTab />,
+    profile: renderProfileTab(),
+    experience: renderExperienceTab(),
+    skills: renderSkillsTab(),
+    education: renderEducationTab(),
+    references: renderReferencesTab(),
+    password: renderPasswordTab(),
   };
 
   return (
