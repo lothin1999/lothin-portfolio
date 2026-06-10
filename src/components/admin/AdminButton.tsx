@@ -1,37 +1,61 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, Lock } from "lucide-react";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCVData } from "@/hooks/useCVData";
 import { AdminLoginModal } from "./AdminLoginModal";
 import { AdminEditModal } from "./AdminEditModal";
 
-export function AdminButton() {
+function AdminHandler() {
   const { isAdmin } = useCVData();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const hasEditParam = searchParams.has("edit");
+
   const [showLogin, setShowLogin] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
-  const handleClick = () => {
-    if (isAdmin) {
-      setShowEdit(true);
+  useEffect(() => {
+    if (hasEditParam) {
+      if (isAdmin) {
+        setShowEdit(true);
+        setShowLogin(false);
+      } else {
+        setShowLogin(true);
+        setShowEdit(false);
+      }
     } else {
-      setShowLogin(true);
+      setShowLogin(false);
+      setShowEdit(false);
     }
+  }, [hasEditParam, isAdmin]);
+
+  const handleCloseLogin = () => {
+    setShowLogin(false);
+    if (!isAdmin) {
+      // Clear query param
+      router.replace("/", { scroll: false });
+    }
+  };
+
+  const handleCloseEdit = () => {
+    setShowEdit(false);
+    // Clear query param
+    router.replace("/", { scroll: false });
   };
 
   return (
     <>
-      <button
-        onClick={handleClick}
-        title={isAdmin ? "Edit CV" : "Admin login"}
-        className="fixed bottom-6 right-6 z-[100] w-11 h-11 rounded-full bg-ink text-white shadow-lg hover:bg-accent transition-colors flex items-center justify-center"
-        aria-label={isAdmin ? "Edit CV" : "Admin login"}
-      >
-        {isAdmin ? <Pencil size={16} /> : <Lock size={15} />}
-      </button>
-
-      {showLogin && <AdminLoginModal onClose={() => setShowLogin(false)} />}
-      {showEdit && <AdminEditModal onClose={() => setShowEdit(false)} />}
+      {showLogin && <AdminLoginModal onClose={handleCloseLogin} />}
+      {showEdit && <AdminEditModal onClose={handleCloseEdit} />}
     </>
+  );
+}
+
+export function AdminButton() {
+  return (
+    <Suspense fallback={null}>
+      <AdminHandler />
+    </Suspense>
   );
 }
