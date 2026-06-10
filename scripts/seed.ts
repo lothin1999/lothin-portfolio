@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import { defaultCV } from '../src/lib/data';
+import { encryptData } from '../src/lib/encryption';
 
 // Load .env manually
 const envPath = path.resolve(process.cwd(), '.env');
@@ -29,18 +30,25 @@ if (!supabaseUrl || !supabaseKey) {
   process.exit(1);
 }
 
+const passcode = process.argv[2] || "lothin-dev";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function seed() {
-  console.log("Seeding default CV data to Supabase...");
+  console.log(`Seeding ENCRYPTED CV data to Supabase (passcode: "${passcode}")...`);
   console.log("URL:", supabaseUrl);
 
   try {
+    const encryptedStr = await encryptData(defaultCV, passcode);
+    const payload = {
+      encrypted: true,
+      ciphertext: encryptedStr
+    };
+
     const { error } = await supabase
       .from('portfolio_data')
       .upsert({
         key: 'lothin_cv_data',
-        value: defaultCV,
+        value: payload,
         updated_at: new Date().toISOString()
       }, { onConflict: 'key' });
 
@@ -48,7 +56,7 @@ async function seed() {
       console.error("❌ Error seeding data:", error.message);
       process.exit(1);
     } else {
-      console.log("✅ Successfully seeded default CV data to Supabase!");
+      console.log("✅ Successfully seeded encrypted CV data to Supabase!");
       process.exit(0);
     }
   } catch (err) {

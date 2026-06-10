@@ -12,8 +12,11 @@ interface PageSEO {
   noIndex?: boolean;
 }
 
-export function buildMetadata(cv: CVData, page?: PageSEO): Metadata {
-  const { profile } = cv;
+import { defaultCV } from "./data";
+
+export function buildMetadata(cv: any, page?: PageSEO): Metadata {
+  const cvData = (cv && cv.profile) ? cv : defaultCV;
+  const { profile } = cvData;
   const fullName = `${profile.name.first} ${profile.name.last}`;
   const defaultTitle = `${fullName} — ${profile.title}`;
   const defaultDesc = `${profile.summary.slice(0, 155)}…`;
@@ -80,8 +83,9 @@ export function buildMetadata(cv: CVData, page?: PageSEO): Metadata {
 }
 
 /** JSON-LD structured data for the portfolio person */
-export function personJsonLd(cv: CVData): object {
-  const { profile } = cv;
+export function personJsonLd(cv: any): object {
+  const cvData = (cv && cv.profile) ? cv : defaultCV;
+  const { profile } = cvData;
   return {
     "@context": "https://schema.org",
     "@type": "Person",

@@ -85,11 +85,22 @@ export function AdminEditModal({ onClose }: Props) {
   const [pwMsg, setPwMsg] = useState("");
   const [pwHash, setPwHash] = useState("");
 
+  const [visitorPasscode, setVisitorPasscode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("lothin_visitor_passcode") || "";
+    }
+    return "";
+  });
+
   async function handleSave() {
+    if (!visitorPasscode.trim()) {
+      alert("Please enter a Visitor Passcode to encrypt your portfolio.");
+      return;
+    }
     setSaving(true);
     setSaveMsg("");
     try {
-      await updateCV(draft);
+      await updateCV(draft, visitorPasscode);
       setSaveMsg("Saved!");
       setTimeout(() => setSaveMsg(""), 2000);
     } catch {
@@ -151,6 +162,23 @@ export function AdminEditModal({ onClose }: Props) {
   // ── Profile Tab ──
   const renderProfileTab = () => (
     <div className="space-y-4">
+      <SectionHeading>Visitor Security & Encryption</SectionHeading>
+      <div className="space-y-1">
+        <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-accent">
+          Visitor Decryption Passcode
+        </label>
+        <input
+          type="text"
+          value={visitorPasscode}
+          onChange={(e) => setVisitorPasscode(e.target.value)}
+          placeholder="Passcode for recruiters/visitors to decrypt portfolio..."
+          className="w-full px-2.5 py-2 border border-accent rounded text-[13px] text-ink bg-bg placeholder:text-muted/50 focus:outline-none transition-colors"
+        />
+        <p className="text-[11px] text-muted leading-relaxed">
+          This passcode is used to encrypt your portfolio in the browser. You must share this passcode with visitors/recruiters so they can view your CV.
+        </p>
+      </div>
+
       <SectionHeading>Identity</SectionHeading>
       <div className="grid grid-cols-2 gap-3">
         <Field label="First name" value={draft.profile.name.first}

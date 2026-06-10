@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { AdminButton } from "@/components/admin/AdminButton";
 import { getCVData } from "@/lib/cvStore";
 import { buildMetadata, personJsonLd } from "@/lib/seo";
+import { CVContentWrapper } from "@/components/layout/CVContentWrapper";
 
 export const dynamic = "force-dynamic";
 
@@ -55,10 +56,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </a>
         <ThemeProvider>
           <CVProvider>
-            <Navbar />
-            <main id="main">{children}</main>
-            <Footer />
-            <AdminButton />
+            <CVContentWrapper>
+              <Navbar />
+              <main id="main">{children}</main>
+              <Footer />
+              <AdminButton />
+            </CVContentWrapper>
           </CVProvider>
         </ThemeProvider>
       </body>
