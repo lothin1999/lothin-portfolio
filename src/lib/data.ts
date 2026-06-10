@@ -16,7 +16,7 @@ export const defaultCV: CVData = {
     photoUrl: "",
     languages: [
       { name: "Khmer", level: "Native" },
-      { name: "English", level: "Professional" },
+      { name: "English", level: "Medium" },
     ],
   },
   experiences: [
