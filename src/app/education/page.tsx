@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getCVData } from "@/lib/cvStore";
 import { buildMetadata } from "@/lib/seo";
-import { EducationSection } from "@/components/sections/EducationSection";
 
 export async function generateMetadata(): Promise<Metadata> {
   const cv = await getCVData();
@@ -13,5 +13,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function EducationPage() {
-  return <EducationSection />;
+  redirect("/#education");
 }

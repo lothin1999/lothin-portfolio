@@ -56,6 +56,12 @@ body {
 /* ── SELECTION ──────────────────────────────────────────────────── */
 ::selection { background: var(--accent); color: #fff; }
 
+/* ── SCROLL ANCHOR OFFSET (account for sticky navbar height 58px) ── */
+section[id] {
+  scroll-margin-top: 58px;
+}
+
+
 /* ── NAV LINK ───────────────────────────────────────────────────── */
 .nav-link {
   position: relative;
