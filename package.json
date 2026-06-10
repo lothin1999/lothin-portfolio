@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "preview": "npm run pages:build && wrangler pages dev .vercel/output/static",
-    "deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static"
+    "pages:build": "pnpm dlx vercel build && pnpm dlx @cloudflare/next-on-pages --skip-build",
+    "preview": "pnpm pages:build && pnpm wrangler pages dev .vercel/output/static",
+    "deploy": "pnpm pages:build && pnpm wrangler pages deploy .vercel/output/static"
   },
   "dependencies": {
     "@gsap/react": "^2.1.1",

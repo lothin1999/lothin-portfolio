@@ -3,6 +3,7 @@ import { getCVData, saveCVData } from "@/lib/cvStore";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 export async function GET() {
   const data = await getCVData();
   return NextResponse.json(data, {

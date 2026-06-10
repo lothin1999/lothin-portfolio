@@ -17,6 +17,7 @@ import { buildMetadata, personJsonLd } from "@/lib/seo";
 import { CVContentWrapper } from "@/components/layout/CVContentWrapper";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],

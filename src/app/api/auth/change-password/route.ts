@@ -7,6 +7,8 @@ const schema = z.object({
   newPassword: z.string().min(8, "Password must be at least 8 characters"),
 });
 
+export const runtime = "edge";
+
 export async function POST(req: NextRequest) {
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (!token || !(await verifySessionToken(token))) {

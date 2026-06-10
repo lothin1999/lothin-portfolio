@@ -4,6 +4,8 @@ import { z } from "zod";
 
 const schema = z.object({ password: z.string().min(1) });
 
+export const runtime = "edge";
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
