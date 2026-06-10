@@ -7,6 +7,7 @@ import { ScrambleText } from "@/components/ui/ScrambleText";
 import { Chip } from "@/components/ui/Chip";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 export async function generateMetadata(): Promise<Metadata> {
   const cv = await getCVData();
