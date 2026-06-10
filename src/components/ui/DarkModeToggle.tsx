@@ -97,6 +97,9 @@ export function DarkModeToggle() {
           <mask id="dm-moon-mask">
             <rect x="0" y="0" width="24" height="24" fill="white" />
             <motion.circle
+              cx={isDark ? MOON_MASK_DARK.cx : MOON_MASK_LIGHT.cx}
+              cy={isDark ? MOON_MASK_DARK.cy : MOON_MASK_LIGHT.cy}
+              r={isDark ? MOON_MASK_DARK.r : MOON_MASK_LIGHT.r}
               animate={
                 isDark
                   ? { ...MOON_MASK_DARK, fillOpacity: 1 }
@@ -111,6 +114,7 @@ export function DarkModeToggle() {
         <motion.circle
           cx={CENTER}
           cy={CENTER}
+          r={isDark ? MOON_R : SUN_R}
           fill="currentColor"
           stroke="none"
           mask="url(#dm-moon-mask)"
