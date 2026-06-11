@@ -34,23 +34,28 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="/#experience" className="font-sans text-xs text-ink hover:text-accent transition-colors">
+                <Link href="/about" className="font-sans text-xs text-ink hover:text-accent transition-colors">
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link href="/portfolio" className="font-sans text-xs text-ink hover:text-accent transition-colors">
                   Work
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#skills" className="font-sans text-xs text-ink hover:text-accent transition-colors">
-                  Skills
-                </a>
-              </li>
-              <li>
-                <a href="/#education" className="font-sans text-xs text-ink hover:text-accent transition-colors">
-                  Education
-                </a>
+                <Link href="/services" className="font-sans text-xs text-ink hover:text-accent transition-colors">
+                  Services
+                </Link>
               </li>
               <li>
                 <Link href="/articles" className="font-sans text-xs text-ink hover:text-accent transition-colors">
                   Writing
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="font-sans text-xs text-ink hover:text-accent transition-colors">
+                  Reach Out
                 </Link>
               </li>
             </ul>

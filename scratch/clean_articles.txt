@@ -1,0 +1,79 @@
+[Link: #main-content]
+Skip to main content
+[Link: /]
+codedgar
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /portfolio]
+work
+[Link: /services]
+services
+[Link: /articles]
+writing
+[Link: /contact]
+reach out // navigation ×
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /portfolio]
+work
+[Link: /services]
+services
+[Link: /articles]
+writing
+[Link: /contact]
+reach out 01 // page.writing Writing Thoughts on frontend development, architecture, and the craft of building for the web. 02 // section.featured Featured
+[Link: /articles/why-i-choose-bem-over-css-modules]
+Dec 15, 2024 Why I Choose BEM Over CSS Modules (Most of the Time) CSS architecture is a decision with long-term consequences. Here is why I often reach for BEM methodology over CSS Modules, and when I do not. CSS Architecture Decision Making
+Read article →
+[Link: /articles/seo-for-web-developers-the-complete-guide]
+Dec 1, 2024 SEO for Web Developers: The Complete Guide Everything I know about SEO as a frontend developer. HTML structure, content strategy, tracking progress, and what has changed heading into 2026. SEO Content Performance
+Read article →
+[Link: /articles/design-tokens-before-components]
+Oct 8, 2024 Why I Build Design Tokens Before Components Most teams start with components and add tokens later. I do the opposite. Here is why the sequence matters and what it looks like in practice. Design Systems Architecture Process
+Read article →
+[Link: /articles/what-teams-get-wrong-about-code-reviews]
+Aug 22, 2024 What Most Teams Get Wrong About Code Reviews Code reviews are supposed to improve quality and share knowledge. Instead, most teams turn them into bottlenecks and blame games. Here is how to fix that. Leadership Process Teams
+Read article → 03 // section.archive More Posts
+[Link: /articles/css-architecture-for-enterprise]
+CSS Architecture for Enterprise: What Actually Works CSS Architecture Enterprise Jan 25, 2025
+[Link: /articles/result-driven-web-design]
+The Formula: Web Design That Generates Results Web Design UX Conversion Dec 9, 2024
+[Link: /articles/how-a-website-connects-with-marketing]
+Your Website Is Not Separate From Your Marketing Marketing Strategy Web Development Aug 16, 2024 What problem are you facing in your frontend? I write about problems I encounter in real work. If you have a question, let's discuss.
+[Link: /contact]
+Let's Discuss
+CODEDGAR built with intention. maintained with care.
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /contact]
+contact
+[Link: /services]
+services
+[Link: /services/custom-web-development]
+web development
+[Link: /services/frontend-consulting]
+consulting
+[Link: /services/frontend-advisory]
+advisory
+[Link: /services/team-knowledge-design]
+knowledge design
+[Link: /portfolio]
+work
+[Link: /articles]
+writing
+[Link: /terms-and-conditions]
+terms ·
+[Link: /privacy-policy]
+privacy · cookie settings Made in Buenos Aires // codedgar.2026 top [MODE: VISITOR ] // writing ♪ ▶ 0 % - - : - - S ?
+I use cookies for analytics. Just page views and basic usage data so I can see what's working. No tracking you around the internet.
+[Link: /privacy-policy]
+Privacy policy
+that's fine
+no thanks
+// keyboard.shortcuts × Navigation j Scroll down k Scroll up g then g Go to top G Go to bottom Quick Jump g then h Go home g then p Go to work g then s Go to services g then c Go to contact General ? Show this help g then , Site settings Esc Close overlays Press ? anytime to toggle this panel // site.settings × Smooth scroll Eased scrolling instead of native browser scroll Custom cursor Corner-bracket cursor with trailing ring cancel save

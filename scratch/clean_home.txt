@@ -1,0 +1,101 @@
+[Link: #main-content]
+Skip to main content
+[Link: /]
+codedgar
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /portfolio]
+work
+[Link: /services]
+services
+[Link: /articles]
+writing
+[Link: /contact]
+reach out // navigation ×
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /portfolio]
+work
+[Link: /services]
+services
+[Link: /articles]
+writing
+[Link: /contact]
+reach out 01 // system.init 10 years ·
+[Link: /portfolio]
+12 products · 6 teams scaled Hello, I'm Edgar Pérez Frontend Design Engineer
+Your team feels stuck. Features drag, releases break things, and nobody can explain why.
+I find the structural problems and organize the way forward.
+[Link: /about]
+See my approach
+[Link: /portfolio]
+Case studies 0x01 // the problem 02 The Problem Frontend complexity doesn't announce itself. It piles up quietly until shipping anything feels like a fight. [01] Features take longer than they should Change one thing, five other places break. What should be a half-day task turns into a multi-day ordeal, and nobody can explain why. [02] New engineers take months to contribute Knowledge lives in people's heads. Conventions are undocumented. Onboarding is ad-hoc. [03] Design and engineering are misaligned No shared language, no design system governance, constant rework and miscommunication. [04] Performance degrades with every release The app gets heavier with every deploy. Pages that loaded in 2 seconds now take 5. Your users noticed before your team did.
+Most teams try to fix this by pushing harder or adding new policies without adding structure. That's aspirin. The real fix is structural, and that's what I do.
+03 // section.about Who I Am
+I started in Venezuela, led teams across startups and agencies, and shipped products used by thousands. A client once called me "the organizer." There's more if you're curious.
+[Link: /about]
+More about me → 0 + years Venezuela → enterprise scale 0 engineers led across 3 companies 0 % faster loads MapVX: 8s → 0.8s 0 + GitHub stars Puppertino framework 04 // section.work Featured Work
+[Link: /portfolio/mapvx]
+2024 Frontend Tech Lead MapVX An indoor navigation platform drowning in technical debt. I rebuilt the CSS architecture, introduced 50+ design tokens, and cut loading times by 90%. Architecture Performance Team Scaling
+View case study →
+[Link: /portfolio/gmk87-configurator]
+2025 Creator & Maintainer GMK87 Configurator My keyboard had features I couldn't use from macOS. So I reverse-engineered the USB protocol and built a desktop app that works on every platform. Open Source Reverse Engineering Desktop
+View case study →
+[Link: /portfolio/capsulo-one]
+2025 Creator & Developer Capsulo One A screen recorder with on-device AI transcription. No cloud, no bots, no subscriptions. Built it for my girlfriend, then I couldn't stop using it myself. Product Electron Privacy
+View case study →
+[Link: /portfolio]
+View all projects 05 // section.services How I Help Four ways to work together, depending on where your team is right now.
+[Link: /services/frontend-consulting]
+High-End Frontend Consulting I look at how your frontend is actually built, find the stuff that is slowing your team down, and give you a plan to fix it.
+[Link: /services/custom-web-development]
+Custom Web Development I build sites that work well and are easy for your team to keep running. WordPress, WooCommerce, stuff like that.
+[Link: /services/frontend-advisory]
+Long-Term Frontend Advisory You get ongoing access to someone who thinks about frontend architecture for a living, without hiring full-time.
+[Link: /services]
+View all services → 06 // section.writing Latest Writing
+[Link: /articles/css-architecture-for-enterprise]
+Jan 25, 2025 CSS Architecture for Enterprise: What Actually Works Enterprise CSS is messy by nature. Here is what works in real codebases with real teams, real deadlines, and real legacy code. CSS Architecture Enterprise
+[Link: /articles/why-i-choose-bem-over-css-modules]
+Dec 15, 2024 Why I Choose BEM Over CSS Modules (Most of the Time) CSS architecture is a decision with long-term consequences. Here is why I often reach for BEM methodology over CSS Modules, and when I do not. CSS Architecture Decision Making
+[Link: /articles]
+Read more → 07 // section.proof What Others Say Edgar is a very enthusiastic developer with a proactive attitude and eagerness to learn new technologies. He was able to work within the team to achieve amazing websites... Yael Roufe Software Project Leader at Mercado Libre I am extremely grateful for the work Edgar did for my hostel. The website has enabled clients to make reservations directly, helping us avoid high fees from booking companies and offering a more personal experience. Xavier Owner of Hostal Juarez 08 Let's Talk
+I take on two clients at a time so I can give each one real focus.
+Limited availability · accepting select projects for Q2 2026
+[Link: /contact]
+Tell Me What's Broken
+CODEDGAR built with intention. maintained with care.
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /contact]
+contact
+[Link: /services]
+services
+[Link: /services/custom-web-development]
+web development
+[Link: /services/frontend-consulting]
+consulting
+[Link: /services/frontend-advisory]
+advisory
+[Link: /services/team-knowledge-design]
+knowledge design
+[Link: /portfolio]
+work
+[Link: /articles]
+writing
+[Link: /terms-and-conditions]
+terms ·
+[Link: /privacy-policy]
+privacy · cookie settings Made in Buenos Aires // codedgar.2026 top [MODE: VISITOR ] // home ♪ ▶ 0 % - - : - - S ?
+I use cookies for analytics. Just page views and basic usage data so I can see what's working. No tracking you around the internet.
+[Link: /privacy-policy]
+Privacy policy
+that's fine
+no thanks
+// keyboard.shortcuts × Navigation j Scroll down k Scroll up g then g Go to top G Go to bottom Quick Jump g then h Go home g then p Go to work g then s Go to services g then c Go to contact General ? Show this help g then , Site settings Esc Close overlays Press ? anytime to toggle this panel // site.settings × Smooth scroll Eased scrolling instead of native browser scroll Custom cursor Corner-bracket cursor with trailing ring cancel save

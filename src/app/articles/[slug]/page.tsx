@@ -207,7 +207,7 @@ export default async function ArticleDetailsPage({ params }: PageProps) {
           <p className="text-xs text-ink2 leading-relaxed font-sans font-light">
             Published by <strong>{cv.profile.name.first} {cv.profile.name.last}</strong>. Cambodia-based Full-Stack Web Developer specialized in payments gateway systems, real-time synchronisation nodes, and edge delivery.
           </p>
-          <Link href="/#about" className="font-mono text-xs text-accent hover:text-accent-orange link-underline w-fit">
+          <Link href="/contact" className="font-mono text-xs text-accent hover:text-accent-orange link-underline w-fit">
             Get in touch
           </Link>
         </footer>

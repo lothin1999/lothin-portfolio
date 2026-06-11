@@ -87,48 +87,21 @@ export function ShortcutsModal() {
         } else if (key === "h") {
           e.preventDefault();
           router.push("/");
+        } else if (key === "a") {
+          e.preventDefault();
+          router.push("/about");
         } else if (key === "p") {
           e.preventDefault();
-          router.push("/#experience");
-          setTimeout(() => {
-            const el = document.getElementById("experience");
-            if (el) {
-              if ((window as any).lenis) {
-                (window as any).lenis.scrollTo(el, { offset: -58, duration: 1.0 });
-              } else {
-                el.scrollIntoView({ behavior: "smooth" });
-              }
-            }
-          }, 100);
+          router.push("/portfolio");
         } else if (key === "s") {
           e.preventDefault();
-          router.push("/#skills");
-          setTimeout(() => {
-            const el = document.getElementById("skills");
-            if (el) {
-              if ((window as any).lenis) {
-                (window as any).lenis.scrollTo(el, { offset: -58, duration: 1.0 });
-              } else {
-                el.scrollIntoView({ behavior: "smooth" });
-              }
-            }
-          }, 100);
+          router.push("/services");
         } else if (key === "w") {
           e.preventDefault();
           router.push("/articles");
         } else if (key === "c") {
           e.preventDefault();
-          router.push("/#about");
-          setTimeout(() => {
-            const el = document.getElementById("about");
-            if (el) {
-              if ((window as any).lenis) {
-                (window as any).lenis.scrollTo(el, { offset: -58, duration: 1.0 });
-              } else {
-                el.scrollIntoView({ behavior: "smooth" });
-              }
-            }
-          }, 100);
+          router.push("/contact");
         } else if (key === ",") {
           e.preventDefault();
           setSettingsOpen(true);
@@ -213,7 +186,15 @@ export function ShortcutsModal() {
                 </span>
               </div>
               <div className="flex justify-between items-center py-0.5">
-                <span className="text-ink2">Go to experience</span>
+                <span className="text-ink2">Go to about</span>
+                <span className="flex gap-1 items-center">
+                  <span className="bg-tag-bg border border-rule px-1.5 py-0.5 rounded text-[11px] text-tag-text font-bold">g</span>
+                  <span className="text-muted text-[10px]">then</span>
+                  <span className="bg-tag-bg border border-rule px-1.5 py-0.5 rounded text-[11px] text-tag-text font-bold">a</span>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-ink2">Go to work</span>
                 <span className="flex gap-1 items-center">
                   <span className="bg-tag-bg border border-rule px-1.5 py-0.5 rounded text-[11px] text-tag-text font-bold">g</span>
                   <span className="text-muted text-[10px]">then</span>
@@ -221,7 +202,7 @@ export function ShortcutsModal() {
                 </span>
               </div>
               <div className="flex justify-between items-center py-0.5">
-                <span className="text-ink2">Go to skills</span>
+                <span className="text-ink2">Go to services</span>
                 <span className="flex gap-1 items-center">
                   <span className="bg-tag-bg border border-rule px-1.5 py-0.5 rounded text-[11px] text-tag-text font-bold">g</span>
                   <span className="text-muted text-[10px]">then</span>
@@ -229,7 +210,7 @@ export function ShortcutsModal() {
                 </span>
               </div>
               <div className="flex justify-between items-center py-0.5">
-                <span className="text-ink2">Go to writing (blog)</span>
+                <span className="text-ink2">Go to writing</span>
                 <span className="flex gap-1 items-center">
                   <span className="bg-tag-bg border border-rule px-1.5 py-0.5 rounded text-[11px] text-tag-text font-bold">g</span>
                   <span className="text-muted text-[10px]">then</span>

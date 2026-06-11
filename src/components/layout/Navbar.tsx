@@ -10,11 +10,11 @@ import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar";
 
 const navLinks = [
   { href: "/", label: "Home", sectionId: "home", pathMatch: "/" },
-  { href: "/experience", label: "Work", sectionId: "work", pathMatch: "/experience" },
-  { href: "/skills", label: "Skills", sectionId: "skills", pathMatch: "/skills" },
-  { href: "/education", label: "Education", sectionId: "education", pathMatch: "/education" },
   { href: "/about", label: "About", sectionId: "about", pathMatch: "/about" },
+  { href: "/portfolio", label: "Work", sectionId: "work", pathMatch: "/portfolio" },
+  { href: "/services", label: "Services", sectionId: "services", pathMatch: "/services" },
   { href: "/articles", label: "Writing", sectionId: "writing", pathMatch: "/articles" },
+  { href: "/contact", label: "Reach Out", sectionId: "contact", pathMatch: "/contact" },
 ];
 
 export function Navbar() {

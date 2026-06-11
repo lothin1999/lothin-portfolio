@@ -1,0 +1,64 @@
+[Link: #main-content]
+Skip to main content
+[Link: /]
+codedgar
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /portfolio]
+work
+[Link: /services]
+services
+[Link: /articles]
+writing
+[Link: /contact]
+reach out // navigation ×
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /portfolio]
+work
+[Link: /services]
+services
+[Link: /articles]
+writing
+[Link: /contact]
+reach out 01 // page.contact Contact I read every message. I'll get back to you within 2-3 business days. Limited availability · accepting select projects for Q2 2026 establishing connection..." data-astro-cid-2a3qkw65="true" class="text-reveal text-reveal--typewriter connection-line"> > establishing connection... handshake complete" data-astro-cid-2a3qkw65="true" class="text-reveal text-reveal--typewriter connection-line"> > handshake complete channel open_" data-astro-cid-2a3qkw65="true" class="text-reveal text-reveal--typewriter connection-line connection-line--success"> > channel open_ 02 // section.reach How to Reach Me Email works best. Tell me what's going on and I'll take it from there. Email (Preferred) edgar@codedgar.com
+[Link: mailto:edgar@codedgar.com]
+Send email → copy
+[Link: https://linkedin.com/in/codedgar]
+LinkedIn linkedin.com/in/codedgar View profile →
+[Link: /links]
+All Links Socials, projects, and more View all → 03 // section.process What Happens Next 01 I review and respond I'll get back to you within 2-3 business days with my thoughts or a few questions. 02 We schedule a call If it looks like a fit, we hop on a 30-minute call to talk it through. 03 Proposal or referral I'll send a proposal if we're a match. If not, I'll point you somewhere that makes more sense. CODEDGAR built with intention. maintained with care.
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /contact]
+contact
+[Link: /services]
+services
+[Link: /services/custom-web-development]
+web development
+[Link: /services/frontend-consulting]
+consulting
+[Link: /services/frontend-advisory]
+advisory
+[Link: /services/team-knowledge-design]
+knowledge design
+[Link: /portfolio]
+work
+[Link: /articles]
+writing
+[Link: /terms-and-conditions]
+terms ·
+[Link: /privacy-policy]
+privacy · cookie settings Made in Buenos Aires // codedgar.2026 top [MODE: VISITOR ] // contact ♪ ▶ 0 % - - : - - S ?
+I use cookies for analytics. Just page views and basic usage data so I can see what's working. No tracking you around the internet.
+[Link: /privacy-policy]
+Privacy policy
+that's fine
+no thanks
+// keyboard.shortcuts × Navigation j Scroll down k Scroll up g then g Go to top G Go to bottom Quick Jump g then h Go home g then p Go to work g then s Go to services g then c Go to contact General ? Show this help g then , Site settings Esc Close overlays Press ? anytime to toggle this panel // site.settings × Smooth scroll Eased scrolling instead of native browser scroll Custom cursor Corner-bracket cursor with trailing ring cancel save

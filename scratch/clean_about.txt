@@ -1,0 +1,72 @@
+[Link: #main-content]
+Skip to main content
+[Link: /]
+codedgar
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /portfolio]
+work
+[Link: /services]
+services
+[Link: /articles]
+writing
+[Link: /contact]
+reach out // navigation ×
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /portfolio]
+work
+[Link: /services]
+services
+[Link: /articles]
+writing
+[Link: /contact]
+reach out 01 // page.about About
+From an electronics lab in Venezuela to leading frontend teams for Shark Tank entrepreneurs. 10+ years building systems that scale, and the scrappy mindset to make the best of what I've got.
+Limited availability · accepting select projects for Q2 2026 0 + years experience 0 engineers led 0 % load time reduced 0 + github stars 02 // section.story My Story
+I'm a Frontend Design Engineer and Technical Lead . I help founders and CTOs untangle frontend complexity so their teams can actually ship and grow.
+I studied electronics in Venezuela. I learned to think in systems: every component is a gear in a bigger machine. That mindset followed me into code, into teams, into how I see entire companies. When a startup gave me three days to build a Morse code game as an internship test, I didn't finish, but I shipped what I had and showed up. They never checked the code. They wanted to see someone who gives 100% and builds. That lesson stuck with me.
+My first big project was iPago, a fintech app for instant QR-code payments in Venezuela. Unreliable internet, low-spec phones, servers running in-country just to cut latency, no marketing budget. Just a small team in love with the product. Over 5,000 users. Building under those constraints taught me to solve problems with whatever I had, not what I wished I had. And when I saw people actually using the app, businesses learning it, lives getting easier, I knew this was what I was going to do.
+Early on, I made discoverability my top priority. I rebuilt my portfolio every single month, shared it everywhere, and took every piece of criticism as a push forward. That approach connected me with two Shark Tank Mexico entrepreneurs, agencies delivering for brands like KTM and the International Chamber of Commerce, and eventually MapVX, where I built their marketing site, mobile apps, and theming system, then proposed myself for the tech lead role and earned it. I've walked through El Dorado airport and elite shopping centers in Bogotá seeing my own work on their screens.
+My leadership style is calm, structured, and people-oriented . I've been in rooms where a C-level and a developer were openly fighting, and I stayed calm, de-escalated, and brought everyone back to collaboration. I don't react to fires. I show up every day so they don't start.
+When I'm not working, I'm usually still on my computer, creating
+[Link: https://steamcommunity.com/id/codedgar/myworkshopfiles/]
+animated wallpapers , building PCs, or reading Harvard Business Review. I used to breakdance until I was 20; learned to improvise, feel the rhythm, and flow with whatever was happening. Honestly, that's the same approach I bring to code. If I wasn't doing frontend, I'd probably be running an electronics repair shop like my grandpa had.
+// system.stack React Vue.js Astro TypeScript JavaScript GSAP CSS Tailwind Node.js WordPress Git Figma Design Systems Performance Accessibility Architecture React Vue.js Astro TypeScript JavaScript GSAP CSS Tailwind Node.js WordPress Git Figma Design Systems Performance Accessibility Architecture // section.achievements Recognition CSS Article of the Week Dev.to Got picked for a CSS deep-dive on Dev.to. I write about the stuff I run into at work, and sometimes it lands. Shark Tank Collaborations 2 Featured Entrepreneurs Frontend leadership for two Shark Tank Mexico entrepreneurs. Both reached out to me. Reshaped how I communicate impact in terms executives actually care about. Creator of Puppertino 1,000+ GitHub Stars, 5,000+ Downloads Open-source CSS framework inspired by Human Interface Guidelines. 03 // section.principles How I Think About Work Systems over features Good architecture means your developers add features without fighting the codebase. Not perfectly encapsulated. It leaves room for new things. Every time I've set this up, time-to-ship drops. Clarity over cleverness I've seen clever code cause real damage. Pre-rendered modals that overflowed the DOM, mega-components that broke when you touched anything. We split them up and immediately shipped faster. Boring code wins. Business context matters I've watched teams pick tech stacks because one founder knew the language, then spend months migrating. Technical decisions are business decisions. I always ask what this means for the company before what's the 'correct' solution. Long-term thinking Every shortcut comes back eventually, and it's always worse the second time. I'd rather spend an extra day now than lose a week six months from now. // section.boundaries What I Don't Do I like to be upfront about this. It saves both of us time. - Tutorial-level hand-holding. I'll point you to the path, but I won't walk it for you - Quick feature work without understanding the system it lives in - Projects without clear business objectives or direction - Teams not ready for structural change. If 'we've always done it this way' is the answer, we're probably not a fit - Free advice or unpaid consultations 04 // section.career Career Commits A version-controlled history of growth and impact. 2025 Senior WordPress Developer @ ClickIT / Ivím Health HEAD Built a plugin system that lets the team drop custom templates into any existing WordPress theme without touching the theme code. Also wrote a CSV-to-JSON parser that 80+ users rely on daily. + Plugin-based template system + CSV-to-JSON parser for 80+ users + ACF-driven templates ~ Deployment workflows ~ HTML/CSS/JS performance 2024 Frontend Tech Lead @ MapVX Ran a 6-person frontend team. We built the marketing site, mobile app, totem kiosks, and a theming engine with 50+ tokens. Load times went from 8 seconds to under 1. + Team leadership (6 engineers) + C-level presentations + External API integrations (3+ partners) ~ CSS architecture → BEM ~ Component library (15+ reusable) ~ Theming system (50+ tokens) - Legacy deployment processes - Technical debt 2023 Senior WordPress Developer @ Integrated Media Group Locked down 25+ client sites with WordFence, hardened configs, and proper update cycles. Zero breaches, 99.9% uptime. Also ran performance audits that got most sites above 80 on PageSpeed. + Security hardening (WordFence) + E-commerce integrations + CRM connections + Automated workflows ~ PageSpeed scores (80+ on most sites) ~ Load times (55% faster) 2022 Full-stack Developer @ Rise Agency Shipped 15+ WordPress sites from Figma and InVision comps. This is where I got serious about GSAP: scroll animations, VueJS components, REST APIs wired into everything. + GSAP & ScrollTrigger animations + VueJS components + REST API integrations ~ Client satisfaction (+25%) 2019 Frontend Developer @ Shopy21 & GoApps Built React and NodeJS apps, set up Git workflows the company never had, and started mentoring other devs. Cut 40% of the codebase debt and got pages loading 50% faster. + React applications + NodeJS backends + Git workflows + Team mentorship ~ Codebase debt (cut 40%) ~ Page speed (50% faster) 2017 Frontend Consultant @ Interactive Valley & Digital Era 10+ sites for clients like the International Chamber of Commerce and KTM. Started leading and mentoring 3-5 junior devs here. First taste of what I actually wanted to do long-term. + Team mentorship (3-5 juniors) + AEM CMS management + SVG animations + Client presentations ~ Performance (40%+ faster) ~ SEO overhaul 2017 Frontend Developer @ iCrea.xyz First real job. Built the iCrea marketing site with animated hero sequences, then moved on to iPago, a fintech QR-payments app that hit 5,000+ users in Venezuela with unreliable internet and low-spec phones. + Fintech UI/UX (iPago) + QR code generation systems + Animated marketing site (iCrea) + CSS animation sequences Let's talk I take on two clients at a time so I can give each one real focus. If something here resonated, reach out.
+[Link: /contact]
+Get in Touch
+CODEDGAR built with intention. maintained with care.
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /contact]
+contact
+[Link: /services]
+services
+[Link: /services/custom-web-development]
+web development
+[Link: /services/frontend-consulting]
+consulting
+[Link: /services/frontend-advisory]
+advisory
+[Link: /services/team-knowledge-design]
+knowledge design
+[Link: /portfolio]
+work
+[Link: /articles]
+writing
+[Link: /terms-and-conditions]
+terms ·
+[Link: /privacy-policy]
+privacy · cookie settings Made in Buenos Aires // codedgar.2026 top [MODE: VISITOR ] // about ♪ ▶ 0 % - - : - - S ?
+I use cookies for analytics. Just page views and basic usage data so I can see what's working. No tracking you around the internet.
+[Link: /privacy-policy]
+Privacy policy
+that's fine
+no thanks
+// keyboard.shortcuts × Navigation j Scroll down k Scroll up g then g Go to top G Go to bottom Quick Jump g then h Go home g then p Go to work g then s Go to services g then c Go to contact General ? Show this help g then , Site settings Esc Close overlays Press ? anytime to toggle this panel // site.settings × Smooth scroll Eased scrolling instead of native browser scroll Custom cursor Corner-bracket cursor with trailing ring cancel save

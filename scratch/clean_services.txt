@@ -1,0 +1,81 @@
+[Link: #main-content]
+Skip to main content
+[Link: /]
+codedgar
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /portfolio]
+work
+[Link: /services]
+services
+[Link: /articles]
+writing
+[Link: /contact]
+reach out // navigation ×
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /portfolio]
+work
+[Link: /services]
+services
+[Link: /articles]
+writing
+[Link: /contact]
+reach out 01 // page.services Services
+Most teams I talk to know their frontend feels off. They just haven't figured out where the problem actually starts.
+02 // section.offerings How I Work I work in four different ways, depending on where your team is at and what you need right now.
+[Link: /services/frontend-consulting]
+High-End Frontend Consulting Finding what your frontend is hiding I look at how your frontend is actually built, find the stuff that is slowing your team down, and give you a plan to fix it.
+Learn more →
+[Link: /services/custom-web-development]
+Custom Web Development Websites your team can actually maintain I build sites that work well and are easy for your team to keep running. WordPress, WooCommerce, stuff like that.
+Learn more →
+[Link: /services/frontend-advisory]
+Long-Term Frontend Advisory A frontend lead on call You get ongoing access to someone who thinks about frontend architecture for a living, without hiring full-time.
+Learn more →
+[Link: /services/team-knowledge-design]
+Team Knowledge & Process Design Getting your team to build better together I set up the processes, docs, and habits that help your frontend team move faster and stay aligned.
+Learn more → 03 // section.why Why Work With Me Leadership Experience I've led frontend teams, talked directly with executives about technical direction, and shipped products that thousands of people use every day. Systems Thinking I look at the architecture and the processes, not just the features. Six months from now, your team should be moving faster. That's what I optimize for. Business Alignment I translate architecture decisions into language your CEO cares about. Technical calls and business calls are the same call. Most teams just don't treat them that way. Results That Show Two Shark Tank entrepreneurs hired me. Puppertino hit 1,000+ GitHub stars. MapVX went from 8-second loads to under 1. I let the work speak. 04 // section.engagement Engagement Structure Simple terms, no surprises. I want you to know exactly what you are getting. Discovery & Diagnosis
+I spend time with your codebase and your team to understand where things stand. I look at the architecture, talk to the engineers, and put together a clear picture of what is working, what is not, and where to go from there.
+Typical duration: 2-4 weeks Implementation Partnership
+I embed with your engineers and we build together. Reworking architecture, setting up foundational systems, leading a big initiative. I'm another member of the team for as long as the project runs.
+Typical duration: 1-3 months Ongoing Advisory
+Regular check-ins, architecture reviews, and someone to think through frontend decisions with. You get a frontend lead you can call on whenever you need one, without the full-time commitment.
+Typical duration: 6+ months Start with a conversation If you are not sure which one fits, that is totally fine. We can talk it through and figure it out.
+[Link: /contact]
+Schedule a Call
+CODEDGAR built with intention. maintained with care.
+[Link: /]
+home
+[Link: /about]
+about
+[Link: /contact]
+contact
+[Link: /services]
+services
+[Link: /services/custom-web-development]
+web development
+[Link: /services/frontend-consulting]
+consulting
+[Link: /services/frontend-advisory]
+advisory
+[Link: /services/team-knowledge-design]
+knowledge design
+[Link: /portfolio]
+work
+[Link: /articles]
+writing
+[Link: /terms-and-conditions]
+terms ·
+[Link: /privacy-policy]
+privacy · cookie settings Made in Buenos Aires // codedgar.2026 top [MODE: VISITOR ] // services ♪ ▶ 0 % - - : - - S ?
+I use cookies for analytics. Just page views and basic usage data so I can see what's working. No tracking you around the internet.
+[Link: /privacy-policy]
+Privacy policy
+that's fine
+no thanks
+// keyboard.shortcuts × Navigation j Scroll down k Scroll up g then g Go to top G Go to bottom Quick Jump g then h Go home g then p Go to work g then s Go to services g then c Go to contact General ? Show this help g then , Site settings Esc Close overlays Press ? anytime to toggle this panel // site.settings × Smooth scroll Eased scrolling instead of native browser scroll Custom cursor Corner-bracket cursor with trailing ring cancel save

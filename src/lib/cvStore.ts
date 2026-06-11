@@ -7,6 +7,7 @@
 import { defaultCV } from "./data";
 import type { CVData } from "@/types/cv";
 import { supabase } from "./supabase";
+import localCV from "../../cv.json";
 
 // In-memory cache for serverless (resets on cold start, but fine for single user)
 let memCache: CVData | null = null;
@@ -93,9 +94,10 @@ export async function getCVData(): Promise<CVData> {
     // ignore
   }
 
-  // 5. Fall back to default seed data
-  memCache = { ...defaultCV, updatedAt: new Date().toISOString() };
-  return memCache;
+  // 5. Fall back to local cv.json seed data
+  const fallback = { ...(localCV as any), updatedAt: new Date().toISOString() } as CVData;
+  memCache = fallback;
+  return fallback;
 }
 
 export async function saveCVData(data: CVData): Promise<void> {

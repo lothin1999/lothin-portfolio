@@ -10,11 +10,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseRoutes = [
     { path: "", freq: "weekly", priority: 1.0 },
-    { path: "/experience", freq: "monthly", priority: 0.9 },
-    { path: "/skills", freq: "monthly", priority: 0.9 },
-    { path: "/education", freq: "monthly", priority: 0.8 },
     { path: "/about", freq: "monthly", priority: 0.8 },
+    { path: "/portfolio", freq: "monthly", priority: 0.9 },
+    { path: "/services", freq: "monthly", priority: 0.9 },
     { path: "/articles", freq: "weekly", priority: 0.8 },
+    { path: "/contact", freq: "monthly", priority: 0.8 },
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = baseRoutes.map(({ path, freq, priority }) => ({
