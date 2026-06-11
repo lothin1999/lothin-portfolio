@@ -29,7 +29,7 @@ export async function getCVData(): Promise<CVData> {
         console.log("Supabase error fetching CV data:", error);
       } else if (data && data.value) {
         const parsed = data.value as CVData;
-        if (!parsed.articles) {
+        if (!parsed.articles || parsed.articles.length === 0) {
           parsed.articles = defaultCV.articles;
         }
         memCache = parsed;
@@ -45,7 +45,7 @@ export async function getCVData(): Promise<CVData> {
     const raw = process.env.CV_JSON_DATA;
     if (raw) {
       const parsed = JSON.parse(raw) as CVData;
-      if (!parsed.articles) {
+      if (!parsed.articles || parsed.articles.length === 0) {
         parsed.articles = defaultCV.articles;
       }
       memCache = parsed;
