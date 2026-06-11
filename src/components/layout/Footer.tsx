@@ -17,7 +17,7 @@ export function Footer() {
               lothin.dev
             </span>
             <p className="text-xs text-muted leading-relaxed font-sans max-w-[240px]">
-              Full-Stack developer building high-performance systems with Next.js, Nuxt, NestJS, and Cloudflare edge architecture.
+              Full-Stack Web Developer building high-performance systems with Next.js, Nuxt, NestJS, and Cloudflare edge architecture.
             </p>
             <p className="font-mono text-[10px] text-muted tracking-wide mt-2">
               © {new Date().getFullYear()} {profile.name.first} {profile.name.last} · {profile.location}

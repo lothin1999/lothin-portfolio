@@ -205,7 +205,7 @@ export default async function ArticleDetailsPage({ params }: PageProps) {
             <h4 className="font-mono text-[11px] uppercase tracking-wider text-ink font-semibold">// Author</h4>
           </div>
           <p className="text-xs text-ink2 leading-relaxed font-sans font-light">
-            Published by <strong>{cv.profile.name.first} {cv.profile.name.last}</strong>. Cambodia-based Full-Stack Developer specialized in payments gateway systems, real-time synchronisation nodes, and edge delivery.
+            Published by <strong>{cv.profile.name.first} {cv.profile.name.last}</strong>. Cambodia-based Full-Stack Web Developer specialized in payments gateway systems, real-time synchronisation nodes, and edge delivery.
           </p>
           <Link href="/#about" className="font-mono text-xs text-accent hover:text-accent-orange link-underline w-fit">
             Get in touch

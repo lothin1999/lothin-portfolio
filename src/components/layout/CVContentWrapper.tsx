@@ -99,7 +99,7 @@ function LoadingScreen() {
         className="font-mono text-[11px] tracking-[0.18em] uppercase mb-8"
         style={{ color: "var(--muted)" }}
       >
-        Full-Stack Developer
+        Full-Stack Web Developer
       </p>
       <div
         className="w-[160px] h-[1.5px] rounded-full overflow-hidden"

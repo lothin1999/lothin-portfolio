@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(cv, {
     title: "About",
     description:
-      "Thoeun Lothin — Full-Stack Developer based in Phnom Penh, Cambodia. 3+ years building production platforms, payment gateways, and enterprise systems. Contact details and references included.",
+      "Thoeun Lothin — Full-Stack Web Developer based in Phnom Penh, Cambodia. 3+ years building production platforms, payment gateways, and enterprise systems. Contact details and references included.",
     path: "/about",
   });
 }
@@ -34,7 +34,7 @@ export default async function AboutPage() {
             <ScrambleText text="About" delay={100} duration={800} />
           </h1>
           <p className="text-xs font-mono text-muted uppercase tracking-[2px] mt-4">
-            // phnom penh, cambodia · full-stack developer
+            // phnom penh, cambodia · full-stack web developer
           </p>
         </div>
       </header>
@@ -44,7 +44,7 @@ export default async function AboutPage() {
         <div className="max-w-6xl mx-auto px-6 py-8">
           <p className="text-[15px] text-ink2 font-sans font-light leading-relaxed max-w-3xl">
             I&apos;m <span className="text-ink font-medium">Thoeun Lothin</span>, a
-            full-stack developer passionate about building clean, scalable production
+            full-stack web developer passionate about building clean, scalable production
             systems — from payment gateways and booking engines to real-time platforms
             and enterprise dashboards. Based in Phnom Penh, Cambodia. Open to remote
             and on-site roles.
@@ -65,7 +65,7 @@ export default async function AboutPage() {
             <p className="font-mono text-[11px] text-muted">Phnom Penh, Cambodia — June 2026</p>
             <p>Dear Hiring Manager,</p>
             <p>
-              I am writing to express my sincere interest in a Full-Stack Developer
+              I am writing to express my sincere interest in a Full-Stack Web Developer
               position. My name is{" "}
               <span className="text-ink font-medium">Thoeun Lothin</span>, and I am a
               passionate software engineer based in Phnom Penh, Cambodia, with over{" "}

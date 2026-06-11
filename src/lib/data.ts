@@ -3,10 +3,10 @@ import type { CVData } from "@/types/cv";
 export const defaultCV: CVData = {
   profile: {
     name: { first: "Thoeun", last: "Lothin" },
-    title: "Full-Stack Developer",
+    title: "Full-Stack Web Developer",
     tagline: "3+ Years · Production Systems",
     summary:
-      "Full-stack developer across Vue/Nuxt, React/Next.js, and Angular — with NestJS, Laravel, and Spring Boot on the back end. Delivered nationwide rental marketplaces, enterprise POS, banking, and loan platforms. Specialised in Cloudflare edge infrastructure, Firebase real-time systems, and Cambodia-native Bakong KHQR payment integration.",
+      "Full-stack web developer across Vue/Nuxt, React/Next.js, and Angular — with NestJS, Laravel, and Spring Boot on the back end. Delivered nationwide rental marketplaces, enterprise POS, banking, and loan platforms. Specialised in Cloudflare edge infrastructure, Firebase real-time systems, and Cambodia-native Bakong KHQR payment integration.",
     location: "Phnom Penh, Cambodia",
     website: "https://lothin-dev.vercel.app",
     telegram: "https://t.me/lothin01",
@@ -24,7 +24,7 @@ export const defaultCV: CVData = {
   experiences: [
     {
       id: "exp-1",
-      title: "Full-Stack Developer — AALL Rental Platform",
+      title: "Full-Stack Web Developer — AALL Rental Platform",
       company: "idev.group / AALL",
       location: "Phnom Penh, Cambodia",
       period: "2025 – Present",
@@ -40,7 +40,7 @@ export const defaultCV: CVData = {
     },
     {
       id: "exp-2",
-      title: "Full-Stack Developer — POS System & Admin Dashboard",
+      title: "Full-Stack Web Developer — POS System & Admin Dashboard",
       company: "Chushin Technology Co., Ltd.",
       location: "Phnom Penh, Cambodia",
       period: "2024 – Present",
@@ -56,7 +56,7 @@ export const defaultCV: CVData = {
     },
     {
       id: "exp-3",
-      title: "Full-Stack Developer — CRM, Hotel, KDMS & More",
+      title: "Full-Stack Web Developer — CRM, Hotel, KDMS & More",
       company: "Chushin Technology Co., Ltd.",
       location: "Phnom Penh, Cambodia",
       period: "2023 – 2024",
@@ -133,7 +133,7 @@ export const defaultCV: CVData = {
   references: [
     {
       name: "Pheap Sopheaktra",
-      role: "Full-Stack Developer",
+      role: "Full-Stack Web Developer",
       company: "IDG Technology Solutions",
       contact: "096 92 84 202",
     },

@@ -21,10 +21,10 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
   const cvData = (cv && cv.profile) ? cv : defaultCV;
   const { profile } = cvData;
   const fullName = `${profile.name.first} ${profile.name.last}`;
-  const defaultTitle = `${fullName} — ${profile.title}`;
+  const defaultTitle = `${fullName} (Chushin Dev) — ${profile.title}`;
   const defaultDesc = `${profile.summary.slice(0, 155)}…`;
 
-  const title = page?.title ? `${page.title} — ${fullName}` : defaultTitle;
+  const title = page?.title ? `${page.title} — ${fullName} (Chushin Dev)` : defaultTitle;
   const description = page?.description ?? defaultDesc;
   const url = `${SITE_URL}${page?.path ?? ""}`;
 
@@ -34,7 +34,9 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
     description,
     keywords: [
       profile.title,
-      "Full-Stack Developer",
+      "Full-Stack Web Developer",
+      "Chushin Dev",
+      "Chushin Technology",
       "Cambodia",
       "Phnom Penh",
       "Vue",
