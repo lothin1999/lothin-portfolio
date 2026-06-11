@@ -30,9 +30,9 @@ function AdminHandler() {
     }
   }, [hasEditParam, isAdmin]);
 
-  const handleCloseLogin = () => {
+  const handleCloseLogin = (success?: boolean) => {
     setShowLogin(false);
-    if (!isAdmin) {
+    if (success !== true && !isAdmin) {
       // Clear query param
       router.replace("/", { scroll: false });
     }

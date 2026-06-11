@@ -4,7 +4,7 @@ import { useState } from "react";
 import { X, Lock, Eye, EyeOff } from "lucide-react";
 import { useCVData } from "@/hooks/useCVData";
 
-export function AdminLoginModal({ onClose }: { onClose: () => void }) {
+export function AdminLoginModal({ onClose }: { onClose: (success?: boolean) => void }) {
   const { setAdmin } = useCVData();
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -24,7 +24,7 @@ export function AdminLoginModal({ onClose }: { onClose: () => void }) {
       });
       if (res.ok) {
         setAdmin(true);
-        onClose();
+        onClose(true);
       } else {
         const j = await res.json() as { error?: string };
         setError(j.error ?? "Invalid password");
@@ -38,9 +38,9 @@ export function AdminLoginModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => onClose()} />
       <div className="relative bg-surface border border-rule rounded-lg shadow-2xl w-full max-w-sm p-6">
-        <button onClick={onClose} className="absolute top-4 right-4 text-muted hover:text-ink transition-colors">
+        <button onClick={() => onClose()} className="absolute top-4 right-4 text-muted hover:text-ink transition-colors">
           <X size={18} />
         </button>
         <div className="flex items-center gap-2.5 mb-5">
