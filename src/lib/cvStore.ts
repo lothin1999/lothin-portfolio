@@ -1,22 +1,51 @@
 // src/lib/cvStore.ts
 // Abstraction over CV data persistence.
+// - Cloudflare R2: Primary free edge object storage
+// - Supabase: Persistent cloud PostgreSQL storage (fallback/backup)
 // - Dev / Fallback: Local memory cache or environment variables
-// - Supabase: Persistent cloud PostgreSQL storage
 
 import { defaultCV } from "./data";
 import type { CVData } from "@/types/cv";
 import { supabase } from "./supabase";
+import { getRequestContext } from "@cloudflare/next-on-pages";
 
 // In-memory cache for serverless (resets on cold start, but fine for single user)
 let memCache: CVData | null = null;
 
 const STORAGE_KEY = "lothin_cv_data";
+const R2_FILE_KEY = "cv.json";
+
+interface MinimalR2Bucket {
+  get(key: string): Promise<{ json(): Promise<any> } | null>;
+  put(key: string, value: string): Promise<any>;
+}
 
 export async function getCVData(): Promise<CVData> {
   // 1. Try in-memory cache first
   if (memCache) return memCache;
 
-  // 2. Try fetching from Supabase database
+  // 2. Try Cloudflare R2 Object Storage
+  try {
+    const context = getRequestContext();
+    const env = context?.env as any;
+    const bucket = env?.PORTFOLIO_BUCKET as MinimalR2Bucket | undefined;
+    if (bucket) {
+      const object = await bucket.get(R2_FILE_KEY);
+      if (object) {
+        const parsed = (await object.json()) as CVData;
+        if (!parsed.articles || parsed.articles.length === 0) {
+          parsed.articles = defaultCV.articles;
+        }
+        memCache = parsed;
+        return memCache;
+      }
+    }
+  } catch (err) {
+    // Silence warning when running outside Cloudflare env (e.g. build time or next dev)
+    console.log("R2 bucket is not available. Falling back to Supabase/defaults.");
+  }
+
+  // 3. Try fetching from Supabase database
   if (supabase) {
     try {
       const { data, error } = await supabase
@@ -40,7 +69,7 @@ export async function getCVData(): Promise<CVData> {
     }
   }
 
-  // 3. Try env-injected data
+  // 4. Try env-injected data
   try {
     const raw = process.env.CV_JSON_DATA;
     if (raw) {
@@ -55,7 +84,7 @@ export async function getCVData(): Promise<CVData> {
     // ignore
   }
 
-  // 4. Fall back to default seed data
+  // 5. Fall back to default seed data
   memCache = { ...defaultCV, updatedAt: new Date().toISOString() };
   return memCache;
 }
@@ -64,7 +93,19 @@ export async function saveCVData(data: CVData): Promise<void> {
   const updatedData = { ...data, updatedAt: new Date().toISOString() };
   memCache = updatedData;
 
-  // 1. Write to Supabase database
+  // 1. Write to Cloudflare R2 Object Storage
+  try {
+    const context = getRequestContext();
+    const env = context?.env as any;
+    const bucket = env?.PORTFOLIO_BUCKET as MinimalR2Bucket | undefined;
+    if (bucket) {
+      await bucket.put(R2_FILE_KEY, JSON.stringify(updatedData));
+    }
+  } catch (err) {
+    console.error("Cloudflare R2 save error (might be running locally without binding):", err);
+  }
+
+  // 2. Write to Supabase database
   if (supabase) {
     try {
       const { error } = await supabase
@@ -83,7 +124,8 @@ export async function saveCVData(data: CVData): Promise<void> {
     }
   }
 
-  // 2. Fallback to process.env
+  // 3. Fallback to process.env
   process.env.CV_JSON_DATA = JSON.stringify(updatedData);
 }
+
 
