@@ -9,7 +9,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const apiKey = process.env.IMGBB_API_KEY;
+  const cleanEnvVar = (val: string | undefined) => (val || "").trim().replace(/^['"]|['"]$/g, "");
+  const apiKey = cleanEnvVar(process.env.IMGBB_API_KEY);
   if (!apiKey) {
     return NextResponse.json(
       { error: "IMGBB_API_KEY is not configured" },

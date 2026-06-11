@@ -2,8 +2,11 @@
 import type { Metadata } from "next";
 import type { CVData } from "@/types/cv";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://lothin-dev.pages.dev";
+const cleanEnvVar = (val: string | undefined) => (val || "").trim().replace(/^['"]|['"]$/g, "");
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
+  ? cleanEnvVar(process.env.NEXT_PUBLIC_SITE_URL)
+  : "https://lothin-dev.pages.dev";
 
 interface PageSEO {
   title?: string;

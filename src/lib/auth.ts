@@ -15,8 +15,10 @@ import { SignJWT, jwtVerify } from "jose";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+const cleanEnvVar = (val: string | undefined) => (val || "").trim().replace(/^['"]|['"]$/g, "");
+
 function getSecret(): Uint8Array {
-  const secret = process.env.JWT_SECRET;
+  const secret = cleanEnvVar(process.env.JWT_SECRET);
   if (!secret) {
     if (process.env.NODE_ENV === "production") {
       throw new Error("JWT_SECRET env var is required in production");
@@ -67,7 +69,7 @@ export async function hashPassword(plain: string): Promise<string> {
  * Verify a plain password against the stored "salt:hash" value.
  */
 export async function verifyPassword(plain: string): Promise<boolean> {
-  const stored = process.env.ADMIN_PASSWORD_HASH;
+  const stored = cleanEnvVar(process.env.ADMIN_PASSWORD_HASH);
 
   // Dev fallback — no env var set
   if (!stored) {
@@ -104,4 +106,4 @@ export async function verifySessionToken(token: string): Promise<boolean> {
 }
 
 export const SESSION_COOKIE = "lothin_admin_session";
-export const SESSION_MAX_AGE = parseInt(process.env.SESSION_MAX_AGE ?? "14400", 10);
+export const SESSION_MAX_AGE = parseInt(cleanEnvVar(process.env.SESSION_MAX_AGE) || "14400", 10);
