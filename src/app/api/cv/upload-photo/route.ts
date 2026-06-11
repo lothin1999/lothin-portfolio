@@ -3,56 +3,56 @@ import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
 
 export const runtime = "edge";
 
+async function getCFContext() {
+  try {
+    const { getRequestContext } = await import("@cloudflare/next-on-pages");
+    return getRequestContext();
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (!token || !(await verifySessionToken(token))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const cleanEnvVar = (val: string | undefined) => (val || "").trim().replace(/^['"]|['"]$/g, "");
-  const apiKey = cleanEnvVar(process.env.IMGBB_API_KEY);
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "IMGBB_API_KEY is not configured" },
-      { status: 500 }
-    );
-  }
-
   try {
+    const context = await getCFContext();
+    const env = context?.env as any;
+    const bucket = env?.PORTFOLIO_BUCKET;
+
+    if (!bucket) {
+      return NextResponse.json(
+        { error: "Cloudflare R2 Bucket binding (PORTFOLIO_BUCKET) is not configured" },
+        { status: 500 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("image") as File | null;
     if (!file) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
-    // Convert to base64 for imgbb API
+    // Get file extension (fallback to png)
+    const extension = file.name.split(".").pop() || "png";
+    const filename = `profile-${Date.now()}.${extension}`;
+    const key = `images/${filename}`;
+
     const buffer = await file.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString("base64");
-
-    const body = new URLSearchParams();
-    body.set("image", base64);
-    body.set("key", apiKey);
-
-    const res = await fetch("https://api.imgbb.com/1/upload", {
-      method: "POST",
-      body,
+    await bucket.put(key, buffer, {
+      httpMetadata: {
+        contentType: file.type || "image/png",
+      },
     });
 
-    const json = (await res.json()) as {
-      success: boolean;
-      data?: { url: string; display_url: string };
-      error?: { message: string };
-    };
-
-    if (!json.success) {
-      return NextResponse.json(
-        { error: json.error?.message ?? "Upload failed" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ url: json.data!.display_url });
+    // Return the relative URL of our serving route
+    const relativeUrl = `/api/images/${filename}`;
+    return NextResponse.json({ url: relativeUrl });
   } catch (e) {
+    console.error("Image upload error:", e);
     return NextResponse.json({ error: "Upload error" }, { status: 500 });
   }
 }

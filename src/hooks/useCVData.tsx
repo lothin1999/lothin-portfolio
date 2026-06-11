@@ -11,7 +11,7 @@ interface CVContextValue {
   isLoading: boolean;
   isLocked: boolean;
   setAdmin: (v: boolean) => void;
-  updateCV: (data: CVData, passcode?: string) => Promise<void>;
+  updateCV: (data: CVData) => Promise<void>;
   refreshCV: () => Promise<void>;
   unlock: (passcode: string) => Promise<boolean>;
 }
@@ -46,21 +46,7 @@ export function CVProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch("/api/cv");
       if (res.ok) {
         const data = await res.json();
-        if (data && data.encrypted && data.ciphertext) {
-          setCiphertext(data.ciphertext);
-          setIsLocked(true);
-
-          // Check if there is already a saved passcode in sessionStorage
-          const savedCode = sessionStorage.getItem("lothin_visitor_passcode");
-          if (savedCode) {
-            const success = await decryptAndLoad(data.ciphertext, savedCode);
-            if (success) {
-              setIsLoading(false);
-              return;
-            }
-          }
-        } else if (data && data.profile) {
-          // Plain data fallback
+        if (data && data.profile) {
           setCV(data);
           setIsLocked(false);
         }
@@ -70,40 +56,25 @@ export function CVProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [decryptAndLoad]);
+  }, []);
 
   useEffect(() => {
     refreshCV();
   }, [refreshCV]);
 
   const unlock = useCallback(async (passcode: string) => {
-    if (!ciphertext) return false;
-    return decryptAndLoad(ciphertext, passcode);
-  }, [ciphertext, decryptAndLoad]);
+    return false;
+  }, []);
 
-  const updateCV = useCallback(async (data: CVData, passcode?: string) => {
-    let payload: any = data;
-    if (passcode) {
-      const encryptedStr = await encryptData(data, passcode);
-      payload = {
-        encrypted: true,
-        ciphertext: encryptedStr
-      };
-      setCV(data);
-      setCiphertext(encryptedStr);
-      setIsLocked(false);
-      sessionStorage.setItem("lothin_visitor_passcode", passcode);
-    } else {
-      setCV(data);
-      setCiphertext(null);
-      setIsLocked(false);
-      sessionStorage.removeItem("lothin_visitor_passcode");
-    }
+  const updateCV = useCallback(async (data: CVData) => {
+    setCV(data);
+    setCiphertext(null);
+    setIsLocked(false);
 
     const res = await fetch("/api/cv", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error("Save failed");
   }, []);

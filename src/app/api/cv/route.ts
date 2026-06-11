@@ -1,17 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCVData, saveCVData } from "@/lib/cvStore";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
+import { encryptData, decryptData } from "@/lib/encryption";
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
+
+const getEncryptionKey = () => process.env.CV_ENCRYPTION_KEY || "lothin-dev";
+
 export async function GET() {
   const data = await getCVData();
+  
+  if (data && (data as any).encrypted && (data as any).ciphertext) {
+    try {
+      const decrypted = await decryptData((data as any).ciphertext, getEncryptionKey());
+      return NextResponse.json(decrypted, {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      });
+    } catch (err) {
+      console.error("Failed to decrypt CV data on server:", err);
+      return NextResponse.json({ error: "Decryption failed" }, { status: 500 });
+    }
+  }
+
   return NextResponse.json(data, {
     headers: {
       "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
     },
   });
 }
+
 export async function PUT(req: NextRequest) {
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (!token || !(await verifySessionToken(token))) {
@@ -20,9 +40,16 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    await saveCVData(body);
+    const encryptedStr = await encryptData(body, getEncryptionKey());
+    const payload = {
+      encrypted: true,
+      ciphertext: encryptedStr
+    };
+    await saveCVData(payload as any);
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    console.error("Failed to save encrypted CV data on server:", err);
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
   }
 }
+

@@ -7,7 +7,6 @@
 import { defaultCV } from "./data";
 import type { CVData } from "@/types/cv";
 import { supabase } from "./supabase";
-import { getRequestContext } from "@cloudflare/next-on-pages";
 
 // In-memory cache for serverless (resets on cold start, but fine for single user)
 let memCache: CVData | null = null;
@@ -20,13 +19,23 @@ interface MinimalR2Bucket {
   put(key: string, value: string): Promise<any>;
 }
 
+// Safely get Cloudflare Request Context using dynamic import to prevent loading crashes in non-Cloudflare environments
+async function getCFContext() {
+  try {
+    const { getRequestContext } = await import("@cloudflare/next-on-pages");
+    return getRequestContext();
+  } catch {
+    return null;
+  }
+}
+
 export async function getCVData(): Promise<CVData> {
   // 1. Try in-memory cache first
   if (memCache) return memCache;
 
   // 2. Try Cloudflare R2 Object Storage
   try {
-    const context = getRequestContext();
+    const context = await getCFContext();
     const env = context?.env as any;
     const bucket = env?.PORTFOLIO_BUCKET as MinimalR2Bucket | undefined;
     if (bucket) {
@@ -95,7 +104,7 @@ export async function saveCVData(data: CVData): Promise<void> {
 
   // 1. Write to Cloudflare R2 Object Storage
   try {
-    const context = getRequestContext();
+    const context = await getCFContext();
     const env = context?.env as any;
     const bucket = env?.PORTFOLIO_BUCKET as MinimalR2Bucket | undefined;
     if (bucket) {
