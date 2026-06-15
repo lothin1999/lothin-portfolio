@@ -279,7 +279,7 @@ const p2EducationTarget = `<div class="section" style="page-break-before: always
         <div class="edu-info">
           <div class="edu-degree">Bachelor's Degree — Information Technology</div>
           <div class="edu-school">Setec Institute &nbsp;·&nbsp; Phnom Penh, Cambodia</div>
-          <div style="font-size:11px;color:#9a8a78;margin-top:6px;font-weight:300;line-height:1.7;">4-year program with core focus on software development, networking, and database systems.</div>
+          <div style="font-size:11px;color:#9a8a78;margin-top:6px;font-weight:300;line-height:1.7;">4-year program with core focus on Management Information System, networking, and database systems.</div>
           <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
             <span style="font-size:10px; background:#faf7f2; border:1px solid #e2d9cc; color:#6b4f2a; padding:3px 9px; border-radius:2px; font-weight:400;">C++ / C# Programming</span>
             <span style="font-size:10px; background:#faf7f2; border:1px solid #e2d9cc; color:#6b4f2a; padding:3px 9px; border-radius:2px; font-weight:400;">Java Programming I–III</span>

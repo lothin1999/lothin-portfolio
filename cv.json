@@ -176,8 +176,8 @@
   "educations": [
     {
       "id": "edu-1",
-      "degree": "Bachelor of Science — Software Development",
-      "school": "University",
+      "degree": "Bachelor of Science — Management Information System",
+      "school": "Setec Institute",
       "location": "Phnom Penh, Cambodia",
       "period": "2019 – 2023",
       "description": "Studied algorithms, data structures, software architecture, object-oriented programming, and enterprise application development. Strong foundation in both theoretical computer science and practical engineering disciplines.",
@@ -196,7 +196,7 @@
       "school": "Secondary School",
       "location": "Cambodia",
       "period": "2019",
-      "description": "Completed secondary education and commenced university-level software development programme.",
+      "description": "Completed secondary education and commenced university-level Management Information System programme.",
       "courses": []
     }
   ],

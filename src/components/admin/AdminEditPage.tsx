@@ -136,7 +136,7 @@ const defaultAboutStats = [
 
 const defaultAboutStory = [
   "I'm a Full-Stack Web Developer and Technical Lead. I help teams untangle system complexity so their applications can load fast, support rich features, and remain clean enough to evolve.",
-  "I studied Software Development in Phnom Penh, learning algorithms, data structures, OOP, and software engineering. I learned to think in systems: every directory, schema, and API boundary is a gear in a larger machine. That mindset followed me directly into my professional career.",
+  "I studied Management Information System in Phnom Penh, learning algorithms, data structures, OOP, and software engineering. I learned to think in systems: every directory, schema, and API boundary is a gear in a larger machine. That mindset followed me directly into my professional career.",
   "My first major project involved CRM, hotel, and session-billing billiard table tracking systems. Building under real-world timing and synchronization constraints taught me to design fail-safe WebSockets channels and optimize transactional SQL queries. When I saw clients actually using the table booking systems to manage their operations, I knew I wanted to focus on building critical production tools.",
   "Later, I worked on Cambodia's nationwide AALL rental marketplace, introducing Nuxt 4 SSR, and leading the full upgrade path of an enterprise POS system through three major Nuxt versions. I focus on BEM CSS architecture, edge database performance, and Cambodia-native Bakong KHQR checkout flows to deliver smooth digital experiences."
 ];
@@ -1167,7 +1167,7 @@ export function AdminEditPage() {
         {/* Dynamic Multi-Section Sidebar Panel */}
         <div className="flex flex-col md:flex-row gap-8 w-full items-start">
           <div className="w-full md:w-60 shrink-0 flex flex-col gap-4">
-            
+
             {/* Box 1: CV Data Group */}
             <div className="border border-rule rounded bg-surface p-1 shadow-sm">
               <button
@@ -1177,7 +1177,7 @@ export function AdminEditPage() {
                 <span>CV Data</span>
                 {cvExpanded ? <ChevronDown size={13} className="text-muted" /> : <ChevronRight size={13} className="text-muted" />}
               </button>
-              
+
               {cvExpanded && (
                 <div className="mt-1 flex flex-col gap-0.5 pl-2 border-l border-rule/60 ml-3.5 mb-1.5">
                   {CV_TABS.map((tab) => (
@@ -1187,11 +1187,10 @@ export function AdminEditPage() {
                         setActiveGroup("cv");
                         setActiveTab(tab.id);
                       }}
-                      className={`font-mono text-[10.5px] tracking-[1.5px] uppercase py-2 px-3 text-left transition-all rounded w-full cursor-pointer border-none bg-transparent ${
-                        activeGroup === "cv" && activeTab === tab.id
+                      className={`font-mono text-[10.5px] tracking-[1.5px] uppercase py-2 px-3 text-left transition-all rounded w-full cursor-pointer border-none bg-transparent ${activeGroup === "cv" && activeTab === tab.id
                           ? "bg-tag-bg text-accent font-semibold border-l-2 border-accent"
                           : "text-muted hover:text-ink hover:bg-tag-bg/30"
-                      }`}
+                        }`}
                     >
                       {tab.label}
                     </button>
@@ -1209,7 +1208,7 @@ export function AdminEditPage() {
                 <span>Site Admin</span>
                 {adminExpanded ? <ChevronDown size={13} className="text-muted" /> : <ChevronRight size={13} className="text-muted" />}
               </button>
-              
+
               {adminExpanded && (
                 <div className="mt-1 flex flex-col gap-0.5 pl-2 border-l border-rule/60 ml-3.5 mb-1.5">
                   {ADMIN_TABS.map((tab) => (
@@ -1219,11 +1218,10 @@ export function AdminEditPage() {
                         setActiveGroup("admin");
                         setActiveTab(tab.id);
                       }}
-                      className={`font-mono text-[10.5px] tracking-[1.5px] uppercase py-2 px-3 text-left transition-all rounded w-full cursor-pointer border-none bg-transparent ${
-                        activeGroup === "admin" && activeTab === tab.id
+                      className={`font-mono text-[10.5px] tracking-[1.5px] uppercase py-2 px-3 text-left transition-all rounded w-full cursor-pointer border-none bg-transparent ${activeGroup === "admin" && activeTab === tab.id
                           ? "bg-tag-bg text-accent font-semibold border-l-2 border-accent"
                           : "text-muted hover:text-ink hover:bg-tag-bg/30"
-                      }`}
+                        }`}
                     >
                       {tab.label}
                     </button>
