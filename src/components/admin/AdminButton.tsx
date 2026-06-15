@@ -7,49 +7,17 @@ import { AdminLoginModal } from "./AdminLoginModal";
 import { AdminEditModal } from "./AdminEditModal";
 
 function AdminHandler() {
-  const { isAdmin } = useCVData();
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasEditParam = searchParams?.has("edit") ?? false;
 
-  const [showLogin, setShowLogin] = useState(false);
-  const [showEdit, setShowEdit] = useState(false);
-
   useEffect(() => {
     if (hasEditParam) {
-      if (isAdmin) {
-        setShowEdit(true);
-        setShowLogin(false);
-      } else {
-        setShowLogin(true);
-        setShowEdit(false);
-      }
-    } else {
-      setShowLogin(false);
-      setShowEdit(false);
+      router.push("/edit");
     }
-  }, [hasEditParam, isAdmin]);
+  }, [hasEditParam, router]);
 
-  const handleCloseLogin = (success?: boolean) => {
-    setShowLogin(false);
-    if (success !== true && !isAdmin) {
-      // Clear query param
-      router.replace("/", { scroll: false });
-    }
-  };
-
-  const handleCloseEdit = () => {
-    setShowEdit(false);
-    // Clear query param
-    router.replace("/", { scroll: false });
-  };
-
-  return (
-    <>
-      {showLogin && <AdminLoginModal onClose={handleCloseLogin} />}
-      {showEdit && <AdminEditModal onClose={handleCloseEdit} />}
-    </>
-  );
+  return null;
 }
 
 export function AdminButton() {

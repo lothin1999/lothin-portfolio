@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCVData } from "@/hooks/useCVData";
 
 export function Footer() {
+  const pathname = usePathname();
   const { cv } = useCVData();
   const { profile } = cv;
+
+  if (pathname === "/edit") return null;
 
   return (
     <footer className="border-t border-rule mt-12 bg-bg pb-16">

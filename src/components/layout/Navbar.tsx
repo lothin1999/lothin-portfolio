@@ -54,7 +54,10 @@ export function Navbar() {
         "sticky top-0 z-40 h-[58px] bg-bg border-b border-rule transition-shadow duration-200",
         scrolled && "shadow-sm"
       )} aria-label="Main navigation">
-        <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between gap-6">
+        <div className={cn(
+          "h-full flex items-center justify-between gap-6",
+          pathname === "/edit" ? "w-full px-6 md:px-12" : "max-w-6xl mx-auto px-6"
+        )}>
           <Link href="/" className="font-mono text-[14px] text-ink font-semibold tracking-tight hover:text-accent transition-colors shrink-0">
             lothin.dev
           </Link>
