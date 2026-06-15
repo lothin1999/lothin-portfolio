@@ -2,9 +2,6 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCVData } from "@/hooks/useCVData";
-import { AdminLoginModal } from "./AdminLoginModal";
-import { AdminEditModal } from "./AdminEditModal";
 
 function AdminHandler() {
   const router = useRouter();

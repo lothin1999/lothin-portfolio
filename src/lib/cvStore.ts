@@ -1,19 +1,16 @@
 // src/lib/cvStore.ts
 // Abstraction over CV data persistence.
-// - Cloudflare R2: Primary free edge object storage
-// - Supabase: Persistent cloud PostgreSQL storage (fallback/backup)
-// - Dev / Fallback: Local memory cache or environment variables
+// - Cloudflare R2: Primary edge object storage (production)
+// - Local File: Persistent workspace file read/write (local development)
 
 import { defaultCV } from "./data";
 import type { CVData } from "@/types/cv";
-import { supabase } from "./supabase";
 import localCV from "../../cv.json";
 import { decryptData } from "./encryption";
 
-// In-memory cache for serverless (resets on cold start, but fine for single user)
+// In-memory cache for serverless
 let memCache: CVData | null = null;
 
-const STORAGE_KEY = "lothin_cv_data";
 const R2_FILE_KEY = "cv.json";
 
 interface MinimalR2Bucket {
@@ -31,6 +28,20 @@ async function getCFContext() {
   }
 }
 
+// Dynamically load node fs in development runtime only to avoid Edge environment bundling exceptions
+async function getLocalFS() {
+  if (process.env.NEXT_RUNTIME === "nodejs" || process.env.NODE_ENV === "development") {
+    try {
+      const fs = await import(/* webpackIgnore: true */ "fs/promises");
+      const path = await import(/* webpackIgnore: true */ "path");
+      return { fs, path };
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 const getEncryptionKey = () => process.env.CV_ENCRYPTION_KEY || "lothin-dev";
 
 async function ensureDecrypted(data: any): Promise<CVData> {
@@ -40,7 +51,6 @@ async function ensureDecrypted(data: any): Promise<CVData> {
       decrypted = await decryptData(data.ciphertext, getEncryptionKey());
     } catch (err) {
       console.error("Failed to decrypt CV data in cvStore:", err);
-      // Fallback to localCV if decryption fails
       decrypted = localCV;
     }
   }
@@ -80,22 +90,16 @@ export async function getCVData(): Promise<CVData> {
     }
   } catch (err) {
     // Silence warning when running outside Cloudflare env (e.g. build time or next dev)
-    console.log("R2 bucket is not available. Falling back to Supabase/defaults.");
   }
 
-  // 3. Try fetching from Supabase database
-  if (supabase) {
+  // 3. Try local filesystem (for persistent local development)
+  const localFS = await getLocalFS();
+  if (localFS) {
     try {
-      const { data, error } = await supabase
-        .from("portfolio_data")
-        .select("value")
-        .eq("key", STORAGE_KEY)
-        .maybeSingle();
-
-      if (error) {
-        console.log("Supabase error fetching CV data:", error);
-      } else if (data && data.value) {
-        const parsed = data.value as any;
+      const filePath = localFS.path.join(process.cwd(), "cv.json");
+      const raw = await localFS.fs.readFile(filePath, "utf-8");
+      if (raw) {
+        const parsed = JSON.parse(raw);
         const decrypted = await ensureDecrypted(parsed);
         if (!decrypted.articles || decrypted.articles.length === 0) {
           decrypted.articles = defaultCV.articles;
@@ -104,7 +108,7 @@ export async function getCVData(): Promise<CVData> {
         return memCache;
       }
     } catch (err) {
-      console.log("Unexpected error fetching CV data from Supabase:", err);
+      // file might not exist yet
     }
   }
 
@@ -131,7 +135,6 @@ export async function getCVData(): Promise<CVData> {
   return fallback;
 }
 
-
 export async function saveCVData(data: CVData): Promise<void> {
   const updatedData = { ...data, updatedAt: new Date().toISOString() };
   memCache = updatedData;
@@ -143,32 +146,24 @@ export async function saveCVData(data: CVData): Promise<void> {
     const bucket = env?.PORTFOLIO_BUCKET as MinimalR2Bucket | undefined;
     if (bucket) {
       await bucket.put(R2_FILE_KEY, JSON.stringify(updatedData));
+      return;
     }
   } catch (err) {
     console.error("Cloudflare R2 save error (might be running locally without binding):", err);
   }
 
-  // 2. Write to Supabase database
-  if (supabase) {
+  // 2. Write to local filesystem (for persistent local development)
+  const localFS = await getLocalFS();
+  if (localFS) {
     try {
-      const { error } = await supabase
-        .from("portfolio_data")
-        .upsert(
-          { key: STORAGE_KEY, value: updatedData, updated_at: new Date().toISOString() },
-          { onConflict: "key" }
-        );
-      if (error) {
-        console.error("Supabase error saving CV data:", error);
-        throw error;
-      }
+      const filePath = localFS.path.join(process.cwd(), "cv.json");
+      await localFS.fs.writeFile(filePath, JSON.stringify(updatedData, null, 2), "utf-8");
       return;
     } catch (err) {
-      console.error("Unexpected error saving CV data to Supabase:", err);
+      console.error("Failed to save CV data to local filesystem:", err);
     }
   }
 
   // 3. Fallback to process.env
   process.env.CV_JSON_DATA = JSON.stringify(updatedData);
 }
-
-

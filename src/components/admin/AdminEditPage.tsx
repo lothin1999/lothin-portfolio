@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Plus, Trash2, Save, Upload, RefreshCw, KeyRound, Check, ArrowLeft,
+  Plus, Trash2, Save, Upload, RefreshCw, Check, ArrowLeft,
 } from "lucide-react";
 import type { CVData } from "@/types/cv";
 import { useCVData } from "@/hooks/useCVData";
@@ -55,14 +55,13 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 }
 
 // ── Tab definitions ───────────────────────────────────────────────────────────
-type Tab = "profile" | "experience" | "skills" | "education" | "references" | "password";
+type Tab = "profile" | "experience" | "skills" | "education" | "references";
 const TABS: { id: Tab; label: string }[] = [
   { id: "profile", label: "Profile" },
   { id: "experience", label: "Experience" },
   { id: "skills", label: "Skills" },
   { id: "education", label: "Education" },
   { id: "references", label: "References" },
-  { id: "password", label: "Password" },
 ];
 
 export function AdminEditPage() {
@@ -78,12 +77,7 @@ export function AdminEditPage() {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Password change state
-  const [curPw, setCurPw] = useState("");
-  const [newPw, setNewPw] = useState("");
-  const [confirmPw, setConfirmPw] = useState("");
-  const [pwMsg, setPwMsg] = useState("");
-  const [pwHash, setPwHash] = useState("");
+  // Password state removed (using Firebase Auth with Gmail Google Sign-In)
 
   async function handleSave() {
     setSaving(true);
@@ -124,29 +118,7 @@ export function AdminEditPage() {
     }
   }
 
-  async function handleChangePw(e: React.FormEvent) {
-    e.preventDefault();
-    setPwMsg("");
-    setPwHash("");
-    if (newPw !== confirmPw) { setPwMsg("Passwords don't match"); return; }
-    try {
-      const res = await fetch("/api/auth/change-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword: curPw, newPassword: newPw }),
-      });
-      const json = await res.json() as { ok?: boolean; newHash?: string; error?: string; message?: string };
-      if (json.ok && json.newHash) {
-        setPwHash(json.newHash);
-        setPwMsg(json.message ?? "Copy the hash below into your ADMIN_PASSWORD_HASH env var");
-        setCurPw(""); setNewPw(""); setConfirmPw("");
-      } else {
-        setPwMsg(json.error ?? "Failed");
-      }
-    } catch {
-      setPwMsg("Network error");
-    }
-  }
+  // handleChangePw removed
 
   // ── Profile Tab ──
   const renderProfileTab = () => (
@@ -392,44 +364,12 @@ export function AdminEditPage() {
     </div>
   );
 
-  // ── Password Tab ──
-  const renderPasswordTab = () => (
-    <div className="space-y-4 max-w-sm">
-      <SectionHeading>Change Password</SectionHeading>
-      <form onSubmit={handleChangePw} className="space-y-3">
-        {[
-          { label: "Current password", val: curPw, set: setCurPw },
-          { label: "New password (min 8 chars)", val: newPw, set: setNewPw },
-          { label: "Confirm new password", val: confirmPw, set: setConfirmPw },
-        ].map(({ label, val, set }) => (
-          <div key={label} className="space-y-1">
-            <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-muted">{label}</label>
-            <input type="password" value={val} onChange={(e) => set(e.target.value)}
-              className="w-full px-2.5 py-2 border border-rule rounded text-[13px] text-ink bg-bg focus:outline-none focus:border-accent transition-colors" />
-          </div>
-        ))}
-        <button type="submit"
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-ink text-white text-[13px] font-medium rounded hover:bg-accent transition-colors border-none cursor-pointer">
-          <KeyRound size={13} /> Change password
-        </button>
-      </form>
-      {pwMsg && <p className="font-mono text-[11px] text-muted leading-[1.6]">{pwMsg}</p>}
-      {pwHash && (
-        <div className="mt-2 p-3 bg-tag-bg border border-rule rounded">
-          <p className="font-mono text-[10px] text-accent mb-1 tracking-wide">New ADMIN_PASSWORD_HASH — copy to your env:</p>
-          <code className="block text-[11px] text-ink break-all select-all">{pwHash}</code>
-        </div>
-      )}
-    </div>
-  );
-
   const tabContent: Record<Tab, React.ReactNode> = {
     profile: renderProfileTab(),
     experience: renderExperienceTab(),
     skills: renderSkillsTab(),
     education: renderEducationTab(),
     references: renderReferencesTab(),
-    password: renderPasswordTab(),
   };
 
   return (

@@ -11,7 +11,7 @@
 //   "
 //   Paste the output into your .env.local / Cloudflare env vars.
 
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, jwtVerify, createRemoteJWKSet } from "jose";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -53,39 +53,28 @@ function safeEqual(a: string, b: string): boolean {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-/**
- * Hash a password for storage.
- * Returns "salt:hmac" string to paste into ADMIN_PASSWORD_HASH env var.
- */
-export async function hashPassword(plain: string): Promise<string> {
-  const salt = Array.from(crypto.getRandomValues(new Uint8Array(16)))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  const hash = await hmacSha256(salt, plain);
-  return `${salt}:${hash}`;
-}
+const JWKS = createRemoteJWKSet(
+  new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com")
+);
 
 /**
- * Verify a plain password against the stored "salt:hash" value.
+ * Verify a Firebase ID token.
  */
-export async function verifyPassword(plain: string): Promise<boolean> {
-  const stored = cleanEnvVar(process.env.ADMIN_PASSWORD_HASH);
-
-  // Dev fallback — no env var set
-  if (!stored) {
-    if (process.env.NODE_ENV === "production") return false;
-    console.warn("⚠️  ADMIN_PASSWORD_HASH not set. Dev fallback password: admin123");
-    return plain === "admin123";
+export async function verifyFirebaseIdToken(token: string) {
+  const projectId = cleanEnvVar(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+  if (!projectId) {
+    throw new Error("NEXT_PUBLIC_FIREBASE_PROJECT_ID is not set in environment");
   }
-
-  const [salt, expectedHash] = stored.split(":");
-  if (!salt || !expectedHash) {
-    console.error("❌ ADMIN_PASSWORD_HASH format is invalid. Expected: salt:hash");
-    return false;
+  try {
+    const { payload } = await jwtVerify(token, JWKS, {
+      issuer: `https://securetoken.google.com/${projectId}`,
+      audience: projectId,
+    });
+    return payload as { email?: string; email_verified?: boolean; [key: string]: any };
+  } catch (err) {
+    console.error("Firebase ID Token verification failed:", err);
+    return null;
   }
-
-  const actualHash = await hmacSha256(salt, plain);
-  return safeEqual(actualHash, expectedHash);
 }
 
 export async function createSessionToken(): Promise<string> {
