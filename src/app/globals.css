@@ -601,3 +601,47 @@ a.link-underline:hover::after {
 .theme-transitioning * {
   transition: none !important;
 }
+
+/* Details & Summary custom styles */
+details {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 12px var(--space-4);
+  margin-bottom: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+details:hover {
+  border-color: var(--color-border);
+}
+
+details[open] {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+summary {
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  color: var(--ink);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+}
+
+summary::-webkit-details-marker {
+  color: var(--accent-orange);
+}
+
+summary::marker {
+  color: var(--accent-orange);
+}
+
+details p {
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+  font-size: 13.5px !important;
+  line-height: 1.6 !important;
+  color: var(--ink2) !important;
+}

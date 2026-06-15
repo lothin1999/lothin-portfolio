@@ -130,7 +130,19 @@ function renderMarkdown(content: string) {
       continue;
     }
 
-    // 5. Normal Paragraph
+    // 5. HTML block tags (like details)
+    if (block.startsWith("<details") || block.startsWith("<div")) {
+      renderedBlocks.push(
+        <div
+          key={i}
+          className="my-4"
+          dangerouslySetInnerHTML={{ __html: parseInline(block) }}
+        />
+      );
+      continue;
+    }
+
+    // 6. Normal Paragraph
     renderedBlocks.push(
       <p
         key={i}
