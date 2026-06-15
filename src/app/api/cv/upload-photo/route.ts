@@ -12,6 +12,140 @@ async function getCFContext() {
   }
 }
 
+/**
+ * Upload an image to Cloudflare R2 via the S3-compatible API.
+ * Used when the Worker binding (PORTFOLIO_BUCKET) is unavailable (e.g. pnpm dev).
+ */
+async function uploadViaR2API(
+  file: File,
+  key: string
+): Promise<{ ok: boolean; error?: string }> {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+  const bucketName = process.env.R2_BUCKET_NAME || "portfolio-data";
+
+  if (!accountId || !accessKeyId || !secretAccessKey) {
+    return {
+      ok: false,
+      error:
+        "R2 credentials not configured. Set CLOUDFLARE_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY in .env",
+    };
+  }
+
+  const endpoint = `https://${accountId}.r2.cloudflarestorage.com`;
+  const url = `${endpoint}/${bucketName}/${key}`;
+
+  const now = new Date();
+  const dateStr = now.toISOString().replace(/[:-]/g, "").split(".")[0] + "Z";
+  const dateOnly = dateStr.slice(0, 8);
+
+  const buffer = await file.arrayBuffer();
+  const bodyBytes = new Uint8Array(buffer);
+
+  // Compute SHA-256 of payload
+  const hashBuffer = await crypto.subtle.digest("SHA-256", bodyBytes);
+  const payloadHash = Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  const contentType = file.type || "image/jpeg";
+  const region = "auto";
+  const service = "s3";
+
+  const canonicalHeaders =
+    `host:${accountId}.r2.cloudflarestorage.com\n` +
+    `x-amz-content-sha256:${payloadHash}\n` +
+    `x-amz-date:${dateStr}\n`;
+
+  const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+
+  const canonicalRequest = [
+    "PUT",
+    `/${bucketName}/${key}`,
+    "",
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash,
+  ].join("\n");
+
+  const credentialScope = `${dateOnly}/${region}/${service}/aws4_request`;
+  const requestHashBuffer = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(canonicalRequest)
+  );
+  const requestHash = Array.from(new Uint8Array(requestHashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    dateStr,
+    credentialScope,
+    requestHash,
+  ].join("\n");
+
+  // Derive signing key
+  const sign = async (key: CryptoKey, data: string): Promise<CryptoKey> => {
+    const sig = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      new TextEncoder().encode(data)
+    );
+    return crypto.subtle.importKey(
+      "raw",
+      sig,
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+  };
+
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(`AWS4${secretAccessKey}`),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const kDate = await sign(keyMaterial, dateOnly);
+  const kRegion = await sign(kDate, region);
+  const kService = await sign(kRegion, service);
+  const kSigning = await sign(kService, "aws4_request");
+
+  const signatureBuffer = await crypto.subtle.sign(
+    "HMAC",
+    kSigning,
+    new TextEncoder().encode(stringToSign)
+  );
+  const signature = Array.from(new Uint8Array(signatureBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  const authHeader =
+    `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, ` +
+    `SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": contentType,
+      "x-amz-date": dateStr,
+      "x-amz-content-sha256": payloadHash,
+      Authorization: authHeader,
+    },
+    body: bodyBytes,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    return { ok: false, error: `R2 API error ${response.status}: ${text}` };
+  }
+
+  return { ok: true };
+}
+
 export async function POST(req: NextRequest) {
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (!token || !(await verifySessionToken(token))) {
@@ -19,51 +153,53 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const context = await getCFContext();
-    const env = context?.env as any;
-    const bucket = env?.PORTFOLIO_BUCKET;
-
-    if (!bucket) {
-      // Fallback: Convert image to base64 Data URL when R2 bucket is not bound (local dev)
-      const formData = await req.formData();
-      const file = formData.get("image") as File | null;
-      if (!file) {
-        return NextResponse.json({ error: "No image provided" }, { status: 400 });
-      }
-      const buffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(buffer);
-      let binary = "";
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      const base64 = btoa(binary);
-      const dataUrl = `data:${file.type || "image/png"};base64,${base64}`;
-      return NextResponse.json({ url: dataUrl });
-    }
-
     const formData = await req.formData();
     const file = formData.get("image") as File | null;
     if (!file) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
-    // Get file extension (fallback to jpg)
+    // Compress/resize is handled on the client side before upload.
     const extension = file.name.split(".").pop() || "jpg";
     const filename = `profile-${Date.now()}.${extension}`;
     const key = `images/${filename}`;
-
-    const buffer = await file.arrayBuffer();
-    await bucket.put(key, new Uint8Array(buffer), {
-      httpMetadata: {
-        contentType: file.type || "image/jpeg",
-      },
-    });
-
-    // Return the relative URL of our serving route
     const relativeUrl = `/api/images/${filename}`;
-    return NextResponse.json({ url: relativeUrl });
+
+    // --- Path 1: Cloudflare Worker binding (production / pnpm preview) ---
+    const context = await getCFContext();
+    const env = context?.env as any;
+    const bucket = env?.PORTFOLIO_BUCKET;
+
+    if (bucket) {
+      const buffer = await file.arrayBuffer();
+      await bucket.put(key, new Uint8Array(buffer), {
+        httpMetadata: { contentType: file.type || "image/jpeg" },
+      });
+      return NextResponse.json({ url: relativeUrl });
+    }
+
+    // --- Path 2: R2 S3-compatible API (local dev with credentials in .env) ---
+    const result = await uploadViaR2API(file, key);
+    if (result.ok) {
+      return NextResponse.json({ url: relativeUrl });
+    }
+
+    // --- Path 3: No credentials at all — tell dev clearly what to do ---
+    return NextResponse.json(
+      {
+        error:
+          "Image upload unavailable in local dev. " +
+          "Add CLOUDFLARE_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY to your .env, " +
+          "OR run `pnpm preview` to use the full Cloudflare runtime locally.",
+        detail: result.error,
+      },
+      { status: 500 }
+    );
   } catch (e: any) {
-    console.error("Image upload exception on R2:", e);
-    return NextResponse.json({ error: e?.message || "Upload error" }, { status: 500 });
+    console.error("Image upload exception:", e);
+    return NextResponse.json(
+      { error: e?.message || "Upload error" },
+      { status: 500 }
+    );
   }
 }

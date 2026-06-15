@@ -1,16 +1,14 @@
 // src/lib/cvStore.ts
 // Abstraction over CV data persistence.
 // - Cloudflare R2: Primary edge object storage (production)
-// - Local File: Persistent workspace file read/write (local development)
+// - Local API: Persistent local JSON endpoint (local development)
 
 import { defaultCV } from "./data";
 import type { CVData } from "@/types/cv";
 import localCV from "../../cv.json";
 import { decryptData } from "./encryption";
 
-// In-memory cache for serverless
 let memCache: CVData | null = null;
-
 const R2_FILE_KEY = "cv.json";
 
 interface MinimalR2Bucket {
@@ -26,19 +24,6 @@ async function getCFContext() {
   } catch {
     return null;
   }
-}
-
-async function getLocalFS() {
-  if (process.env.NEXT_RUNTIME === "nodejs") {
-    try {
-      const fs = eval('require("fs/promises")');
-      const path = eval('require("path")');
-      return { fs, path };
-    } catch {
-      return null;
-    }
-  }
-  return null;
 }
 
 const getEncryptionKey = () => process.env.CV_ENCRYPTION_KEY || "lothin-dev";
@@ -88,17 +73,16 @@ export async function getCVData(): Promise<CVData> {
       }
     }
   } catch (err) {
-    // Silence warning when running outside Cloudflare env (e.g. build time or next dev)
+    // Silence warning when running outside Cloudflare env
   }
 
-  // 3. Try local filesystem (for persistent local development)
-  const localFS = await getLocalFS();
-  if (localFS) {
+  // 3. Try fetching from local save endpoint in local development
+  if (process.env.NODE_ENV === "development") {
     try {
-      const filePath = localFS.path.join(process.cwd(), "cv.json");
-      const raw = await localFS.fs.readFile(filePath, "utf-8");
-      if (raw) {
-        const parsed = JSON.parse(raw);
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      const res = await fetch(`${siteUrl}/api/cv/local-save`, { cache: "no-store" });
+      if (res.ok) {
+        const parsed = await res.json();
         const decrypted = await ensureDecrypted(parsed);
         if (!decrypted.articles || decrypted.articles.length === 0) {
           decrypted.articles = defaultCV.articles;
@@ -107,7 +91,7 @@ export async function getCVData(): Promise<CVData> {
         return memCache;
       }
     } catch (err) {
-      // file might not exist yet
+      // ignore local dev endpoint failures
     }
   }
 
@@ -151,15 +135,18 @@ export async function saveCVData(data: CVData): Promise<void> {
     console.error("Cloudflare R2 save error (might be running locally without binding):", err);
   }
 
-  // 2. Write to local filesystem (for persistent local development)
-  const localFS = await getLocalFS();
-  if (localFS) {
+  // 2. Save locally via Node save endpoint in development
+  if (process.env.NODE_ENV === "development") {
     try {
-      const filePath = localFS.path.join(process.cwd(), "cv.json");
-      await localFS.fs.writeFile(filePath, JSON.stringify(updatedData, null, 2), "utf-8");
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      await fetch(`${siteUrl}/api/cv/local-save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData),
+      });
       return;
     } catch (err) {
-      console.error("Failed to save CV data to local filesystem:", err);
+      console.error("Failed to save CV data to local endpoint:", err);
     }
   }
 
