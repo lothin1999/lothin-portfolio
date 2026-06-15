@@ -538,3 +538,24 @@ a.link-underline:hover::after {
   50% { width: 40%; left: 30%; }
   100% { width: 0%; left: 100%; }
 }
+
+/* View Transitions & Ripple Effect */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* Disable normal transitions when View Transitions are active */
+.theme-transitioning,
+.theme-transitioning * {
+  transition: none !important;
+}

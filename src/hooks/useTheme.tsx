@@ -9,9 +9,9 @@ import {
   useCallback,
   useContext,
   useRef,
-  useEffect,
   type ReactNode,
 } from "react";
+import { flushSync } from "react-dom";
 
 interface RippleContextValue {
   registerToggle: (el: HTMLElement | null) => void;
@@ -28,18 +28,7 @@ export function useRipple() {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const toggleRef = useRef<HTMLElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const busyRef = useRef(false);
-
-  // Clean up canvas from body on unmount
-  useEffect(() => {
-    return () => {
-      if (canvasRef.current) {
-        canvasRef.current.remove();
-        canvasRef.current = null;
-      }
-    };
-  }, []);
 
   const registerToggle = useCallback((el: HTMLElement | null) => {
     toggleRef.current = el;
@@ -47,37 +36,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const triggerRipple = useCallback(
     (toDark: boolean, onMidpoint: () => void) => {
-      if (busyRef.current) return;
-      busyRef.current = true;
-      let canvas = canvasRef.current;
-      if (!canvas) {
-        canvas = document.createElement("canvas");
-        canvas.style.cssText = [
-          "position:fixed",
-          "inset:0",
-          "pointer-events:none",
-          "z-index:9999",
-          "width:100vw",
-          "height:100vh",
-        ].join(";");
-        document.body.appendChild(canvas);
-        canvasRef.current = canvas;
-      }
-
-      const W = window.innerWidth;
-      const H = window.innerHeight;
-      canvas.width = W;
-      canvas.height = H;
-      canvas.style.display = "block";
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        busyRef.current = false;
-        canvas.style.display = "none";
+      const doc = document as any;
+      if (
+        typeof window === "undefined" ||
+        typeof document === "undefined" ||
+        !doc.startViewTransition ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
         onMidpoint();
         return;
       }
 
+      if (busyRef.current) return;
+      busyRef.current = true;
+
+      const W = window.innerWidth;
+      const H = window.innerHeight;
       let ox = W * 0.9;
       let oy = 28;
       if (toggleRef.current) {
@@ -92,55 +66,34 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         Math.hypot(W - ox, H - oy),
       );
 
-      const fillColor = toDark ? "hsl(20 14% 7%)" : "hsl(0 0% 100%)";
-      const DURATION = 640;
-      const MIDPOINT = 0.42;
+      document.documentElement.classList.add("theme-transitioning");
 
-      let midpointFired = false;
-      const start = performance.now();
+      const transition = doc.startViewTransition(() => {
+        flushSync(() => {
+          onMidpoint();
+        });
+      });
 
-      function easeInOut(t: number) {
-        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-      }
-
-      function tick(now: number) {
-        try {
-          const raw = Math.min((now - start) / DURATION, 1);
-          const t = easeInOut(raw);
-          const r = t * maxR;
-
-          ctx!.clearRect(0, 0, W, H);
-          ctx!.beginPath();
-          ctx!.arc(ox, oy, r, 0, Math.PI * 2);
-          ctx!.fillStyle = fillColor;
-          ctx!.fill();
-
-          if (raw >= MIDPOINT && !midpointFired) {
-            midpointFired = true;
-            try {
-              onMidpoint();
-            } catch (err) {
-              console.error("Theme transition midpoint error:", err);
-            }
+      transition.ready.then(() => {
+        document.documentElement.animate(
+          {
+            clipPath: [
+              `circle(0px at ${ox}px ${oy}px)`,
+              `circle(${maxR}px at ${ox}px ${oy}px)`,
+            ],
+          },
+          {
+            duration: 500,
+            easing: "ease-in-out",
+            pseudoElement: "::view-transition-new(root)",
           }
+        );
+      });
 
-          if (raw < 1) {
-            requestAnimationFrame(tick);
-          } else {
-            canvas!.style.display = "none";
-            ctx!.clearRect(0, 0, W, H);
-            busyRef.current = false;
-          }
-        } catch (err) {
-          console.error("Theme transition tick error:", err);
-          if (canvas) {
-            canvas.style.display = "none";
-          }
-          busyRef.current = false;
-        }
-      }
-
-      requestAnimationFrame(tick);
+      transition.finished.finally(() => {
+        document.documentElement.classList.remove("theme-transitioning");
+        busyRef.current = false;
+      });
     },
     [],
   );
