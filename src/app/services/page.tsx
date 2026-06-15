@@ -45,7 +45,7 @@ export default async function ServicesPage() {
       <section className="border-b border-rule bg-surface py-10">
         <div className="max-w-6xl mx-auto px-6">
           <p className="text-[16px] text-ink2 font-sans font-light leading-relaxed max-w-2xl">
-            Most teams I talk to know their full-stack platform feels sluggish or complicated. They just haven&apos;t figured out where the performance bottleneck actually starts.
+            {cv.adminSettings?.servicesIntro || "Most teams I talk to know their full-stack platform feels sluggish or complicated. They just haven't figured out where the performance bottleneck actually starts."}
           </p>
         </div>
       </section>
@@ -64,7 +64,7 @@ export default async function ServicesPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
+            {(cv.adminSettings?.servicesOfferings || [
               {
                 title: "High-End Full-Stack Consulting",
                 label: "Finding what your system is hiding",
@@ -85,7 +85,7 @@ export default async function ServicesPage() {
                 label: "Wiring secure transaction pipelines",
                 desc: "Implement Cambodia-native Bakong KHQR checkouts (signature checks, deep links, webhooks), real-time booking status Pusher logs, and Firebase user management workflows.",
               },
-            ].map((offering) => (
+            ]).map((offering) => (
               <div key={offering.title} className="border border-rule bg-surface p-6 rounded flex flex-col hover:border-ink transition-colors duration-200">
                 <span className="font-mono text-[10px] text-accent uppercase tracking-wider block mb-1">
                   {offering.label}
@@ -116,10 +116,10 @@ export default async function ServicesPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[
+            {(cv.adminSettings?.servicesWhy || [
               {
                 title: "Migration & Upgrade Experience",
-                desc: "I have led large upgrade operations resolving breaking changes, from Nuxt 2 Options API to Nuxt 4 Composition patterns, and Laravel to NestJS backends. I don&apos;t just code; I guide teams through transitions.",
+                desc: "I have led large upgrade operations resolving breaking changes, from Nuxt 2 Options API to Nuxt 4 Composition patterns, and Laravel to NestJS backends. I don't just code; I guide teams through transitions.",
               },
               {
                 title: "Systems Thinking",
@@ -133,7 +133,7 @@ export default async function ServicesPage() {
                 title: "Real-World Results",
                 desc: "From province-based rental filters covering 25+ Cambodian provinces to secure KHQR payment APIs processed successfully daily, I deliver production systems that scale.",
               },
-            ].map((item) => (
+            ]).map((item) => (
               <div key={item.title} className="flex flex-col gap-2">
                 <h3 className="font-serif text-lg text-ink font-semibold">{item.title}</h3>
                 <p className="text-[13.5px] text-ink2 leading-relaxed font-sans font-light">{item.desc}</p>
@@ -157,7 +157,7 @@ export default async function ServicesPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
+            {(cv.adminSettings?.servicesEngagement || [
               {
                 phase: "01",
                 title: "Discovery & Diagnosis",
@@ -176,7 +176,7 @@ export default async function ServicesPage() {
                 desc: "Regular check-ins, architectural advice, and someone to review release schedules. You get a technical lead on call whenever updates feel risky.",
                 duration: "Typical duration: 3+ months",
               },
-            ].map((eng) => (
+            ]).map((eng) => (
               <div key={eng.phase} className="border border-rule bg-surface p-5 rounded hover:border-ink transition-colors duration-200 flex flex-col">
                 <span className="font-mono text-[24px] text-accent font-semibold mb-2">{eng.phase}</span>
                 <h3 className="font-serif text-lg text-ink font-semibold mb-2">{eng.title}</h3>

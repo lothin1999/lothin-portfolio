@@ -4,8 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus, Trash2, Save, Upload, RefreshCw, Check, ArrowLeft,
+  ChevronDown, ChevronRight, FileText, Globe, CheckCircle, Edit, List
 } from "lucide-react";
-import type { CVData } from "@/types/cv";
+import type { CVData, Article } from "@/types/cv";
 import { useCVData } from "@/hooks/useCVData";
 
 // ── Tiny helpers ──────────────────────────────────────────────────────────────
@@ -54,14 +55,123 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AdminField({
+  label, value, onChange, multiline, placeholder, explanation,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  multiline?: boolean;
+  placeholder?: string;
+  explanation?: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <Field label={label} value={value} onChange={onChange} multiline={multiline} placeholder={placeholder} />
+      {explanation && (
+        <p className="font-mono text-[9.5px] text-accent/80 italic mt-0.5 pl-1 flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block shrink-0" />
+          {explanation}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ── Tab definitions ───────────────────────────────────────────────────────────
-type Tab = "profile" | "experience" | "skills" | "education" | "references";
-const TABS: { id: Tab; label: string }[] = [
+type Group = "cv" | "admin";
+type Tab =
+  | "profile"
+  | "experience"
+  | "skills"
+  | "education"
+  | "references"
+  | "home"
+  | "about"
+  | "services"
+  | "articles";
+
+const CV_TABS: { id: Tab; label: string }[] = [
   { id: "profile", label: "Profile" },
   { id: "experience", label: "Experience" },
   { id: "skills", label: "Skills" },
   { id: "education", label: "Education" },
   { id: "references", label: "References" },
+];
+
+const ADMIN_TABS: { id: Tab; label: string }[] = [
+  { id: "home", label: "Homepage" },
+  { id: "about", label: "About Page" },
+  { id: "services", label: "Services Page" },
+  { id: "articles", label: "Articles" },
+];
+
+// ── Default Fallbacks ────────────────────────────────────────────────────────
+const defaultHomeProblems = [
+  { num: "[01]", title: "Features take longer than they should", desc: "Change one thing, five other places break. What should be a half-day task turns into a multi-day testing ordeal because codebases lack encapsulation and type boundaries." },
+  { num: "[02]", title: "Slow page loads and performance debt", desc: "Slow database queries and unoptimized rendering block core visitor routes. Pages that should load instantly lag, leading to increased bounce rates." },
+  { num: "[03]", title: "Backend-Frontend disconnect", desc: "Knowledge lives in developers' heads. REST APIs lack shared typescript contracts, leading to silent serialization errors and constant coordination overhead." },
+  { num: "[04]", title: "Complex integrations and payment bugs", desc: "Payment gateways like Bakong KHQR are wired without strict signature checks or reliable transaction webhooks, causing order status inconsistencies." }
+];
+
+const defaultHomeStats = [
+  { val: "3+ Years", label: "Experience" },
+  { val: "10+", label: "Projects Live" },
+  { val: "3", label: "Nuxt Migrations" },
+  { val: "Edge SSR", label: "Specialty" }
+];
+
+const defaultHomeServices = [
+  { title: "High-End Full-Stack Consulting", desc: "I analyze your application database, caching layer, and client components to locate bottleneck drag and build a clear plan to clean things up." },
+  { title: "Custom Web Development", desc: "I build responsive, lightning-fast SSR web platforms in Vue/Nuxt, React/Next, and Angular, with modular NestJS/Laravel backends that are simple to maintain." },
+  { title: "Core System Integrations", desc: "Integrate Cambodia-native Bakong KHQR checkout flows, real-time Pusher status sockets, and Firebase auth securely into existing systems." }
+];
+
+const defaultAboutStats = [
+  { val: "3+ Years", label: "Experience" },
+  { val: "10+", label: "Live Projects" },
+  { val: "3", label: "Nuxt Migrations" },
+  { val: "25+", label: "Provinces filtered" }
+];
+
+const defaultAboutStory = [
+  "I'm a Full-Stack Web Developer and Technical Lead. I help teams untangle system complexity so their applications can load fast, support rich features, and remain clean enough to evolve.",
+  "I studied Software Development in Phnom Penh, learning algorithms, data structures, OOP, and software engineering. I learned to think in systems: every directory, schema, and API boundary is a gear in a larger machine. That mindset followed me directly into my professional career.",
+  "My first major project involved CRM, hotel, and session-billing billiard table tracking systems. Building under real-world timing and synchronization constraints taught me to design fail-safe WebSockets channels and optimize transactional SQL queries. When I saw clients actually using the table booking systems to manage their operations, I knew I wanted to focus on building critical production tools.",
+  "Later, I worked on Cambodia's nationwide AALL rental marketplace, introducing Nuxt 4 SSR, and leading the full upgrade path of an enterprise POS system through three major Nuxt versions. I focus on BEM CSS architecture, edge database performance, and Cambodia-native Bakong KHQR checkout flows to deliver smooth digital experiences."
+];
+
+const defaultAboutPrinciples = [
+  { title: "Systems over features", desc: "Good architecture ensures your developers add features without fighting the codebase. I write strict types, clean contracts, and keep directory modules simple. That way, code stays testable and time-to-ship drops." },
+  { title: "Clarity over cleverness", desc: "Clever code causes maintenance issues. Nested ternary operations, pre-rendered components with complex hydrates, and multi-layered configurations break easily. I choose boring, predictable code that team members can understand in minutes." },
+  { title: "Business context matters", desc: "Technical decisions are business decisions. Choosing a stack or setting up edge infrastructure must solve real visitor drag or operational latency. I always ask what a technical decision means for the company first." }
+];
+
+const defaultAboutDontDo = [
+  "Tutorial-level hand-holding: I point team members to clean code paths, but expect developers to build problem-solving skills.",
+  "Quick feature patches: Writing code without understanding the system it lives in builds technical debt that we'll have to pay back later.",
+  "Projects without clear objectives: I need a defined metric of success — loading speed, user conversions, or operational metrics — to optimize correctly.",
+  "Teams not ready for change: If 'we've always done it this way' is the final answer, we won't be a good fit."
+];
+
+const defaultServicesOfferings = [
+  { title: "High-End Full-Stack Consulting", label: "Finding what your system is hiding", desc: "I audit your application rendering logic, state stores, and database schemas. I locate query bottlenecks, bloated payloads, and provide a clear, step-by-step optimization plan." },
+  { title: "Custom Web Development", label: "Platforms your team can maintain", desc: "I build responsive frontend clients in Vue/Nuxt, React/Next, and Angular, wired into NestJS, Laravel, or Spring Boot REST APIs with strict TypeScript contracts." },
+  { title: "Long-Term Technical Advisory", label: "A full-stack lead on call", desc: "Get ongoing access to someone who thinks about software architecture, package upgrades, security hardening, and database structures for a living, without hiring full-time." },
+  { title: "Core System & Payment Integrations", label: "Wiring secure transaction pipelines", desc: "Implement Cambodia-native Bakong KHQR checkouts (signature checks, deep links, webhooks), real-time booking status Pusher logs, and Firebase user management workflows." }
+];
+
+const defaultServicesWhy = [
+  { title: "Migration & Upgrade Experience", desc: "I have led large upgrade operations resolving breaking changes, from Nuxt 2 Options API to Nuxt 4 Composition patterns, and Laravel to NestJS backends. I don't just code; I guide teams through transitions." },
+  { title: "Systems Thinking", desc: "I analyze query paths, API contracts, and edge infrastructure, not just frontend styling. When database queries and components are unified, teams ship faster and build with confidence." },
+  { title: "Business Alignment", desc: "Technical decisions are business decisions. I evaluate choices based on whether they reduce server costs, improve checkout conversion rates, or cut maintenance debt." },
+  { title: "Real-World Results", desc: "From province-based rental filters covering 25+ Cambodian provinces to secure KHQR payment APIs processed successfully daily, I deliver production systems that scale." }
+];
+
+const defaultServicesEngagement = [
+  { phase: "01", title: "Discovery & Diagnosis", desc: "I spend time reviewing your codebase, API layers, and database queries. I audit layout shifts, loading delays, and structure a clear plan outlining what requires remediation.", duration: "Typical duration: 2-3 weeks" },
+  { phase: "02", title: "Implementation Partnership", desc: "I embed with your developers to write core code, rewrite state stores, establish strict typescript contracts, and deploy updated modules to production.", duration: "Typical duration: 1-3 months" },
+  { phase: "03", title: "Ongoing Advisory", desc: "Regular check-ins, architectural advice, and someone to review release schedules. You get a technical lead on call whenever updates feel risky.", duration: "Typical duration: 3+ months" }
 ];
 
 function compressImage(file: File, maxWidth = 400, maxHeight = 400, quality = 0.85): Promise<Blob> {
@@ -121,15 +231,43 @@ export function AdminEditPage() {
   const router = useRouter();
 
   // Deep clone for editing
-  const [draft, setDraft] = useState<CVData>(JSON.parse(JSON.stringify(cv)));
+  const [draft, setDraft] = useState<CVData>({
+    profile: { name: { first: "", last: "" }, title: "", tagline: "", summary: "", location: "", website: "", telegram: "", telegramHandle: "", linkedin: "", phones: [], languages: [] },
+    experiences: [],
+    skillGroups: [],
+    educations: [],
+    references: [],
+    articles: [],
+    adminSettings: {},
+  });
 
+  // Load cv data once hook finishes loading
+  useEffect(() => {
+    if (cv && cv.profile) {
+      const cloned = JSON.parse(JSON.stringify(cv));
+      if (!cloned.adminSettings) cloned.adminSettings = {};
+      if (!cloned.articles) cloned.articles = [];
+      setDraft(cloned);
+    }
+  }, [cv]);
+
+  // Sidebar accordion expansion states
+  const [cvExpanded, setCvExpanded] = useState(true);
+  const [adminExpanded, setAdminExpanded] = useState(true);
+
+  // Active navigation settings
+  const [activeGroup, setActiveGroup] = useState<Group>("cv");
   const [activeTab, setActiveTab] = useState<Tab>("profile");
+
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Password state removed (using Firebase Auth with Gmail Google Sign-In)
+  // Articles state
+  const [selectedArticleIdx, setSelectedArticleIdx] = useState<number | null>(null);
+  const [isCreatingArticle, setIsCreatingArticle] = useState(false);
+  const [articleDraft, setArticleDraft] = useState<Article | null>(null);
 
   async function handleSave() {
     setSaving(true);
@@ -156,7 +294,6 @@ export function AdminEditPage() {
     if (!file) return;
     setUploading(true);
     try {
-      // Compress the image client-side to maximum 400x400 JPEG at 85% quality
       const compressedBlob = await compressImage(file, 400, 400, 0.85);
       const compressedFile = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
         type: "image/jpeg",
@@ -179,7 +316,172 @@ export function AdminEditPage() {
     }
   }
 
-  // handleChangePw removed
+  // Helper functions to safely update nested adminSettings state
+  const updateHomeIntro = (v: string) => {
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), homeIntro: v }
+    }));
+  };
+
+  const updateHomeProblem = (idx: number, field: "num" | "title" | "desc", v: string) => {
+    const problems = [...(draft.adminSettings?.homeProblems || defaultHomeProblems)];
+    problems[idx] = { ...problems[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), homeProblems: problems }
+    }));
+  };
+
+  const updateHomeStat = (idx: number, field: "val" | "label", v: string) => {
+    const stats = [...(draft.adminSettings?.homeStats || defaultHomeStats)];
+    stats[idx] = { ...stats[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), homeStats: stats }
+    }));
+  };
+
+  const updateHomeService = (idx: number, field: "title" | "desc", v: string) => {
+    const services = [...(draft.adminSettings?.homeServices || defaultHomeServices)];
+    services[idx] = { ...services[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), homeServices: services }
+    }));
+  };
+
+  const updateAboutIntro = (v: string) => {
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), aboutIntro: v }
+    }));
+  };
+
+  const updateAboutStat = (idx: number, field: "val" | "label", v: string) => {
+    const stats = [...(draft.adminSettings?.aboutStats || defaultAboutStats)];
+    stats[idx] = { ...stats[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), aboutStats: stats }
+    }));
+  };
+
+  const updateAboutStory = (idx: number, v: string) => {
+    const story = [...(draft.adminSettings?.aboutStory || defaultAboutStory)];
+    story[idx] = v;
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), aboutStory: story }
+    }));
+  };
+
+  const updateAboutPrinciple = (idx: number, field: "title" | "desc", v: string) => {
+    const principles = [...(draft.adminSettings?.aboutPrinciples || defaultAboutPrinciples)];
+    principles[idx] = { ...principles[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), aboutPrinciples: principles }
+    }));
+  };
+
+  const updateAboutDontDo = (idx: number, v: string) => {
+    const dontDo = [...(draft.adminSettings?.aboutDontDo || defaultAboutDontDo)];
+    dontDo[idx] = v;
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), aboutDontDo: dontDo }
+    }));
+  };
+
+  const updateServicesIntro = (v: string) => {
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), servicesIntro: v }
+    }));
+  };
+
+  const updateServicesOffering = (idx: number, field: "label" | "title" | "desc", v: string) => {
+    const offerings = [...(draft.adminSettings?.servicesOfferings || defaultServicesOfferings)];
+    offerings[idx] = { ...offerings[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), servicesOfferings: offerings }
+    }));
+  };
+
+  const updateServicesWhy = (idx: number, field: "title" | "desc", v: string) => {
+    const why = [...(draft.adminSettings?.servicesWhy || defaultServicesWhy)];
+    why[idx] = { ...why[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), servicesWhy: why }
+    }));
+  };
+
+  const updateServicesEngagement = (idx: number, field: "phase" | "title" | "desc" | "duration", v: string) => {
+    const engagement = [...(draft.adminSettings?.servicesEngagement || defaultServicesEngagement)];
+    engagement[idx] = { ...engagement[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), servicesEngagement: engagement }
+    }));
+  };
+
+  function handleEditArticle(index: number) {
+    setSelectedArticleIdx(index);
+    setIsCreatingArticle(false);
+    setArticleDraft({
+      slug: "",
+      title: "",
+      excerpt: "",
+      date: "",
+      content: "",
+      tags: [],
+      featured: false,
+      readingTime: "",
+      ...(draft.articles?.[index] || {})
+    });
+  }
+
+  function handleAddArticle() {
+    setSelectedArticleIdx(null);
+    setIsCreatingArticle(true);
+    setArticleDraft({
+      slug: "",
+      title: "",
+      excerpt: "",
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }),
+      content: "",
+      tags: [],
+      featured: false,
+      readingTime: "5 min read"
+    });
+  }
+
+  function handleSaveArticle() {
+    if (!articleDraft) return;
+    if (!articleDraft.slug || !articleDraft.title) {
+      alert("Slug and Title are required");
+      return;
+    }
+    const articles = [...(draft.articles || [])];
+    if (isCreatingArticle) {
+      articles.push(articleDraft);
+    } else if (selectedArticleIdx !== null) {
+      articles[selectedArticleIdx] = articleDraft;
+    }
+    setDraft(d => ({ ...d, articles }));
+    setArticleDraft(null);
+    setIsCreatingArticle(false);
+    setSelectedArticleIdx(null);
+  }
+
+  function handleDeleteArticle(index: number) {
+    if (!confirm("Are you sure you want to delete this article?")) return;
+    const articles = (draft.articles || []).filter((_, i) => i !== index);
+    setDraft(d => ({ ...d, articles }));
+  }
 
   // ── Profile Tab ──
   const renderProfileTab = () => (
@@ -225,7 +527,7 @@ export function AdminEditPage() {
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors disabled:opacity-50 cursor-pointer"
           >
             {uploading ? <RefreshCw size={13} className="animate-spin" /> : <Upload size={13} />}
             {uploading ? "Uploading…" : "Upload photo"}
@@ -318,7 +620,7 @@ export function AdminEditPage() {
       ))}
       <button
         onClick={() => setDraft(d => ({ ...d, experiences: [...d.experiences, { id: `exp-${Date.now()}`, title: "", company: "", location: "", period: "", bullets: [""], tags: [] }] }))}
-        className="inline-flex items-center gap-1.5 px-3 py-2 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors"
+        className="inline-flex items-center gap-1.5 px-3 py-2 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors cursor-pointer"
       >
         <Plus size={13} /> Add experience
       </button>
@@ -347,7 +649,7 @@ export function AdminEditPage() {
       ))}
       <button
         onClick={() => setDraft(d => ({ ...d, skillGroups: [...d.skillGroups, { label: "New Group", skills: [] }] }))}
-        className="inline-flex items-center gap-1.5 px-3 py-2 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors"
+        className="inline-flex items-center gap-1.5 px-3 py-2 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors cursor-pointer"
       >
         <Plus size={13} /> Add skill group
       </button>
@@ -387,7 +689,7 @@ export function AdminEditPage() {
       ))}
       <button
         onClick={() => setDraft(d => ({ ...d, educations: [...d.educations, { id: `edu-${Date.now()}`, degree: "", school: "", location: "", period: "", description: "", courses: [] }] }))}
-        className="inline-flex items-center gap-1.5 px-3 py-2 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors"
+        className="inline-flex items-center gap-1.5 px-3 py-2 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors cursor-pointer"
       >
         <Plus size={13} /> Add education
       </button>
@@ -418,12 +720,399 @@ export function AdminEditPage() {
       ))}
       <button
         onClick={() => setDraft(d => ({ ...d, references: [...d.references, { name: "", role: "", company: "", contact: "" }] }))}
-        className="inline-flex items-center gap-1.5 px-3 py-2 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors"
+        className="inline-flex items-center gap-1.5 px-3 py-2 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors cursor-pointer"
       >
         <Plus size={13} /> Add reference
       </button>
     </div>
   );
+
+  // ── Homepage Admin Tab ──
+  const renderHomeTab = () => {
+    const homeProblems = draft.adminSettings?.homeProblems || defaultHomeProblems;
+    const homeStats = draft.adminSettings?.homeStats || defaultHomeStats;
+    const homeServices = draft.adminSettings?.homeServices || defaultHomeServices;
+
+    return (
+      <div className="space-y-6">
+        <SectionHeading>Hero / Intro</SectionHeading>
+        <AdminField
+          label="Hero Intro Paragraph"
+          value={draft.adminSettings?.homeIntro || ""}
+          onChange={updateHomeIntro}
+          multiline
+          placeholder="Your web platform feels sluggish..."
+          explanation="Changes the main intro text below your name on the Homepage."
+        />
+
+        <SectionHeading>The Problem Cards</SectionHeading>
+        <p className="text-[11px] text-muted -mt-2 mb-4">
+          Modify the 4 problem cards on the Homepage.
+        </p>
+        <div className="space-y-4">
+          {homeProblems.map((prob, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Card {i + 1}</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-1">
+                  <Field label="Number Code" value={prob.num} onChange={(v) => updateHomeProblem(i, "num", v)} />
+                </div>
+                <div className="col-span-2">
+                  <Field label="Title" value={prob.title} onChange={(v) => updateHomeProblem(i, "title", v)} />
+                </div>
+              </div>
+              <AdminField
+                label="Description"
+                value={prob.desc}
+                onChange={(v) => updateHomeProblem(i, "desc", v)}
+                multiline
+                explanation={`Changes Problem Card #${i + 1} description in the grid on the Homepage.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>Stats List</SectionHeading>
+        <p className="text-[11px] text-muted -mt-2 mb-4">
+          Modify the 4 stat counters under the Biography section.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {homeStats.map((stat, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Stat {i + 1}</p>
+              <Field label="Value" value={stat.val} onChange={(v) => updateHomeStat(i, "val", v)} />
+              <AdminField
+                label="Label"
+                value={stat.label}
+                onChange={(v) => updateHomeStat(i, "label", v)}
+                explanation={`Changes Homepage Stat #${i + 1} value & description label.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>How I Help (Services)</SectionHeading>
+        <p className="text-[11px] text-muted -mt-2 mb-4">
+          Modify the 3 service highlights on the Homepage.
+        </p>
+        <div className="space-y-4">
+          {homeServices.map((service, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Service {i + 1}</p>
+              <Field label="Title" value={service.title} onChange={(v) => updateHomeService(i, "title", v)} />
+              <AdminField
+                label="Description"
+                value={service.desc}
+                onChange={(v) => updateHomeService(i, "desc", v)}
+                multiline
+                explanation={`Changes Service highlight Card #${i + 1} on the Homepage.`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ── About Page Admin Tab ──
+  const renderAboutTab = () => {
+    const aboutStats = draft.adminSettings?.aboutStats || defaultAboutStats;
+    const aboutStory = draft.adminSettings?.aboutStory || defaultAboutStory;
+    const aboutPrinciples = draft.adminSettings?.aboutPrinciples || defaultAboutPrinciples;
+    const aboutDontDo = draft.adminSettings?.aboutDontDo || defaultAboutDontDo;
+
+    return (
+      <div className="space-y-6">
+        <SectionHeading>Intro Header</SectionHeading>
+        <AdminField
+          label="Intro Strip Text"
+          value={draft.adminSettings?.aboutIntro || ""}
+          onChange={updateAboutIntro}
+          multiline
+          placeholder="From building billiard table session tracking tools..."
+          explanation="Changes the header paragraph inside the quick stats strip on the About page."
+        />
+
+        <SectionHeading>Quick Stats</SectionHeading>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {aboutStats.map((stat, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Stat {i + 1}</p>
+              <Field label="Value" value={stat.val} onChange={(v) => updateAboutStat(i, "val", v)} />
+              <AdminField
+                label="Label"
+                value={stat.label}
+                onChange={(v) => updateAboutStat(i, "label", v)}
+                explanation={`Changes Stat #${i + 1} on the quick intro strip of the About page.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>My Story (Biography)</SectionHeading>
+        <p className="text-[11px] text-muted -mt-2 mb-4">
+          Write up to 4 paragraphs describing your professional background story.
+        </p>
+        <div className="space-y-4">
+          {aboutStory.map((para, i) => (
+            <div key={i} className="space-y-1">
+              <AdminField
+                label={`Story Paragraph #${i + 1}`}
+                value={para}
+                onChange={(v) => updateAboutStory(i, v)}
+                multiline
+                explanation={`Changes paragraph #${i + 1} under 'My Story' on the About page.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>How I Think (Principles)</SectionHeading>
+        <div className="space-y-4">
+          {aboutPrinciples.map((principle, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Principle {i + 1}</p>
+              <Field label="Title" value={principle.title} onChange={(v) => updateAboutPrinciple(i, "title", v)} />
+              <AdminField
+                label="Description"
+                value={principle.desc}
+                onChange={(v) => updateAboutPrinciple(i, "desc", v)}
+                multiline
+                explanation={`Changes Principle #${i + 1} under 'How I Think About Work' on the About page.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>What I Don't Do</SectionHeading>
+        <div className="space-y-4">
+          {aboutDontDo.map((item, i) => (
+            <div key={i} className="space-y-1">
+              <AdminField
+                label={`Bound Item #${i + 1}`}
+                value={item}
+                onChange={(v) => updateAboutDontDo(i, v)}
+                explanation={`Changes list item #${i + 1} under 'What I Don't Do' on the About page.`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ── Services Page Admin Tab ──
+  const renderServicesTab = () => {
+    const offerings = draft.adminSettings?.servicesOfferings || defaultServicesOfferings;
+    const why = draft.adminSettings?.servicesWhy || defaultServicesWhy;
+    const engagement = draft.adminSettings?.servicesEngagement || defaultServicesEngagement;
+
+    return (
+      <div className="space-y-6">
+        <SectionHeading>Intro Header</SectionHeading>
+        <AdminField
+          label="Intro Paragraph"
+          value={draft.adminSettings?.servicesIntro || ""}
+          onChange={updateServicesIntro}
+          multiline
+          placeholder="Most teams I talk to know their full-stack platform..."
+          explanation="Changes the introductory paragraph below the header of the Services page."
+        />
+
+        <SectionHeading>How I Work (Offerings)</SectionHeading>
+        <div className="space-y-4">
+          {offerings.map((off, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Offering {i + 1}</p>
+              <Field label="Label" value={off.label} onChange={(v) => updateServicesOffering(i, "label", v)} />
+              <Field label="Title" value={off.title} onChange={(v) => updateServicesOffering(i, "title", v)} />
+              <AdminField
+                label="Description"
+                value={off.desc}
+                onChange={(v) => updateServicesOffering(i, "desc", v)}
+                multiline
+                explanation={`Changes Offering card #${i + 1} under 'How I Work' on the Services page.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>Why Work With Me</SectionHeading>
+        <div className="space-y-4">
+          {why.map((item, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Point {i + 1}</p>
+              <Field label="Title" value={item.title} onChange={(v) => updateServicesWhy(i, "title", v)} />
+              <AdminField
+                label="Description"
+                value={item.desc}
+                onChange={(v) => updateServicesWhy(i, "desc", v)}
+                multiline
+                explanation={`Changes point #${i + 1} in the 'Why Work With Me' grid on the Services page.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>Engagement Structure</SectionHeading>
+        <div className="space-y-4">
+          {engagement.map((phase, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Phase {i + 1}</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Field label="Phase Code" value={phase.phase} onChange={(v) => updateServicesEngagement(i, "phase", v)} />
+                </div>
+                <div className="col-span-2">
+                  <Field label="Title" value={phase.title} onChange={(v) => updateServicesEngagement(i, "title", v)} />
+                </div>
+              </div>
+              <Field label="Duration" value={phase.duration} onChange={(v) => updateServicesEngagement(i, "duration", v)} />
+              <AdminField
+                label="Description"
+                value={phase.desc}
+                onChange={(v) => updateServicesEngagement(i, "desc", v)}
+                multiline
+                explanation={`Changes engagement phase #${i + 1} description under 'Engagement Structure' on the Services page.`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ── Articles Manager Tab ──
+  const renderArticlesTab = () => {
+    const list = draft.articles || [];
+
+    if (articleDraft) {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between pb-3 border-b border-rule">
+            <h4 className="font-mono text-[11px] uppercase tracking-wider text-accent font-bold">
+              {isCreatingArticle ? "Create New Article" : "Edit Article"}
+            </h4>
+            <button
+              onClick={() => setArticleDraft(null)}
+              className="text-[11px] text-muted hover:text-ink border border-rule rounded px-2.5 py-1 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Title" value={articleDraft.title} onChange={(v) => setArticleDraft(a => a ? ({ ...a, title: v }) : null)} />
+            <Field label="Slug (URL path)" value={articleDraft.slug} onChange={(v) => setArticleDraft(a => a ? ({ ...a, slug: v.toLowerCase().replace(/[^a-z0-9-]/g, "-") }) : null)} />
+            <Field label="Date" value={articleDraft.date} onChange={(v) => setArticleDraft(a => a ? ({ ...a, date: v }) : null)} />
+            <Field label="Reading Time" value={articleDraft.readingTime || ""} onChange={(v) => setArticleDraft(a => a ? ({ ...a, readingTime: v }) : null)} />
+          </div>
+
+          <Field
+            label="Tags (comma separated)"
+            value={articleDraft.tags.join(", ")}
+            onChange={(v) => setArticleDraft(a => a ? ({ ...a, tags: v.split(",").map(t => t.trim()).filter(Boolean) }) : null)}
+          />
+
+          <div className="flex items-center gap-2 py-1">
+            <input
+              type="checkbox"
+              id="featured-checkbox"
+              checked={!!articleDraft.featured}
+              onChange={(e) => setArticleDraft(a => a ? ({ ...a, featured: e.target.checked }) : null)}
+              className="w-3.5 h-3.5 rounded accent-accent border border-rule bg-bg"
+            />
+            <label htmlFor="featured-checkbox" className="font-mono text-[10px] uppercase text-ink cursor-pointer">
+              Featured Article (shows on Homepage)
+            </label>
+          </div>
+
+          <Field
+            label="Excerpt / Summary"
+            value={articleDraft.excerpt}
+            onChange={(v) => setArticleDraft(a => a ? ({ ...a, excerpt: v }) : null)}
+            multiline
+          />
+
+          <Field
+            label="Markdown Content"
+            value={articleDraft.content}
+            onChange={(v) => setArticleDraft(a => a ? ({ ...a, content: v }) : null)}
+            multiline
+            placeholder="## Section Title..."
+          />
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-rule mt-6">
+            <button
+              onClick={handleSaveArticle}
+              className="px-4 py-2 bg-ink hover:bg-accent text-white text-[12px] font-medium rounded transition-colors cursor-pointer border-none"
+            >
+              Save Article (Draft)
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between pb-3 border-b border-rule">
+          <div>
+            <h4 className="font-mono text-[11px] uppercase tracking-wider text-accent font-bold">Articles List</h4>
+            <p className="text-[10px] text-muted mt-0.5">Manage case studies and writing on your portfolio site.</p>
+          </div>
+          <button
+            onClick={handleAddArticle}
+            className="inline-flex items-center gap-1 text-[11px] border border-rule rounded px-3 py-1.5 text-ink hover:bg-tag-bg transition-colors cursor-pointer"
+          >
+            <Plus size={12} /> Add Article
+          </button>
+        </div>
+
+        {list.length === 0 ? (
+          <div className="py-10 text-center border border-dashed border-rule rounded">
+            <p className="font-mono text-[11px] text-muted">No articles found. Create your first post!</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-rule border border-rule rounded overflow-hidden bg-bg">
+            {list.map((art, idx) => (
+              <div key={idx} className="p-4 flex items-center justify-between gap-4 hover:bg-tag-bg/20 transition-colors">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-serif text-[14px] text-ink font-medium truncate block">{art.title}</span>
+                    {art.featured && (
+                      <span className="text-[9px] uppercase font-mono tracking-wider px-1 bg-accent/10 text-accent rounded shrink-0">
+                        Featured
+                      </span>
+                    )}
+                  </div>
+                  <span className="font-mono text-[9.5px] text-muted uppercase tracking-wider mt-1 block">
+                    {art.date} · {art.readingTime || "5 min read"} · slug: /{art.slug}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => handleEditArticle(idx)}
+                    className="p-1.5 text-muted hover:text-accent hover:bg-tag-bg rounded transition-colors cursor-pointer"
+                    title="Edit article"
+                  >
+                    <Edit size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteArticle(idx)}
+                    className="p-1.5 text-muted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                    title="Delete article"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const tabContent: Record<Tab, React.ReactNode> = {
     profile: renderProfileTab(),
@@ -431,6 +1120,10 @@ export function AdminEditPage() {
     skills: renderSkillsTab(),
     education: renderEducationTab(),
     references: renderReferencesTab(),
+    home: renderHomeTab(),
+    about: renderAboutTab(),
+    services: renderServicesTab(),
+    articles: renderArticlesTab(),
   };
 
   return (
@@ -447,7 +1140,7 @@ export function AdminEditPage() {
               <ArrowLeft size={16} />
             </button>
             <div>
-              <h1 className="text-[20px] font-semibold text-ink">Edit CV</h1>
+              <h1 className="text-[20px] font-semibold text-ink">Edit CV & Site Text</h1>
               <p className="font-mono text-[10px] text-muted tracking-wide mt-0.5">Admin Dashboard</p>
             </div>
           </div>
@@ -471,23 +1164,74 @@ export function AdminEditPage() {
           </div>
         </div>
 
-        {/* Two columns layout: Left Sidebar (vertical tabs), Right Main (content) */}
+        {/* Dynamic Multi-Section Sidebar Panel */}
         <div className="flex flex-col md:flex-row gap-8 w-full items-start">
-          {/* Vertical Tabs */}
-          <div className="w-full md:w-56 shrink-0 flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-x-visible border-b md:border-b-0 md:border-r border-rule pb-4 md:pb-0 md:pr-4 whitespace-nowrap md:whitespace-normal">
-            {TABS.map((tab) => (
+          <div className="w-full md:w-60 shrink-0 flex flex-col gap-4">
+            
+            {/* Box 1: CV Data Group */}
+            <div className="border border-rule rounded bg-surface p-1 shadow-sm">
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`font-mono text-[11px] tracking-[1.5px] uppercase py-2.5 px-3 text-left transition-all whitespace-nowrap rounded w-full cursor-pointer ${
-                  activeTab === tab.id
-                    ? "bg-surface text-accent font-semibold border-l-2 border-accent shadow-sm"
-                    : "text-muted hover:text-ink hover:bg-surface/50"
-                }`}
+                onClick={() => setCvExpanded(!cvExpanded)}
+                className="w-full font-mono text-[10.5px] tracking-[2px] uppercase py-2 px-3 text-left font-bold text-ink flex items-center justify-between hover:bg-tag-bg/50 rounded transition-colors"
               >
-                {tab.label}
+                <span>CV Data</span>
+                {cvExpanded ? <ChevronDown size={13} className="text-muted" /> : <ChevronRight size={13} className="text-muted" />}
               </button>
-            ))}
+              
+              {cvExpanded && (
+                <div className="mt-1 flex flex-col gap-0.5 pl-2 border-l border-rule/60 ml-3.5 mb-1.5">
+                  {CV_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveGroup("cv");
+                        setActiveTab(tab.id);
+                      }}
+                      className={`font-mono text-[10.5px] tracking-[1.5px] uppercase py-2 px-3 text-left transition-all rounded w-full cursor-pointer border-none bg-transparent ${
+                        activeGroup === "cv" && activeTab === tab.id
+                          ? "bg-tag-bg text-accent font-semibold border-l-2 border-accent"
+                          : "text-muted hover:text-ink hover:bg-tag-bg/30"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Box 2: Site Admin Group */}
+            <div className="border border-rule rounded bg-surface p-1 shadow-sm">
+              <button
+                onClick={() => setAdminExpanded(!adminExpanded)}
+                className="w-full font-mono text-[10.5px] tracking-[2px] uppercase py-2 px-3 text-left font-bold text-ink flex items-center justify-between hover:bg-tag-bg/50 rounded transition-colors"
+              >
+                <span>Site Admin</span>
+                {adminExpanded ? <ChevronDown size={13} className="text-muted" /> : <ChevronRight size={13} className="text-muted" />}
+              </button>
+              
+              {adminExpanded && (
+                <div className="mt-1 flex flex-col gap-0.5 pl-2 border-l border-rule/60 ml-3.5 mb-1.5">
+                  {ADMIN_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveGroup("admin");
+                        setActiveTab(tab.id);
+                      }}
+                      className={`font-mono text-[10.5px] tracking-[1.5px] uppercase py-2 px-3 text-left transition-all rounded w-full cursor-pointer border-none bg-transparent ${
+                        activeGroup === "admin" && activeTab === tab.id
+                          ? "bg-tag-bg text-accent font-semibold border-l-2 border-accent"
+                          : "text-muted hover:text-ink hover:bg-tag-bg/30"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
 
           {/* Active Tab Form Content */}

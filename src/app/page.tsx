@@ -59,8 +59,7 @@ export default function HomePage() {
                 // {profile.title} · based in {profile.location}
               </p>
               <p className="text-[16px] text-ink2 leading-relaxed font-sans font-light max-w-[580px] mb-8">
-                Your web platform feels sluggish, features drag, releases break things, and nobody can explain why.
-                I find the structural problems, resolve database and state bottleneck drag, and organize the way forward.
+                {cv.adminSettings?.homeIntro || "Your web platform feels sluggish, features drag, releases break things, and nobody can explain why. I find the structural problems, resolve database and state bottleneck drag, and organize the way forward."}
               </p>
               <div className="flex flex-wrap gap-4 items-center">
                 <Link
@@ -128,7 +127,7 @@ export default function HomePage() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
+            {(cv.adminSettings?.homeProblems || [
               {
                 num: "[01]",
                 title: "Features take longer than they should",
@@ -142,14 +141,14 @@ export default function HomePage() {
               {
                 num: "[03]",
                 title: "Backend-Frontend disconnect",
-                desc: "Knowledge lives in developers&apos; heads. REST APIs lack shared typescript contracts, leading to silent serialization errors and constant coordination overhead.",
+                desc: "Knowledge lives in developers' heads. REST APIs lack shared typescript contracts, leading to silent serialization errors and constant coordination overhead.",
               },
               {
                 num: "[04]",
                 title: "Complex integrations and payment bugs",
                 desc: "Payment gateways like Bakong KHQR are wired without strict signature checks or reliable transaction webhooks, causing order status inconsistencies.",
               },
-            ].map((prob) => (
+            ]).map((prob) => (
               <div key={prob.num} className="border border-rule bg-surface p-5 rounded hover:border-ink transition-colors duration-200">
                 <span className="font-mono text-xs text-accent font-semibold">{prob.num}</span>
                 <h3 className="font-serif text-lg text-ink font-semibold mt-2 mb-2">{prob.title}</h3>
@@ -187,12 +186,12 @@ export default function HomePage() {
             </div>
 
             <div className="lg:col-span-4 grid grid-cols-2 gap-4">
-              {[
+              {(cv.adminSettings?.homeStats || [
                 { val: "3+ Years", label: "Experience" },
                 { val: "10+", label: "Projects Live" },
                 { val: "3", label: "Nuxt Migrations" },
                 { val: "Edge SSR", label: "Specialty" },
-              ].map((stat) => (
+              ]).map((stat) => (
                 <div key={stat.label} className="border border-rule bg-surface p-4 rounded flex flex-col gap-1">
                   <span className="font-serif text-[20px] text-ink font-semibold">{stat.val}</span>
                   <span className="font-mono text-[9px] uppercase tracking-wider text-muted">{stat.label}</span>
@@ -259,27 +258,24 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {[
+            {(cv.adminSettings?.homeServices || [
               {
                 title: "High-End Full-Stack Consulting",
                 desc: "I analyze your application database, caching layer, and client components to locate bottleneck drag and build a clear plan to clean things up.",
-                href: "/services",
               },
               {
                 title: "Custom Web Development",
                 desc: "I build responsive, lightning-fast SSR web platforms in Vue/Nuxt, React/Next, and Angular, with modular NestJS/Laravel backends that are simple to maintain.",
-                href: "/services",
               },
               {
                 title: "Core System Integrations",
                 desc: "Integrate Cambodia-native Bakong KHQR checkout flows, real-time Pusher status sockets, and Firebase auth securely into existing systems.",
-                href: "/services",
               },
-            ].map((service) => (
+            ]).map((service) => (
               <div key={service.title} className="border border-rule bg-surface p-5 rounded flex flex-col hover:border-ink transition-colors duration-200">
                 <h3 className="font-serif text-lg text-ink font-semibold mb-2">{service.title}</h3>
                 <p className="text-[13px] text-ink2 leading-relaxed font-sans font-light mb-6">{service.desc}</p>
-                <Link href={service.href} className="font-mono text-[11px] text-accent hover:text-accent-orange font-semibold mt-auto inline-flex items-center gap-1">
+                <Link href="/services" className="font-mono text-[11px] text-accent hover:text-accent-orange font-semibold mt-auto inline-flex items-center gap-1">
                   Learn more <span className="arrow">→</span>
                 </Link>
               </div>

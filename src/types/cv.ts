@@ -60,6 +60,22 @@ export interface Article {
   readingTime?: string;
 }
 
+export interface AdminSettings {
+  homeIntro?: string;
+  homeProblems?: { num: string; title: string; desc: string }[];
+  homeStats?: { val: string; label: string }[];
+  homeServices?: { title: string; desc: string }[];
+  aboutIntro?: string;
+  aboutStats?: { val: string; label: string }[];
+  aboutStory?: string[];
+  aboutPrinciples?: { title: string; desc: string }[];
+  aboutDontDo?: string[];
+  servicesIntro?: string;
+  servicesOfferings?: { label: string; title: string; desc: string }[];
+  servicesWhy?: { title: string; desc: string }[];
+  servicesEngagement?: { phase: string; title: string; desc: string; duration: string }[];
+}
+
 export interface CVData {
   profile: Profile;
   experiences: Experience[];
@@ -67,5 +83,6 @@ export interface CVData {
   educations: Education[];
   references: Reference[];
   articles?: Article[];
+  adminSettings?: AdminSettings;
   updatedAt?: string;
 }

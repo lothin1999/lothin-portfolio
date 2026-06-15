@@ -19,5 +19,6 @@ export const defaultCV: CVData = {
   educations: [],
   references: [],
   articles: [],
+  adminSettings: {},
 };
 

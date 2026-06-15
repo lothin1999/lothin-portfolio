@@ -50,16 +50,16 @@ export default async function AboutPage() {
         <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           <div className="lg:col-span-8">
             <p className="text-[16px] text-ink2 font-sans font-light leading-relaxed max-w-3xl">
-              From building billiard table session tracking tools in Phnom Penh to leading full-stack upgrades through three major framework versions. 3+ years building production systems with a focus on code structure and edge optimization.
+              {cv.adminSettings?.aboutIntro || "From building billiard table session tracking tools in Phnom Penh to leading full-stack upgrades through three major framework versions. 3+ years building production systems with a focus on code structure and edge optimization."}
             </p>
           </div>
           <div className="lg:col-span-4 grid grid-cols-2 gap-4">
-            {[
+            {(cv.adminSettings?.aboutStats || [
               { val: "3+ Years", label: "Experience" },
               { val: "10+", label: "Live Projects" },
               { val: "3", label: "Nuxt Migrations" },
               { val: "25+", label: "Provinces filtered" },
-            ].map((stat) => (
+            ]).map((stat) => (
               <div key={stat.label} className="flex flex-col gap-0.5 border-l border-rule pl-4">
                 <span className="font-serif text-[24px] text-ink font-semibold leading-none">{stat.val}</span>
                 <span className="font-mono text-[9px] uppercase tracking-wider text-muted">{stat.label}</span>
@@ -85,18 +85,14 @@ export default async function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Biography text */}
             <div className="lg:col-span-8 space-y-5 text-[14.5px] text-ink2 font-sans font-light leading-relaxed">
-              <p>
-                I&apos;m a <strong className="font-semibold text-ink">Full-Stack Web Developer</strong> and Technical Lead. I help teams untangle system complexity so their applications can load fast, support rich features, and remain clean enough to evolve.
-              </p>
-              <p>
-                I studied Software Development in Phnom Penh, learning algorithms, data structures, OOP, and software engineering. I learned to think in systems: every directory, schema, and API boundary is a gear in a larger machine. That mindset followed me directly into my professional career.
-              </p>
-              <p>
-                My first major project involved CRM, hotel, and session-billing billiard table tracking systems. Building under real-world timing and synchronization constraints taught me to design fail-safe WebSockets channels and optimize transactional SQL queries. When I saw clients actually using the table booking systems to manage their operations, I knew I wanted to focus on building critical production tools.
-              </p>
-              <p>
-                Later, I worked on Cambodia&apos;s nationwide AALL rental marketplace, introducing Nuxt 4 SSR, and leading the full upgrade path of an enterprise POS system through three major Nuxt versions. I focus on BEM CSS architecture, edge database performance, and Cambodia-native Bakong KHQR checkout flows to deliver smooth digital experiences.
-              </p>
+              {(cv.adminSettings?.aboutStory || [
+                "I'm a Full-Stack Web Developer and Technical Lead. I help teams untangle system complexity so their applications can load fast, support rich features, and remain clean enough to evolve.",
+                "I studied Software Development in Phnom Penh, learning algorithms, data structures, OOP, and software engineering. I learned to think in systems: every directory, schema, and API boundary is a gear in a larger machine. That mindset followed me directly into my professional career.",
+                "My first major project involved CRM, hotel, and session-billing billiard table tracking systems. Building under real-world timing and synchronization constraints taught me to design fail-safe WebSockets channels and optimize transactional SQL queries. When I saw clients actually using the table booking systems to manage their operations, I knew I wanted to focus on building critical production tools.",
+                "Later, I worked on Cambodia's nationwide AALL rental marketplace, introducing Nuxt 4 SSR, and leading the full upgrade path of an enterprise POS system through three major Nuxt versions. I focus on BEM CSS architecture, edge database performance, and Cambodia-native Bakong KHQR checkout flows to deliver smooth digital experiences."
+              ]).map((para, idx) => (
+                <p key={idx}>{para}</p>
+              ))}
             </div>
 
             {/* Right side contact information card */}
@@ -187,7 +183,7 @@ export default async function AboutPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
+            {(cv.adminSettings?.aboutPrinciples || [
               {
                 title: "Systems over features",
                 desc: "Good architecture ensures your developers add features without fighting the codebase. I write strict types, clean contracts, and keep directory modules simple. That way, code stays testable and time-to-ship drops.",
@@ -200,7 +196,7 @@ export default async function AboutPage() {
                 title: "Business context matters",
                 desc: "Technical decisions are business decisions. Choosing a stack or setting up edge infrastructure must solve real visitor drag or operational latency. I always ask what a technical decision means for the company first.",
               },
-            ].map((principle) => (
+            ]).map((principle) => (
               <div key={principle.title} className="border border-rule bg-surface p-5 rounded hover:border-ink transition-colors duration-200">
                 <h3 className="font-serif text-lg text-ink font-semibold mb-2">{principle.title}</h3>
                 <p className="text-[13px] text-ink2 leading-relaxed font-sans font-light">{principle.desc}</p>
@@ -219,12 +215,12 @@ export default async function AboutPage() {
           <div className="max-w-3xl space-y-4">
             <h3 className="font-serif text-2xl text-ink font-normal mb-4">What I Don&apos;t Do</h3>
             <ul className="list-none space-y-3 pl-4">
-              {[
+              {(cv.adminSettings?.aboutDontDo || [
                 "Tutorial-level hand-holding: I point team members to clean code paths, but expect developers to build problem-solving skills.",
-                "Quick feature patches: Writing code without understanding the system it lives in builds technical debt that we&apos;ll have to pay back later.",
+                "Quick feature patches: Writing code without understanding the system it lives in builds technical debt that we'll have to pay back later.",
                 "Projects without clear objectives: I need a defined metric of success — loading speed, user conversions, or operational metrics — to optimize correctly.",
-                "Teams not ready for change: If 'we&apos;ve always done it this way' is the final answer, we won&apos;t be a good fit.",
-              ].map((boundary) => (
+                "Teams not ready for change: If 'we've always done it this way' is the final answer, we won't be a good fit.",
+              ]).map((boundary) => (
                 <li
                   key={boundary.split(":")[0]}
                   className="text-[14px] text-ink2 leading-relaxed pl-4 relative before:content-['–'] before:absolute before:left-0 before:text-accent-orange font-sans font-light"
