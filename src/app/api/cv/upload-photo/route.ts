@@ -47,23 +47,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
-    // Get file extension (fallback to png)
-    const extension = file.name.split(".").pop() || "png";
+    // Get file extension (fallback to jpg)
+    const extension = file.name.split(".").pop() || "jpg";
     const filename = `profile-${Date.now()}.${extension}`;
     const key = `images/${filename}`;
 
     const buffer = await file.arrayBuffer();
-    await bucket.put(key, buffer, {
+    await bucket.put(key, new Uint8Array(buffer), {
       httpMetadata: {
-        contentType: file.type || "image/png",
+        contentType: file.type || "image/jpeg",
       },
     });
 
     // Return the relative URL of our serving route
     const relativeUrl = `/api/images/${filename}`;
     return NextResponse.json({ url: relativeUrl });
-  } catch (e) {
-    console.error("Image upload error:", e);
-    return NextResponse.json({ error: "Upload error" }, { status: 500 });
+  } catch (e: any) {
+    console.error("Image upload exception on R2:", e);
+    return NextResponse.json({ error: e?.message || "Upload error" }, { status: 500 });
   }
 }

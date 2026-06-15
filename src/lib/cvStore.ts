@@ -28,12 +28,11 @@ async function getCFContext() {
   }
 }
 
-// Dynamically load node fs in development runtime only to avoid Edge environment bundling exceptions
 async function getLocalFS() {
-  if (process.env.NEXT_RUNTIME === "nodejs" || process.env.NODE_ENV === "development") {
+  if (process.env.NEXT_RUNTIME === "nodejs") {
     try {
-      const fs = await import(/* webpackIgnore: true */ "fs/promises");
-      const path = await import(/* webpackIgnore: true */ "path");
+      const fs = eval('require("fs/promises")');
+      const path = eval('require("path")');
       return { fs, path };
     } catch {
       return null;
