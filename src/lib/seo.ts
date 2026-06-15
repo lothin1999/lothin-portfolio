@@ -94,7 +94,12 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
           },
         },
     verification: {
-      google: "mhvos7F8eyGCieFWQXyxKZ3W6EnIrV5Sk6c4a0yWnVg",
+      google: [
+        "mhvos7F8eyGCieFWQXyxKZ3W6EnIrV5Sk6c4a0yWnVg",
+        "29d5ac3bea67f157",
+        "67ed7cf9211d6442",
+        "ubtwP5KtvCl8qcDlgXh866qrykLOSi_QO0nWMX7C4Ps",
+      ],
     },
   };
 }
