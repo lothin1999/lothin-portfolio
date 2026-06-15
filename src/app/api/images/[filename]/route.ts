@@ -13,7 +13,7 @@ async function getCFContext() {
 
 /**
  * Fetch an image from R2 via the S3-compatible API.
- * Used when the Worker binding (PORTFOLIO_BUCKET) is unavailable (e.g. pnpm dev).
+ * Used when the Worker binding (R2_BUCKET_NAME) is unavailable (e.g. pnpm dev).
  */
 async function fetchFromR2API(key: string): Promise<Response | null> {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
@@ -134,7 +134,7 @@ export async function GET(
     // --- Path 1: Cloudflare Worker binding (production / pnpm preview) ---
     const context = await getCFContext();
     const env = context?.env as any;
-    const bucket = env?.PORTFOLIO_BUCKET;
+    const bucket = env?.R2_BUCKET_NAME;
 
     if (bucket) {
       const object = await bucket.get(key);

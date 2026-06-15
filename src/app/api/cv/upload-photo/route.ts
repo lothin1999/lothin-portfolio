@@ -14,7 +14,7 @@ async function getCFContext() {
 
 /**
  * Upload an image to Cloudflare R2 via the S3-compatible API.
- * Used when the Worker binding (PORTFOLIO_BUCKET) is unavailable (e.g. pnpm dev).
+ * Used when the Worker binding (R2_BUCKET_NAME) is unavailable (e.g. pnpm dev).
  */
 async function uploadViaR2API(
   file: File,
@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
     // --- Path 1: Cloudflare Worker binding (production / pnpm preview) ---
     const context = await getCFContext();
     const env = context?.env as any;
-    const bucket = env?.PORTFOLIO_BUCKET;
+    const bucket = env?.R2_BUCKET_NAME;
 
     if (bucket) {
       const buffer = await file.arrayBuffer();

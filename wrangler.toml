@@ -4,6 +4,6 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 [[r2_buckets]]
-binding = "PORTFOLIO_BUCKET"
+binding = "R2_BUCKET_NAME"
 bucket_name = "portfolio-data"
 

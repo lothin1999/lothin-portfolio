@@ -13,6 +13,8 @@ interface SettingsContextType {
   setHelpOpen: (val: boolean) => void;
   settingsOpen: boolean;
   setSettingsOpen: (val: boolean) => void;
+  aiOpen: boolean;
+  setAiOpen: (val: boolean) => void;
   activePathSegment: string;
   setActivePathSegment: (val: string) => void;
 }
@@ -25,6 +27,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [smoothScroll, setSmoothScroll] = useState(true);
   const [helpOpen, setHelpOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
   const [activePathSegment, setActivePathSegment] = useState("home");
 
   // Load from localStorage
@@ -82,6 +85,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setHelpOpen,
         settingsOpen,
         setSettingsOpen,
+        aiOpen,
+        setAiOpen,
         activePathSegment,
         setActivePathSegment,
       }}

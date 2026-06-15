@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 import { DarkModeToggle } from "@/components/ui/DarkModeToggle";
 import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar";
 import { useCVData } from "@/hooks/useCVData";
+import { useSettings } from "@/components/layout/SettingsContext";
 
 const DEFAULT_NAV_LINKS = [
   { href: "/", label: "Home", sectionId: "home", pathMatch: "/" },
@@ -20,6 +21,7 @@ const DEFAULT_NAV_LINKS = [
 
 export function Navbar() {
   const { cv } = useCVData();
+  const { aiOpen, setAiOpen } = useSettings();
   const navLinks = cv.adminSettings?.navLinks || DEFAULT_NAV_LINKS;
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -79,10 +81,31 @@ export function Navbar() {
                 </li>
               ))}
             </ul>
+            <button
+              onClick={() => setAiOpen(!aiOpen)}
+              className={cn(
+                "p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 cursor-pointer flex items-center justify-center relative text-ink",
+                aiOpen && "border-accent text-accent bg-accent/5"
+              )}
+              aria-label="Ask Lothin's AI Assistant"
+              title="Ask Lothin's AI Assistant"
+            >
+              <Sparkles size={15} className={cn("transition-transform duration-300", aiOpen && "scale-110 rotate-12")} />
+            </button>
             <DarkModeToggle />
           </div>
 
           <div className="md:hidden flex items-center gap-2">
+            <button
+              onClick={() => setAiOpen(!aiOpen)}
+              className={cn(
+                "p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 cursor-pointer flex items-center justify-center text-ink",
+                aiOpen && "border-accent text-accent bg-accent/5"
+              )}
+              aria-label="Ask Lothin's AI Assistant"
+            >
+              <Sparkles size={15} />
+            </button>
             <DarkModeToggle />
             <button className="p-1.5 rounded text-ink hover:text-accent transition-colors"
               aria-label="Open menu" onClick={() => setMobileOpen(true)}>

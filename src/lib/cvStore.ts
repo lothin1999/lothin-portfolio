@@ -48,7 +48,7 @@ async function ensureDecrypted(data: any): Promise<CVData> {
   if (!result.references) result.references = [];
   if (!result.articles) result.articles = [];
   if (!result.adminSettings) result.adminSettings = (localCV as any).adminSettings || {};
-  
+
   return result;
 }
 
@@ -60,7 +60,7 @@ export async function getCVData(): Promise<CVData> {
   try {
     const context = await getCFContext();
     const env = context?.env as any;
-    const bucket = env?.PORTFOLIO_BUCKET as MinimalR2Bucket | undefined;
+    const bucket = env?.R2_BUCKET_NAME as MinimalR2Bucket | undefined;
     if (bucket) {
       const object = await bucket.get(R2_FILE_KEY);
       if (object) {
@@ -127,7 +127,7 @@ export async function saveCVData(data: CVData): Promise<void> {
   try {
     const context = await getCFContext();
     const env = context?.env as any;
-    const bucket = env?.PORTFOLIO_BUCKET as MinimalR2Bucket | undefined;
+    const bucket = env?.R2_BUCKET_NAME as MinimalR2Bucket | undefined;
     if (bucket) {
       await bucket.put(R2_FILE_KEY, JSON.stringify(updatedData));
       return;

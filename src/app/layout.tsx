@@ -11,6 +11,7 @@ import { CustomCursor } from "@/components/layout/CustomCursor";
 import { StatusBar } from "@/components/layout/StatusBar";
 import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
 import { SettingsModal } from "@/components/layout/SettingsModal";
+import { AIChatDrawer } from "@/components/layout/AIChatDrawer";
 import { AdminButton } from "@/components/admin/AdminButton";
 import { getCVData } from "@/lib/cvStore";
 import { buildMetadata, personJsonLd } from "@/lib/seo";
@@ -83,6 +84,7 @@ export default async function RootLayout({
                   <StatusBar />
                   <ShortcutsModal />
                   <SettingsModal />
+                  <AIChatDrawer />
                   <AdminButton />
                 </CVContentWrapper>
               </SmoothScrollProvider>
