@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   X, Plus, Trash2, Save, Upload, RefreshCw, KeyRound, Check,
 } from "lucide-react";
@@ -72,6 +72,14 @@ export function AdminEditModal({ onClose }: Props) {
 
   // Deep clone for editing
   const [draft, setDraft] = useState<CVData>(JSON.parse(JSON.stringify(cv)));
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
@@ -434,14 +442,21 @@ export function AdminEditModal({ onClose }: Props) {
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-6">
       <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-surface border border-rule rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div className="relative bg-surface border border-rule rounded-md shadow-2xl w-full max-w-4xl h-[85vh] max-h-[750px] min-h-[500px] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-rule shrink-0">
           <div>
             <p className="text-[14px] font-semibold text-ink">Edit CV</p>
             <p className="font-mono text-[10px] text-muted tracking-wide">Admin mode</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <a
+              href="/api/cv/download"
+              download
+              className="text-[12px] text-muted hover:text-ink border border-rule rounded px-2.5 py-1 transition-colors"
+            >
+              Download HTML
+            </a>
             <button onClick={handleLogout}
               className="text-[12px] text-muted hover:text-ink border border-rule rounded px-2.5 py-1 transition-colors">
               Logout
