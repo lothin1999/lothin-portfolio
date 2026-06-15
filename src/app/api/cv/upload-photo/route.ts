@@ -24,10 +24,21 @@ export async function POST(req: NextRequest) {
     const bucket = env?.PORTFOLIO_BUCKET;
 
     if (!bucket) {
-      return NextResponse.json(
-        { error: "Cloudflare R2 Bucket binding (PORTFOLIO_BUCKET) is not configured" },
-        { status: 500 }
-      );
+      // Fallback: Convert image to base64 Data URL when R2 bucket is not bound (local dev)
+      const formData = await req.formData();
+      const file = formData.get("image") as File | null;
+      if (!file) {
+        return NextResponse.json({ error: "No image provided" }, { status: 400 });
+      }
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = "";
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+      const dataUrl = `data:${file.type || "image/png"};base64,${base64}`;
+      return NextResponse.json({ url: dataUrl });
     }
 
     const formData = await req.formData();
