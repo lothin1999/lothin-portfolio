@@ -63,15 +63,15 @@ function MarkdownText({ text }: { text: string }) {
     level?: number;
     items?: string[];
   }[] = [];
-  
+
   const lines = text.split("\n");
   let inCodeBlock = false;
   let codeContent: string[] = [];
   let codeLang = "";
-  
+
   let currentListItems: string[] = [];
   let currentNumberedItems: string[] = [];
-  
+
   const flushLists = () => {
     if (currentListItems.length > 0) {
       blocks.push({ type: "list", content: "", items: currentListItems });
@@ -86,7 +86,7 @@ function MarkdownText({ text }: { text: string }) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
-    
+
     // Handle code block toggle
     if (trimmed.startsWith("```")) {
       if (inCodeBlock) {
@@ -106,7 +106,7 @@ function MarkdownText({ text }: { text: string }) {
       }
       continue;
     }
-    
+
     if (inCodeBlock) {
       codeContent.push(line);
       continue;
@@ -123,7 +123,7 @@ function MarkdownText({ text }: { text: string }) {
         }
       }
     }
-    
+
     // Handle bullet lists
     if (trimmed.startsWith("- ") || trimmed.startsWith("* ") || trimmed.startsWith("• ")) {
       if (currentNumberedItems.length > 0) {
@@ -133,7 +133,7 @@ function MarkdownText({ text }: { text: string }) {
       currentListItems.push(trimmed.slice(2));
       continue;
     }
-    
+
     // Handle numbered lists
     const numberedMatch = trimmed.match(/^\d+\.\s+(.*)/);
     if (numberedMatch) {
@@ -144,10 +144,10 @@ function MarkdownText({ text }: { text: string }) {
       currentNumberedItems.push(numberedMatch[1]);
       continue;
     }
-    
+
     // If we reach here, it's a regular line, flush lists
     flushLists();
-    
+
     // Handle headers
     if (trimmed.startsWith("### ")) {
       blocks.push({ type: "header", level: 3, content: trimmed.slice(4) });
@@ -161,22 +161,22 @@ function MarkdownText({ text }: { text: string }) {
       blocks.push({ type: "header", level: 1, content: trimmed.slice(2) });
       continue;
     }
-    
+
     // Handle empty line
     if (trimmed === "") {
       continue;
     }
-    
+
     // Regular text paragraph
     blocks.push({ type: "paragraph", content: line });
   }
-  
+
   // Clean up remaining open states
   flushLists();
   if (inCodeBlock && codeContent.length > 0) {
     blocks.push({ type: "code-block", content: codeContent.join("\n"), lang: codeLang });
   }
-  
+
   return (
     <div className="space-y-3 text-[13.5px] leading-relaxed text-ink2">
       {blocks.map((block, idx) => {
@@ -391,7 +391,7 @@ export function AIChatDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setAiOpen(false)}
-            className="fixed inset-0 bg-[#141313]/30 backdrop-blur-[4px] z-[240] cursor-pointer"
+            className="fixed inset-0 backdrop-blur-[4px] z-[240] cursor-pointer"
           />
 
           {/* Drawer container */}
@@ -452,7 +452,7 @@ export function AIChatDrawer() {
                 </button>
               </div>
             </header>            {/* Chat Area */}
-            <div 
+            <div
               data-lenis-prevent
               className="relative flex-1 overflow-y-auto overscroll-contain px-6 py-4 space-y-4 z-10"
             >
@@ -483,9 +483,9 @@ export function AIChatDrawer() {
                     <div className="flex flex-col gap-2">
                       {SUGGESTIONS.map((s, i) => (
                         <button
-                           key={i}
-                           onClick={() => handleSend(s)}
-                           className="w-full text-left px-3.5 py-2.5 border border-rule/50 hover:border-accent/50 bg-surface/50 hover:bg-accent/[0.02] rounded-xl text-[12.5px] font-sans text-ink2 hover:text-ink transition-all duration-200 hover:translate-x-1 flex items-center justify-between group cursor-pointer"
+                          key={i}
+                          onClick={() => handleSend(s)}
+                          className="w-full text-left px-3.5 py-2.5 border border-rule/50 hover:border-accent/50 bg-surface/50 hover:bg-accent/[0.02] rounded-xl text-[12.5px] font-sans text-ink2 hover:text-ink transition-all duration-200 hover:translate-x-1 flex items-center justify-between group cursor-pointer"
                         >
                           <span>{s}</span>
                           <span className="text-[10px] font-mono text-muted group-hover:text-accent opacity-0 group-hover:opacity-100 transition-all transform translate-x-1 group-hover:translate-x-0">
@@ -501,7 +501,7 @@ export function AIChatDrawer() {
                   {messages.map((m) => {
                     if (m.role === "system") {
                       return (
-                        <motion.div 
+                        <motion.div
                           key={m.id}
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
@@ -530,8 +530,8 @@ export function AIChatDrawer() {
                         <div
                           className={cn(
                             "w-7.5 h-7.5 rounded-full border border-rule flex items-center justify-center shrink-0 text-xs select-none shadow-sm transition-all",
-                            m.role === "user" 
-                              ? "bg-gradient-to-br from-accent to-accent/90 text-white border-accent" 
+                            m.role === "user"
+                              ? "bg-gradient-to-br from-accent to-accent/90 text-white border-accent"
                               : "bg-surface/60 dark:bg-surface/40 text-ink backdrop-blur-sm"
                           )}
                         >
@@ -545,9 +545,9 @@ export function AIChatDrawer() {
                             m.role === "user"
                               ? "bg-gradient-to-br from-accent to-accent/95 text-white rounded-tr-none shadow-[0_4px_12px_rgba(27,93,239,0.12)]"
                               : cn(
-                                  "bg-bg/40 dark:bg-surface/40 border border-rule/50 rounded-tl-none shadow-[0_4px_16px_rgba(0,0,0,0.02)] backdrop-blur-[2px] text-ink",
-                                  m.isError && "bg-accent-orange/5 border-accent-orange/20 text-accent-orange"
-                                )
+                                "bg-bg/40 dark:bg-surface/40 border border-rule/50 rounded-tl-none shadow-[0_4px_16px_rgba(0,0,0,0.02)] backdrop-blur-[2px] text-ink",
+                                m.isError && "bg-accent-orange/5 border-accent-orange/20 text-accent-orange"
+                              )
                           )}
                         >
                           {m.isError ? (
@@ -574,7 +574,7 @@ export function AIChatDrawer() {
 
                   {/* Typing State */}
                   {loading && (
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="flex gap-3 mr-auto max-w-[90%] font-sans"
