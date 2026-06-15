@@ -78,21 +78,33 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right side illustration glyph */}
+            {/* Right side illustration glyph / profile photo */}
             <div className="lg:col-span-4 flex justify-start lg:justify-end items-center h-full">
-              <div className="flex flex-col gap-3 p-6 border border-rule bg-surface rounded relative">
-                <Glyph
-                  pattern="111010111"
-                  hoverPattern="111111111"
-                  size={84}
-                  gap={4}
-                  color="var(--accent)"
-                  className="mx-auto"
-                />
-                <span className="font-mono text-[9px] text-muted text-center uppercase tracking-[2px] mt-2">
-                  // SYS.NODE.ACTIVE
-                </span>
-              </div>
+              {profile.photoUrl ? (
+                <div className="relative group p-1 border border-rule bg-surface rounded">
+                  <div className="w-48 h-48 overflow-hidden rounded relative">
+                    <img
+                      src={profile.photoUrl}
+                      alt={`${profile.name.first} ${profile.name.last}`}
+                      className="object-cover w-full h-full grayscale group-hover:grayscale-0 transition-all duration-300"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 p-6 border border-rule bg-surface rounded relative">
+                  <Glyph
+                    pattern="111010111"
+                    hoverPattern="111111111"
+                    size={84}
+                    gap={4}
+                    color="var(--accent)"
+                    className="mx-auto"
+                  />
+                  <span className="font-mono text-[9px] text-muted text-center uppercase tracking-[2px] mt-2">
+                    // SYS.NODE.ACTIVE
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

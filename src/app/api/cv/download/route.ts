@@ -130,7 +130,12 @@ export async function GET(req: NextRequest) {
     // Page 2 - Profile Photo
     let photoHtml = `<div class="photo-initials">${profile.name.first[0]}${profile.name.last[0]}</div>`;
     if (profile.photoUrl) {
-      photoHtml = `<img src="${profile.photoUrl}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+      let photoUrl = profile.photoUrl;
+      if (photoUrl.startsWith("/")) {
+        const origin = req.nextUrl.origin;
+        photoUrl = `${origin}${photoUrl}`;
+      }
+      photoHtml = `<img src="${photoUrl}" style="width: 100%; height: 100%; object-fit: cover;" />`;
     } else {
       photoHtml = `<img src="${defaultPhotoBase64}" style="width: 100%; height: 100%; object-fit: cover;" />`;
     }
