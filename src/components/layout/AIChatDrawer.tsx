@@ -16,11 +16,10 @@ interface Message {
 const SUGGESTIONS = [
   "What is Lothin's tech stack?",
   "Tell me about the AALL Rental project.",
-  "What POS systems has Lothin worked on?",
+  "What Hotel systems has Lothin worked on?",
   "How can I contact Lothin?",
 ];
 
-// Helper to format text with simple markdown parsing (bold, lists, inline code)
 function renderInline(str: string) {
   const parts = [];
   const regex = /(\*\*.*?\*\*|`.*?`)/g;
