@@ -56,7 +56,13 @@ function renderInline(str: string) {
 
 function MarkdownText({ text }: { text: string }) {
   // Parse the text into distinct semantic blocks to avoid formatting fragmentation
-  const blocks: { type: "paragraph" | "list" | "header" | "code-block"; content: string; lang?: string; level?: number; items?: string[] }[] = [];
+  const blocks: {
+    type: "paragraph" | "list" | "numbered-list" | "header" | "code-block";
+    content: string;
+    lang?: string;
+    level?: number;
+    items?: string[];
+  }[] = [];
   
   const lines = text.split("\n");
   let inCodeBlock = false;
@@ -64,7 +70,19 @@ function MarkdownText({ text }: { text: string }) {
   let codeLang = "";
   
   let currentListItems: string[] = [];
+  let currentNumberedItems: string[] = [];
   
+  const flushLists = () => {
+    if (currentListItems.length > 0) {
+      blocks.push({ type: "list", content: "", items: currentListItems });
+      currentListItems = [];
+    }
+    if (currentNumberedItems.length > 0) {
+      blocks.push({ type: "numbered-list", content: "", items: currentNumberedItems });
+      currentNumberedItems = [];
+    }
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
@@ -82,12 +100,7 @@ function MarkdownText({ text }: { text: string }) {
         codeLang = "";
         inCodeBlock = false;
       } else {
-        // Start of code block
-        // Flush active list first
-        if (currentListItems.length > 0) {
-          blocks.push({ type: "list", content: "", items: currentListItems });
-          currentListItems = [];
-        }
+        flushLists();
         inCodeBlock = true;
         codeLang = trimmed.slice(3).trim();
       }
@@ -98,17 +111,42 @@ function MarkdownText({ text }: { text: string }) {
       codeContent.push(line);
       continue;
     }
+
+    // Handle Setext underlines (e.g., === or ---)
+    if (/^[=-]{3,}$/.test(trimmed)) {
+      if (blocks.length > 0) {
+        const lastBlock = blocks[blocks.length - 1];
+        if (lastBlock.type === "paragraph") {
+          lastBlock.type = "header";
+          lastBlock.level = trimmed.startsWith("=") ? 2 : 3;
+          continue;
+        }
+      }
+    }
     
     // Handle bullet lists
-    if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+    if (trimmed.startsWith("- ") || trimmed.startsWith("* ") || trimmed.startsWith("• ")) {
+      if (currentNumberedItems.length > 0) {
+        blocks.push({ type: "numbered-list", content: "", items: currentNumberedItems });
+        currentNumberedItems = [];
+      }
       currentListItems.push(trimmed.slice(2));
       continue;
-    } else {
+    }
+    
+    // Handle numbered lists
+    const numberedMatch = trimmed.match(/^\d+\.\s+(.*)/);
+    if (numberedMatch) {
       if (currentListItems.length > 0) {
         blocks.push({ type: "list", content: "", items: currentListItems });
         currentListItems = [];
       }
+      currentNumberedItems.push(numberedMatch[1]);
+      continue;
     }
+    
+    // If we reach here, it's a regular line, flush lists
+    flushLists();
     
     // Handle headers
     if (trimmed.startsWith("### ")) {
@@ -134,9 +172,7 @@ function MarkdownText({ text }: { text: string }) {
   }
   
   // Clean up remaining open states
-  if (currentListItems.length > 0) {
-    blocks.push({ type: "list", content: "", items: currentListItems });
-  }
+  flushLists();
   if (inCodeBlock && codeContent.length > 0) {
     blocks.push({ type: "code-block", content: codeContent.join("\n"), lang: codeLang });
   }
@@ -165,6 +201,14 @@ function MarkdownText({ text }: { text: string }) {
                   <li key={itemIdx}>{renderInline(item)}</li>
                 ))}
               </ul>
+            );
+          case "numbered-list":
+            return (
+              <ol key={idx} className="list-decimal pl-5 space-y-1.5 my-2.5 text-ink2">
+                {block.items?.map((item, itemIdx) => (
+                  <li key={itemIdx}>{renderInline(item)}</li>
+                ))}
+              </ol>
             );
           case "header":
             if (block.level === 3) {
@@ -407,10 +451,11 @@ export function AIChatDrawer() {
                   <X size={16} />
                 </button>
               </div>
-            </header>
-
-            {/* Chat Area */}
-            <div className="relative flex-1 overflow-y-auto overscroll-contain px-6 py-4 space-y-4 z-10">
+            </header>            {/* Chat Area */}
+            <div 
+              data-lenis-prevent
+              className="relative flex-1 overflow-y-auto overscroll-contain px-6 py-4 space-y-4 z-10"
+            >
               {messages.length === 0 ? (
                 <div className="h-full flex flex-col justify-center py-8 text-center space-y-6">
                   <div className="flex justify-center">
@@ -438,9 +483,9 @@ export function AIChatDrawer() {
                     <div className="flex flex-col gap-2">
                       {SUGGESTIONS.map((s, i) => (
                         <button
-                          key={i}
-                          onClick={() => handleSend(s)}
-                          className="w-full text-left px-3.5 py-2.5 border border-rule/50 hover:border-accent/50 bg-surface/50 hover:bg-accent/[0.02] rounded-xl text-[12.5px] font-sans text-ink2 hover:text-ink transition-all duration-200 hover:translate-x-1 flex items-center justify-between group cursor-pointer"
+                           key={i}
+                           onClick={() => handleSend(s)}
+                           className="w-full text-left px-3.5 py-2.5 border border-rule/50 hover:border-accent/50 bg-surface/50 hover:bg-accent/[0.02] rounded-xl text-[12.5px] font-sans text-ink2 hover:text-ink transition-all duration-200 hover:translate-x-1 flex items-center justify-between group cursor-pointer"
                         >
                           <span>{s}</span>
                           <span className="text-[10px] font-mono text-muted group-hover:text-accent opacity-0 group-hover:opacity-100 transition-all transform translate-x-1 group-hover:translate-x-0">
@@ -456,17 +501,26 @@ export function AIChatDrawer() {
                   {messages.map((m) => {
                     if (m.role === "system") {
                       return (
-                        <div key={m.id} className="flex justify-center my-1.5 w-full">
+                        <motion.div 
+                          key={m.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex justify-center my-1.5 w-full"
+                        >
                           <div className="px-3.5 py-2 rounded-xl bg-tag-bg border border-rule/40 text-[11px] font-mono text-ink2 flex items-center gap-2 max-w-[95%] shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
                             <RefreshCw size={11} className="text-accent animate-spin" style={{ animationDuration: '3s' }} />
                             <span>{m.content}</span>
                           </div>
-                        </div>
+                        </motion.div>
                       );
                     }
                     return (
-                      <div
+                      <motion.div
                         key={m.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
                         className={cn(
                           "flex gap-3 max-w-[90%]",
                           m.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
@@ -478,7 +532,7 @@ export function AIChatDrawer() {
                             "w-7.5 h-7.5 rounded-full border border-rule flex items-center justify-center shrink-0 text-xs select-none shadow-sm transition-all",
                             m.role === "user" 
                               ? "bg-gradient-to-br from-accent to-accent/90 text-white border-accent" 
-                              : "bg-surface text-ink"
+                              : "bg-surface/60 dark:bg-surface/40 text-ink backdrop-blur-sm"
                           )}
                         >
                           {m.role === "user" ? <User size={12} /> : <Bot size={12} />}
@@ -491,7 +545,7 @@ export function AIChatDrawer() {
                             m.role === "user"
                               ? "bg-gradient-to-br from-accent to-accent/95 text-white rounded-tr-none shadow-[0_4px_12px_rgba(27,93,239,0.12)]"
                               : cn(
-                                  "bg-surface border border-rule rounded-tl-none shadow-[0_4px_12px_rgba(0,0,0,0.02)]",
+                                  "bg-bg/40 dark:bg-surface/40 border border-rule/50 rounded-tl-none shadow-[0_4px_16px_rgba(0,0,0,0.02)] backdrop-blur-[2px] text-ink",
                                   m.isError && "bg-accent-orange/5 border-accent-orange/20 text-accent-orange"
                                 )
                           )}
@@ -514,22 +568,26 @@ export function AIChatDrawer() {
                             <MarkdownText text={m.content} />
                           )}
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
 
                   {/* Typing State */}
                   {loading && (
-                    <div className="flex gap-3 mr-auto max-w-[90%] font-sans">
-                      <div className="w-7.5 h-7.5 rounded-full border border-rule flex items-center justify-center bg-surface text-ink shrink-0 shadow-sm">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex gap-3 mr-auto max-w-[90%] font-sans"
+                    >
+                      <div className="w-7.5 h-7.5 rounded-full border border-rule flex items-center justify-center bg-surface/60 dark:bg-surface/40 text-ink shrink-0 shadow-sm backdrop-blur-sm">
                         <Bot size={12} />
                       </div>
-                      <div className="bg-surface border border-rule rounded-2xl rounded-tl-none px-4 py-3 shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex items-center gap-1.5">
+                      <div className="bg-bg/40 dark:bg-surface/40 border border-rule/50 rounded-2xl rounded-tl-none px-4 py-3 shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex items-center gap-1.5 backdrop-blur-[2px]">
                         <span className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce [animation-delay:-0.3s]" />
                         <span className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce [animation-delay:-0.15s]" />
                         <span className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce" />
                       </div>
-                    </div>
+                    </motion.div>
                   )}
 
                   <div ref={messagesEndRef} />
