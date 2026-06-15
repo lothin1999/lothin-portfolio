@@ -8,6 +8,14 @@ export function Footer() {
   const pathname = usePathname();
   const { cv } = useCVData();
   const { profile } = cv;
+  const navLinks = cv.adminSettings?.navLinks || [
+    { href: "/", label: "Home" },
+    { href: "/about", label: "About" },
+    { href: "/portfolio", label: "Work" },
+    { href: "/services", label: "Services" },
+    { href: "/articles", label: "Writing" },
+    { href: "/contact", label: "Reach Out" },
+  ];
 
   if (pathname === "/edit") return null;
 
@@ -34,36 +42,13 @@ export function Footer() {
             <div className="flex flex-col gap-3">
               <h4 className="font-mono text-[11px] uppercase tracking-wider text-muted">// Index</h4>
               <ul className="flex flex-col gap-2 list-none" role="list">
-                <li>
-                  <Link href="/" className="font-sans text-xs text-ink hover:text-accent transition-colors">
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/about" className="font-sans text-xs text-ink hover:text-accent transition-colors">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/portfolio" className="font-sans text-xs text-ink hover:text-accent transition-colors">
-                    Work
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/services" className="font-sans text-xs text-ink hover:text-accent transition-colors">
-                    Services
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/articles" className="font-sans text-xs text-ink hover:text-accent transition-colors">
-                    Writing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="font-sans text-xs text-ink hover:text-accent transition-colors">
-                    Reach Out
-                  </Link>
-                </li>
+                {navLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="font-sans text-xs text-ink hover:text-accent transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 

@@ -52,7 +52,7 @@ export default function ContactPage() {
             Contact
           </h1>
           <p className="text-xs font-mono text-muted uppercase tracking-[2px] mt-4">
-            // establish.connection · socket.handshake · channel.open
+            {cv.adminSettings?.contactSubtext || "// establish.connection · socket.handshake · channel.open"}
           </p>
         </div>
       </header>
@@ -94,7 +94,7 @@ export default function ContactPage() {
           </div>
 
           <p className="text-[14.5px] text-ink2 leading-relaxed font-sans font-light max-w-xl mb-10">
-            Let&apos;s build something stable together. You can reach out through any of these communication channels, and I&apos;ll get back to you within 2 business days.
+            {cv.adminSettings?.contactIntro || "Let's build something stable together. You can reach out through any of these communication channels, and I'll get back to you within 2 business days."}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -177,7 +177,7 @@ export default function ContactPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
+            {(cv.adminSettings?.contactSteps || [
               {
                 step: "01",
                 title: "Review & Response",
@@ -191,9 +191,9 @@ export default function ContactPage() {
               {
                 step: "03",
                 title: "Proposal or Reference",
-                desc: "I&apos;ll send an execution proposal details document mapping out dependencies and scopes. If we are not a fit, I&apos;ll refer you to other specialists.",
+                desc: "I'll send an execution proposal details document mapping out dependencies and scopes. If we are not a fit, I'll refer you to other specialists.",
               },
-            ].map((p) => (
+            ]).map((p) => (
               <div key={p.step} className="border border-rule bg-surface p-5 rounded hover:border-ink transition-colors flex flex-col">
                 <span className="font-mono text-[24px] text-accent font-semibold mb-2">{p.step}</span>
                 <h3 className="font-serif text-lg text-ink font-semibold mb-2">{p.title}</h3>

@@ -123,7 +123,7 @@ export default function HomePage() {
           </div>
 
           <p className="text-[14.5px] text-ink2 leading-relaxed font-sans font-light max-w-2xl mb-10">
-            Full-stack complexity doesn&apos;t announce itself. It piles up quietly until shipping simple updates feels like a battle.
+            {cv.adminSettings?.homeProblemIntro || "Full-stack complexity doesn't announce itself. It piles up quietly until shipping simple updates feels like a battle."}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -174,12 +174,12 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-8 space-y-4 text-[14.5px] text-ink2 font-sans font-light leading-relaxed">
-              <p>
-                I&apos;m a Full-Stack Web Developer based in Phnom Penh. I help teams resolve system complexity so their platforms can scale.
-              </p>
-              <p>
-                I started in Cambodia, building CRM systems, real-time billiard table status trackers, and loan calculators. Later, I architected nationwide rental marketplaces and migrated legacy POS platforms through multiple major Nuxt and backend framework shifts.
-              </p>
+              {(cv.adminSettings?.homeAboutStory || [
+                "I'm a Full-Stack Web Developer based in Phnom Penh. I help teams resolve system complexity so their platforms can scale.",
+                "I started in Cambodia, building CRM systems, real-time billiard table status trackers, and loan calculators. Later, I architected nationwide rental marketplaces and migrated legacy POS platforms through multiple major Nuxt and backend framework shifts."
+              ]).map((para, index) => (
+                <p key={index}>{para}</p>
+              ))}
               <Link href="/about" className="inline-flex items-center gap-1.5 font-mono text-xs text-accent hover:text-accent-orange link-underline mt-2">
                 More about me <span>→</span>
               </Link>
@@ -372,16 +372,16 @@ export default function HomePage() {
         <div className="max-w-xl mx-auto px-6 flex flex-col items-center gap-4">
           <Glyph pattern="010111010" hoverPattern="111111111" size={42} gap={3} color="var(--accent-orange)" />
           <h2 id="talk-title" className="font-serif text-[32px] text-ink leading-tight mt-2">
-            Let&apos;s Talk
+            {cv.adminSettings?.homeCta?.title || "Let's Talk"}
           </h2>
           <p className="text-[14px] text-ink2 leading-relaxed font-sans font-light max-w-sm">
-            I take on limited clients at a time so I can give each project real, focused attention. If something here resonated, tell me what&apos;s broken.
+            {cv.adminSettings?.homeCta?.desc || "I take on limited clients at a time so I can give each project real, focused attention. If something here resonated, tell me what's broken."}
           </p>
           <Link
-            href="/contact"
+            href={cv.adminSettings?.homeCta?.buttonHref || "/contact"}
             className="mt-4 px-6 py-2.5 font-mono text-[11.5px] uppercase tracking-wider text-ink border border-rule hover:border-ink rounded bg-surface hover:bg-[var(--color-surface-subtle)] transition-all inline-block"
           >
-            Tell Me What&apos;s Broken
+            {cv.adminSettings?.homeCta?.buttonText || "Tell Me What's Broken"}
           </Link>
         </div>
       </section>

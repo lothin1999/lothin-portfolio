@@ -352,16 +352,16 @@ export default async function AboutPage() {
         <div className="max-w-md mx-auto px-6 flex flex-col items-center gap-4">
           <Glyph pattern="010111010" hoverPattern="111111111" size={42} gap={3} color="var(--accent)" />
           <h2 className="font-serif text-[28px] text-ink leading-tight mt-2">
-            Want to see how we can build together?
+            {cv.adminSettings?.aboutCta?.title || "Want to see how we can build together?"}
           </h2>
           <p className="text-[13.5px] text-ink2 leading-relaxed font-sans font-light max-w-sm">
-            I take on select clients at a time. If your team has core system debt or framework integration issues, reach out.
+            {cv.adminSettings?.aboutCta?.desc || "I take on select clients at a time. If your team has core system debt or framework integration issues, reach out."}
           </p>
           <Link
-            href="/contact"
+            href={cv.adminSettings?.aboutCta?.buttonHref || "/contact"}
             className="mt-4 px-6 py-2.5 font-mono text-[11.5px] uppercase tracking-wider text-ink border border-rule hover:border-ink rounded bg-surface hover:bg-[var(--color-surface-subtle)] transition-all inline-block"
           >
-            Get in touch
+            {cv.adminSettings?.aboutCta?.buttonText || "Get in touch"}
           </Link>
         </div>
       </section>

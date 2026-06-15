@@ -36,7 +36,7 @@ export default async function ServicesPage() {
             Services
           </h1>
           <p className="text-xs font-mono text-muted uppercase tracking-[2px] mt-4">
-            // full-stack.consulting · tech.advisory · system.integrations
+            {cv.adminSettings?.servicesSubtext || "// full-stack.consulting · tech.advisory · system.integrations"}
           </p>
         </div>
       </header>
@@ -195,16 +195,16 @@ export default async function ServicesPage() {
         <div className="max-w-xl mx-auto px-6 flex flex-col items-center gap-4">
           <Glyph pattern="010111010" hoverPattern="111111111" size={42} gap={3} color="var(--accent-orange)" />
           <h2 className="font-serif text-[28px] text-ink leading-tight mt-2">
-            Start with a conversation
+            {cv.adminSettings?.servicesCta?.title || "Start with a conversation"}
           </h2>
           <p className="text-[13.5px] text-ink2 leading-relaxed font-sans font-light max-w-sm">
-            Not sure which engagement fit your project? That is totally fine. We can discuss your current technical hurdles and figure it out together.
+            {cv.adminSettings?.servicesCta?.desc || "Not sure which engagement fit your project? That is totally fine. We can discuss your current technical hurdles and figure it out together."}
           </p>
           <Link
-            href="/contact"
+            href={cv.adminSettings?.servicesCta?.buttonHref || "/contact"}
             className="mt-4 px-6 py-2.5 font-mono text-[11.5px] uppercase tracking-wider text-ink border border-rule hover:border-ink rounded bg-surface hover:bg-[var(--color-surface-subtle)] transition-all inline-block"
           >
-            Schedule a conversation
+            {cv.adminSettings?.servicesCta?.buttonText || "Schedule a conversation"}
           </Link>
         </div>
       </section>

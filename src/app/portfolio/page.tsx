@@ -47,7 +47,7 @@ export default async function PortfolioPage() {
             Work
           </h1>
           <p className="text-xs font-mono text-muted uppercase tracking-[2px] mt-4">
-            // production.systems · performance.caching · edge.infrastructure
+            {cv.adminSettings?.portfolioSubtext || "// production.systems · performance.caching · edge.infrastructure"}
           </p>
         </div>
       </header>
@@ -55,15 +55,15 @@ export default async function PortfolioPage() {
       {/* Banner */}
       <section className="border-b border-rule bg-surface">
         <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { value: "3+", label: "Years Experience" },
-            { value: "10+", label: "Projects Live" },
-            { value: "3", label: "Nuxt Migrations" },
-            { value: "Edge SSR", label: "Runtime Target" },
-          ].map((stat) => (
+          {(cv.adminSettings?.portfolioStats || [
+            { val: "3+", label: "Years Experience" },
+            { val: "10+", label: "Projects Live" },
+            { val: "3", label: "Nuxt Migrations" },
+            { val: "Edge SSR", label: "Runtime Target" },
+          ]).map((stat) => (
             <div key={stat.label} className="flex flex-col gap-1">
               <span className="font-serif text-[clamp(28px,4vw,40px)] text-ink leading-none">
-                {stat.value}
+                {stat.val}
               </span>
               <span className="font-mono text-[10.5px] tracking-[1.5px] uppercase text-muted">
                 {stat.label}
@@ -157,7 +157,7 @@ export default async function PortfolioPage() {
             // technical.ecosystems
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
+            {(cv.adminSettings?.portfolioEcosystems || [
               {
                 title: "Vue & Nuxt Architecture",
                 desc: "Migrating enterprise-scale applications through Nuxt versions 2, 3, and 4. Specialized in composable structure, server-side caching policies, and performance validation.",
@@ -170,7 +170,7 @@ export default async function PortfolioPage() {
                 title: "Backend Frameworks & databases",
                 desc: "Setting up NestJS, Laravel, and Spring Boot REST APIs with PostgreSQL, MySQL, and database abstractions (Prisma). Handling authentication payloads securely.",
               },
-            ].map((item) => (
+            ]).map((item) => (
               <div key={item.title} className="border border-rule bg-surface p-5 rounded hover:border-ink transition-colors duration-200">
                 <h3 className="font-serif text-lg text-ink font-semibold mb-2">{item.title}</h3>
                 <p className="text-[13px] text-ink2 leading-relaxed font-sans font-light">{item.desc}</p>
@@ -185,16 +185,16 @@ export default async function PortfolioPage() {
         <div className="max-w-xl mx-auto px-6 flex flex-col items-center gap-4">
           <Glyph pattern="010111010" hoverPattern="111111111" size={42} gap={3} color="var(--accent-orange)" />
           <h2 className="font-serif text-[28px] text-ink leading-tight mt-2">
-            Interested in building together?
+            {cv.adminSettings?.portfolioCta?.title || "Interested in building together?"}
           </h2>
           <p className="text-[13.5px] text-ink2 leading-relaxed font-sans font-light max-w-sm">
-            I take on select project scopes at a time. If you have code architecture complexity or framework migration needs, let&apos;s talk.
+            {cv.adminSettings?.portfolioCta?.desc || "I take on select project scopes at a time. If you have code architecture complexity or framework migration needs, let's talk."}
           </p>
           <Link
-            href="/contact"
+            href={cv.adminSettings?.portfolioCta?.buttonHref || "/contact"}
             className="mt-4 px-6 py-2.5 font-mono text-[11.5px] uppercase tracking-wider text-ink border border-rule hover:border-ink rounded bg-surface hover:bg-[var(--color-surface-subtle)] transition-all inline-block"
           >
-            Schedule a conversation
+            {cv.adminSettings?.portfolioCta?.buttonText || "Schedule a conversation"}
           </Link>
         </div>
       </section>

@@ -7,8 +7,9 @@ import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
 import { DarkModeToggle } from "@/components/ui/DarkModeToggle";
 import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar";
+import { useCVData } from "@/hooks/useCVData";
 
-const navLinks = [
+const DEFAULT_NAV_LINKS = [
   { href: "/", label: "Home", sectionId: "home", pathMatch: "/" },
   { href: "/about", label: "About", sectionId: "about", pathMatch: "/about" },
   { href: "/portfolio", label: "Work", sectionId: "work", pathMatch: "/portfolio" },
@@ -18,6 +19,8 @@ const navLinks = [
 ];
 
 export function Navbar() {
+  const { cv } = useCVData();
+  const navLinks = cv.adminSettings?.navLinks || DEFAULT_NAV_LINKS;
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

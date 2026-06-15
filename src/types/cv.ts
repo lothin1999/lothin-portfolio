@@ -60,6 +60,13 @@ export interface Article {
   readingTime?: string;
 }
 
+export interface NavLink {
+  href: string;
+  label: string;
+  sectionId: string;
+  pathMatch: string;
+}
+
 export interface AdminSettings {
   homeIntro?: string;
   homeProblems?: { num: string; title: string; desc: string }[];
@@ -74,6 +81,20 @@ export interface AdminSettings {
   servicesOfferings?: { label: string; title: string; desc: string }[];
   servicesWhy?: { title: string; desc: string }[];
   servicesEngagement?: { phase: string; title: string; desc: string; duration: string }[];
+  navLinks?: NavLink[];
+  homeProblemIntro?: string;
+  homeAboutStory?: string[];
+  homeCta?: { title: string; desc: string; buttonText: string; buttonHref: string };
+  aboutCta?: { title: string; desc: string; buttonText: string; buttonHref: string };
+  portfolioSubtext?: string;
+  portfolioStats?: { val: string; label: string }[];
+  portfolioEcosystems?: { title: string; desc: string }[];
+  portfolioCta?: { title: string; desc: string; buttonText: string; buttonHref: string };
+  servicesSubtext?: string;
+  servicesCta?: { title: string; desc: string; buttonText: string; buttonHref: string };
+  contactSubtext?: string;
+  contactIntro?: string;
+  contactSteps?: { step: string; title: string; desc: string }[];
 }
 
 export interface CVData {
@@ -86,3 +107,4 @@ export interface CVData {
   adminSettings?: AdminSettings;
   updatedAt?: string;
 }
+
