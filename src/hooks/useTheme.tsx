@@ -66,28 +66,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         Math.hypot(W - ox, H - oy),
       );
 
+      // Set CSS custom properties for the transition coordinates and radius
+      document.documentElement.style.setProperty("--ripple-x", `${ox}px`);
+      document.documentElement.style.setProperty("--ripple-y", `${oy}px`);
+      document.documentElement.style.setProperty("--ripple-max-radius", `${maxR}px`);
+
       document.documentElement.classList.add("theme-transitioning");
 
       const transition = doc.startViewTransition(() => {
         flushSync(() => {
           onMidpoint();
         });
-      });
-
-      transition.ready.then(() => {
-        document.documentElement.animate(
-          {
-            clipPath: [
-              `circle(0px at ${ox}px ${oy}px)`,
-              `circle(${maxR}px at ${ox}px ${oy}px)`,
-            ],
-          },
-          {
-            duration: 500,
-            easing: "ease-in-out",
-            pseudoElement: "::view-transition-new(root)",
-          }
-        );
       });
 
       transition.finished.finally(() => {

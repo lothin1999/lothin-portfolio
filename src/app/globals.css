@@ -540,6 +540,12 @@ a.link-underline:hover::after {
 }
 
 /* View Transitions & Ripple Effect */
+@property --ripple-radius {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -548,10 +554,46 @@ a.link-underline:hover::after {
 
 ::view-transition-new(root) {
   z-index: 9999;
+  -webkit-mask-image: radial-gradient(
+    circle at var(--ripple-x, 90%) var(--ripple-y, 28px),
+    #000 0%,
+    #000 var(--ripple-radius, 0px),
+    transparent calc(var(--ripple-radius, 0px) + 200px)
+  );
+  mask-image: radial-gradient(
+    circle at var(--ripple-x, 90%) var(--ripple-y, 28px),
+    #000 0%,
+    #000 var(--ripple-radius, 0px),
+    transparent calc(var(--ripple-radius, 0px) + 200px)
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  animation: ripple-fade-reveal 650ms cubic-bezier(0.3, 0.8, 0.3, 1) forwards,
+             fade-in 650ms cubic-bezier(0.3, 0.8, 0.3, 1) forwards;
 }
 
 ::view-transition-old(root) {
   z-index: 1;
+}
+
+@keyframes ripple-fade-reveal {
+  from {
+    --ripple-radius: 0px;
+  }
+  to {
+    --ripple-radius: var(--ripple-max-radius, 2000px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Disable normal transitions when View Transitions are active */
