@@ -4,7 +4,7 @@ import { getCVData } from "@/lib/cvStore";
 declare const process: {
   env: {
     CLOUDFLARE_ACCOUNT_ID?: string;
-    CLOUDFLARE_API_TOKEN?: string;
+    CLOUDFLARE_AI_API_TOKEN?: string;
     [key: string]: string | undefined;
   };
 };
@@ -14,13 +14,13 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+  const apiToken = process.env.CLOUDFLARE_AI_API_TOKEN;
 
   if (!accountId || !apiToken || apiToken === "your_token_here") {
     return NextResponse.json(
       {
         error: "Missing Cloudflare Credentials",
-        message: "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN must be configured in your .env file. Please generate a valid Workers AI token and replace the placeholder value.",
+        message: "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_API_TOKEN must be configured in your .env file. Please generate a valid Workers AI token and replace the placeholder value.",
       },
       { status: 500 }
     );

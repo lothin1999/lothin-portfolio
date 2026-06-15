@@ -507,7 +507,7 @@ export function AIChatDrawer() {
                               </p>
                               <div className="bg-surface/60 border border-rule-solid p-2.5 rounded-lg text-[11px] font-mono text-ink2 leading-normal mt-2 select-all">
                                 To resolve this, create or update your <code className="bg-tag-bg px-1 rounded">.env</code> with:<br />
-                                <span className="text-ink font-semibold">CLOUDFLARE_API_TOKEN=your_token_here</span>
+                                <span className="text-ink font-semibold">CLOUDFLARE_AI_API_TOKEN=your_token_here</span>
                               </div>
                             </div>
                           ) : (
