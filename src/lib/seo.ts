@@ -28,7 +28,7 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
   const { profile } = cvData;
   const fullName = `${profile.name.first} ${profile.name.last}`;
   const reverseName = `${profile.name.last} ${profile.name.first}`; // Common name order in Cambodia
-  const defaultTitle = `${reverseName} | Senior Full-Stack Developer (Laravel, NestJS, Spring Boot, Nuxt)`;
+  const defaultTitle = `${reverseName} | Full-Stack Developer (Laravel, NestJS, Spring Boot, Nuxt)`;
   const defaultDesc = `${profile.summary.slice(0, 155)}…`;
 
   const title = page?.title ? `${page.title} — ${reverseName}` : defaultTitle;
@@ -192,8 +192,8 @@ export function websiteJsonLd(): object {
     "@type": "WebSite",
     "@id": `${SITE_URL}/#website`,
     url: SITE_URL,
-    name: "Lothin Thoeun | Senior Full-Stack Developer",
-    description: "Professional portfolio of Lothin Thoeun, Senior Full-Stack Developer specialized in Vue/Nuxt, React/Next.js, NestJS, Laravel, and Spring Boot.",
+    name: "Lothin Thoeun | Full-Stack Developer",
+    description: "Professional portfolio of Lothin Thoeun, Full-Stack Developer specialized in Vue/Nuxt, React/Next.js, NestJS, Laravel, and Spring Boot.",
     publisher: {
       "@id": `${SITE_URL}/#person`
     },
@@ -356,7 +356,7 @@ export function contactJsonLd(cv: any): object {
     "@id": `${SITE_URL}/contact/#webpage`,
     "url": `${SITE_URL}/contact`,
     "name": `Contact ${reverseName}`,
-    "description": `Get in touch with Lothin Thoeun, Senior Full-Stack Developer in Phnom Penh, Cambodia, for custom development and consulting.`,
+    "description": `Get in touch with Lothin Thoeun, Full-Stack Developer in Phnom Penh, Cambodia, for custom development and consulting.`,
     "mainEntity": {
       "@id": `${SITE_URL}/#person`
     }
