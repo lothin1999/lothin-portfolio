@@ -7,6 +7,7 @@ import { ScrambleText } from "@/components/ui/ScrambleText";
 import { Glyph } from "@/components/ui/Glyph";
 import { Chip } from "@/components/ui/Chip";
 import { ArrowUpRight } from "lucide-react";
+import { Carousel } from "@/components/ui/Carousel";
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
@@ -146,6 +147,12 @@ export default async function PortfolioPage() {
                         </li>
                       ))}
                     </ul>
+
+                    {exp.images && exp.images.length > 0 && (
+                      <div className="mb-6">
+                        <Carousel images={exp.images} />
+                      </div>
+                    )}
 
                     <div className="flex flex-wrap gap-1.5 mt-auto">
                       {exp.tags.map((tag) => (

@@ -12,6 +12,8 @@ export const defaultCV: CVData = {
     telegramHandle: "",
     linkedin: "",
     phones: [],
+    photoUrl: "",
+    cvPdfUrl: "",
     languages: [],
   },
   experiences: [],

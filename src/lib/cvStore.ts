@@ -42,7 +42,14 @@ async function ensureDecrypted(data: any): Promise<CVData> {
   // Ensure robust properties to prevent crashes on outdated schema shapes
   const result = { ...decrypted } as CVData;
   if (!result.profile) result.profile = (localCV as any).profile || {};
-  if (!result.experiences) result.experiences = [];
+  if (!result.experiences) {
+    result.experiences = [];
+  } else {
+    result.experiences = result.experiences.map((exp: any) => ({
+      ...exp,
+      images: exp.images || [],
+    }));
+  }
   if (!result.educations) result.educations = [];
   if (!result.skillGroups) result.skillGroups = [];
   if (!result.references) result.references = [];

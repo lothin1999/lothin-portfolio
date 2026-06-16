@@ -14,6 +14,7 @@ export interface Profile {
   linkedin: string;
   phones: string[];
   photoUrl?: string;
+  cvPdfUrl?: string;
   languages: { name: string; level: string }[];
 }
 
@@ -25,6 +26,7 @@ export interface Experience {
   period: string;
   bullets: string[];
   tags: string[];
+  images?: string[];
 }
 
 export interface SkillGroup {

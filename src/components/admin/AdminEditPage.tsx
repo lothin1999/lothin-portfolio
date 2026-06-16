@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import type { CVData, Article } from "@/types/cv";
 import { useCVData } from "@/hooks/useCVData";
+import { DragDropUploader } from "./DragDropUploader";
 
 // ── Tiny helpers ──────────────────────────────────────────────────────────────
 function Field({
@@ -232,7 +233,7 @@ export function AdminEditPage() {
 
   // Deep clone for editing
   const [draft, setDraft] = useState<CVData>({
-    profile: { name: { first: "", last: "" }, title: "", tagline: "", summary: "", location: "", website: "", telegram: "", telegramHandle: "", linkedin: "", phones: [], languages: [] },
+    profile: { name: { first: "", last: "" }, title: "", tagline: "", summary: "", location: "", website: "", telegram: "", telegramHandle: "", linkedin: "", phones: [], cvPdfUrl: "", languages: [] },
     experiences: [],
     skillGroups: [],
     educations: [],
@@ -247,6 +248,13 @@ export function AdminEditPage() {
       const cloned = JSON.parse(JSON.stringify(cv));
       if (!cloned.adminSettings) cloned.adminSettings = {};
       if (!cloned.articles) cloned.articles = [];
+      if (!cloned.profile.cvPdfUrl) cloned.profile.cvPdfUrl = "";
+      if (cloned.experiences) {
+        cloned.experiences = cloned.experiences.map((exp: any) => ({
+          ...exp,
+          images: exp.images || []
+        }));
+      }
       setDraft(cloned);
     }
   }, [cv]);
@@ -518,30 +526,24 @@ export function AdminEditPage() {
           onChange={(v) => setDraft(d => { const p = [...d.profile.phones]; p[1] = v; return { ...d, profile: { ...d.profile, phones: p } }; })} />
       </div>
 
-      <SectionHeading>Photo</SectionHeading>
-      <div className="flex items-center gap-4">
-        {draft.profile.photoUrl && (
-          <img src={draft.profile.photoUrl} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-rule" />
-        )}
-        <div className="flex flex-col gap-2">
-          <button
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-rule rounded text-[12px] text-ink hover:bg-tag-bg transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            {uploading ? <RefreshCw size={13} className="animate-spin" /> : <Upload size={13} />}
-            {uploading ? "Uploading…" : "Upload photo"}
-          </button>
-          {draft.profile.photoUrl && (
-            <button
-              onClick={() => setDraft(d => ({ ...d, profile: { ...d.profile, photoUrl: "" } }))}
-              className="text-[11px] text-muted hover:text-red-500 transition-colors text-left"
-            >
-              Remove photo
-            </button>
-          )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-rule">
+        <div>
+          <DragDropUploader
+            label="Profile Photo"
+            accept="image/*"
+            compressMaxWidth={400}
+            value={draft.profile.photoUrl || ""}
+            onChange={(url) => setDraft(d => ({ ...d, profile: { ...d.profile, photoUrl: url } }))}
+          />
         </div>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+        <div>
+          <DragDropUploader
+            label="CV PDF Document"
+            accept="application/pdf"
+            value={draft.profile.cvPdfUrl || ""}
+            onChange={(url) => setDraft(d => ({ ...d, profile: { ...d.profile, cvPdfUrl: url } }))}
+          />
+        </div>
       </div>
 
       <SectionHeading>Languages</SectionHeading>
@@ -615,6 +617,21 @@ export function AdminEditPage() {
             <input type="text" value={exp.tags.join(", ")}
               onChange={(e) => setDraft(d => { const ex = [...d.experiences]; ex[i] = { ...ex[i], tags: e.target.value.split(",").map(s => s.trim()).filter(Boolean) }; return { ...d, experiences: ex }; })}
               className="w-full px-2.5 py-2 border border-rule rounded text-[13px] text-ink bg-bg focus:outline-none focus:border-accent transition-colors" />
+          </div>
+
+          <div className="mt-3">
+            <DragDropUploader
+              label="Project Screenshots / Work Images"
+              accept="image/*"
+              multiple
+              compressMaxWidth={1600}
+              value={exp.images || []}
+              onChange={(urls) => setDraft(d => {
+                const ex = [...d.experiences];
+                ex[i] = { ...ex[i], images: urls };
+                return { ...d, experiences: ex };
+              })}
+            />
           </div>
         </div>
       ))}

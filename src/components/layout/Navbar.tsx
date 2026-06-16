@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, Sparkles, FileText } from "lucide-react";
 import { DarkModeToggle } from "@/components/ui/DarkModeToggle";
 import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar";
 import { useCVData } from "@/hooks/useCVData";
@@ -81,6 +81,17 @@ export function Navbar() {
                 </li>
               ))}
             </ul>
+            <a
+              href={cv.profile?.cvPdfUrl || "/api/cv/download"}
+              download={!cv.profile?.cvPdfUrl ? "LOTHIN_THOEUN_CV.html" : undefined}
+              target={cv.profile?.cvPdfUrl ? "_blank" : undefined}
+              rel="noopener noreferrer"
+              className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
+              title="Download CV"
+              aria-label="Download CV"
+            >
+              <FileText size={15} />
+            </a>
             <button
               onClick={() => setAiOpen(!aiOpen)}
               className={cn(
@@ -96,6 +107,17 @@ export function Navbar() {
           </div>
 
           <div className="md:hidden flex items-center gap-2">
+            <a
+              href={cv.profile?.cvPdfUrl || "/api/cv/download"}
+              download={!cv.profile?.cvPdfUrl ? "LOTHIN_THOEUN_CV.html" : undefined}
+              target={cv.profile?.cvPdfUrl ? "_blank" : undefined}
+              rel="noopener noreferrer"
+              className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
+              title="Download CV"
+              aria-label="Download CV"
+            >
+              <FileText size={15} />
+            </a>
             <button
               onClick={() => setAiOpen(!aiOpen)}
               className={cn(
