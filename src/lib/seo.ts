@@ -6,7 +6,7 @@ const cleanEnvVar = (val: string | undefined) => (val || "").trim().replace(/^['
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
   ? cleanEnvVar(process.env.NEXT_PUBLIC_SITE_URL)
-  : "https://lothin-dev.pages.dev";
+  : "https://lothin-portfolio.pages.dev";
 
 interface PageSEO {
   title?: string;
