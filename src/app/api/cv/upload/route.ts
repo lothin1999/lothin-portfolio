@@ -87,7 +87,13 @@ export async function POST(req: NextRequest) {
   }
 
   const token = req.cookies.get(SESSION_COOKIE)?.value;
-  if (!token || !(await verifySessionToken(token))) {
+  if (!token) {
+    console.error("Upload API Unauthorized: No session cookie found");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const isValid = await verifySessionToken(token);
+  if (!isValid) {
+    console.error("Upload API Unauthorized: Token verification failed");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -193,6 +199,11 @@ async function deleteViaR2API(key: string): Promise<{ ok: boolean; error?: strin
 
     const json = (await response.json()) as any;
     if (!json.success) {
+      // 10007 means "The specified key does not exist." 
+      // This makes the DELETE operation idempotent.
+      if (json.errors?.some((e: any) => e.code === 10007)) {
+        return { ok: true };
+      }
       return { ok: false, error: `R2 API failure: ${JSON.stringify(json.errors)}` };
     }
 
@@ -235,14 +246,21 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "No URL provided" }, { status: 400 });
     }
 
-    // Extract key from the relative URL (e.g. "/api/images/img-123.jpg" -> "images/img-123.jpg")
     let key = "";
-    if (url.startsWith("/api/images/")) {
-      key = `images/${url.substring("/api/images/".length)}`;
-    } else if (url.startsWith("/api/cv/pdf/")) {
-      key = `cv/${url.substring("/api/cv/pdf/".length)}`;
-    } else {
-      return NextResponse.json({ error: "Invalid file URL format" }, { status: 400 });
+    try {
+      // Use a dummy base URL to parse both relative and absolute URLs
+      const parsedUrl = new URL(url, "http://localhost");
+      const pathname = parsedUrl.pathname;
+      
+      if (pathname.startsWith("/api/images/")) {
+        key = `images/${pathname.substring("/api/images/".length)}`;
+      } else if (pathname.startsWith("/api/cv/pdf/")) {
+        key = `cv/${pathname.substring("/api/cv/pdf/".length)}`;
+      } else {
+        return NextResponse.json({ error: "Invalid file URL format" }, { status: 400 });
+      }
+    } catch (e) {
+      return NextResponse.json({ error: "Invalid URL provided" }, { status: 400 });
     }
 
     // --- Path 1: Cloudflare Worker binding (production / pnpm preview) ---

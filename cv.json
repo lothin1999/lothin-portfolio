@@ -19,8 +19,8 @@
       "066 69 55 37"
     ],
     "photoUrl": "",
-    "cvPdfUrl": "/api/cv/pdf/cv-test.pdf",
-    "coverLetterPdfUrl": "/api/cv/pdf/cover-test.pdf",
+    "cvPdfUrl": "",
+    "coverLetterPdfUrl": "",
     "languages": [
       {
         "name": "Khmer",

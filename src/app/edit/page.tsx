@@ -19,7 +19,7 @@ export default function EditPage() {
     );
   }
 
-  if (false && !isAdmin) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg p-6">
         <AdminLoginModal onClose={(success) => {
