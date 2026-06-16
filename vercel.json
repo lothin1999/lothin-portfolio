@@ -1,9 +1,3 @@
 {
-  "redirects": [
-    {
-      "source": "/:path*",
-      "destination": "https://lothin-portfolio.pages.dev/:path*",
-      "permanent": true
-    }
-  ]
+  "redirects": []
 }
