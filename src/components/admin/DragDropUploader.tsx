@@ -14,7 +14,7 @@ interface DragDropUploaderProps {
 }
 
 // Client-side image compression helper
-function compressImage(file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.85): Promise<Blob> {
+function compressImage(file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.82): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -56,7 +56,7 @@ function compressImage(file: File, maxWidth = 1200, maxHeight = 1200, quality = 
               reject(new Error("Canvas toBlob failed"));
             }
           },
-          "image/jpeg",
+          "image/webp",
           quality
         );
       };
@@ -96,6 +96,28 @@ export function DragDropUploader({
       return null;
     }
 
+    if (accept === "application/pdf") {
+      const isPdf = file.type === "application/pdf" || ext === "pdf";
+      if (!isPdf) {
+        alert("Only PDF files (.pdf) are allowed for this upload.");
+        return null;
+      }
+    }
+
+    if (accept.includes("image")) {
+      const allowedExts = ["jpeg", "png", "jpg", "webp"];
+      const isAllowed = allowedExts.includes(ext || "") || (file.type && (
+        file.type === "image/jpeg" ||
+        file.type === "image/png" ||
+        file.type === "image/jpg" ||
+        file.type === "image/webp"
+      ));
+      if (!isAllowed) {
+        alert("Only jpeg, png, jpg, and webp images are allowed.");
+        return null;
+      }
+    }
+
     if (file.size > maxSizeMB * 1024 * 1024) {
       alert(`File "${file.name}" is too large. Max size is ${maxSizeMB}MB.`);
       return null;
@@ -106,11 +128,11 @@ export function DragDropUploader({
     // Compress if it is an image
     if (file.type.startsWith("image/")) {
       try {
-        const compressedBlob = await compressImage(file, compressMaxWidth, compressMaxWidth, 0.85);
+        const compressedBlob = await compressImage(file, compressMaxWidth, compressMaxWidth, 0.82);
         fileToUpload = new File(
           [compressedBlob],
-          file.name.replace(/\.[^/.]+$/, "") + ".jpg",
-          { type: "image/jpeg" }
+          file.name.replace(/\.[^/.]+$/, "") + ".webp",
+          { type: "image/webp" }
         );
       } catch (err) {
         console.error("Image compression failed, using original file:", err);
@@ -183,12 +205,33 @@ export function DragDropUploader({
     }
   };
 
-  const removeFile = (indexToRemove?: number) => {
+  const removeFile = async (indexToRemove?: number) => {
+    let urlToRemove = "";
     if (multiple && typeof indexToRemove === "number") {
       const currentUrls = Array.isArray(value) ? value : [];
+      urlToRemove = currentUrls[indexToRemove];
       onChange(currentUrls.filter((_, i) => i !== indexToRemove));
     } else {
+      urlToRemove = Array.isArray(value) ? value[0] : value;
       onChange("");
+    }
+
+    if (urlToRemove) {
+      try {
+        const res = await fetch("/api/cv/upload", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: urlToRemove }),
+        });
+        if (!res.ok) {
+          const json = await res.json() as any;
+          console.error("Failed to delete file from R2:", json.error || res.statusText);
+        }
+      } catch (err) {
+        console.error("Failed to delete file from R2:", err);
+      }
     }
   };
 

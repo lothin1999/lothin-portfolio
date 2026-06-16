@@ -162,3 +162,117 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+async function deleteViaR2API(key: string): Promise<{ ok: boolean; error?: string }> {
+  const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
+  const accountId = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+  const apiToken = clean(process.env.CLOUDFLARE_AI_API_TOKEN);
+  const bucketName = clean(process.env.R2_BUCKET_NAME) || "portfolio-data";
+
+  if (!accountId || !apiToken) {
+    return {
+      ok: false,
+      error: "Cloudflare credentials not configured.",
+    };
+  }
+
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects/${key}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      return { ok: false, error: `R2 API error ${response.status}: ${text}` };
+    }
+
+    const json = (await response.json()) as any;
+    if (!json.success) {
+      return { ok: false, error: `R2 API failure: ${JSON.stringify(json.errors)}` };
+    }
+
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, error: err.message || "Fetch network error" };
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const ip = req.ip || req.headers.get("cf-connecting-ip") || "127.0.0.1";
+
+  // Rate limit: Max 20 delete requests per 1 minute
+  const { limited, retryAfter } = isRateLimited(ip, {
+    intervalMs: 60 * 1000,
+    maxRequests: 20,
+    limitName: "delete_file",
+  });
+
+  if (limited) {
+    return NextResponse.json(
+      { error: "Too Many Requests" },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": retryAfter.toString(),
+        },
+      }
+    );
+  }
+
+  const token = req.cookies.get(SESSION_COOKIE)?.value;
+  if (!token || !(await verifySessionToken(token))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { url } = await req.json();
+    if (!url || typeof url !== "string") {
+      return NextResponse.json({ error: "No URL provided" }, { status: 400 });
+    }
+
+    // Extract key from the relative URL (e.g. "/api/images/img-123.jpg" -> "images/img-123.jpg")
+    let key = "";
+    if (url.startsWith("/api/images/")) {
+      key = `images/${url.substring("/api/images/".length)}`;
+    } else if (url.startsWith("/api/cv/pdf/")) {
+      key = `cv/${url.substring("/api/cv/pdf/".length)}`;
+    } else {
+      return NextResponse.json({ error: "Invalid file URL format" }, { status: 400 });
+    }
+
+    // --- Path 1: Cloudflare Worker binding (production / pnpm preview) ---
+    const context = await getCFContext();
+    const env = context?.env as any;
+    const bucket = env?.R2_BUCKET_NAME;
+
+    if (bucket) {
+      await bucket.delete(key);
+      return NextResponse.json({ ok: true });
+    }
+
+    // --- Path 2: R2 REST API (local dev) ---
+    const result = await deleteViaR2API(key);
+    if (result.ok) {
+      return NextResponse.json({ ok: true });
+    }
+
+    return NextResponse.json(
+      {
+        error: "R2 Delete failed",
+        detail: result.error,
+      },
+      { status: 500 }
+    );
+  } catch (e: any) {
+    console.error("File delete exception:", e);
+    return NextResponse.json(
+      { error: e?.message || "Delete error" },
+      { status: 500 }
+    );
+  }
+}
