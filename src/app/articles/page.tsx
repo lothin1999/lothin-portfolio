@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getCVData } from "@/lib/cvStore";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, breadcrumbsJsonLd } from "@/lib/seo";
 import { ScrambleText } from "@/components/ui/ScrambleText";
 import { Glyph } from "@/components/ui/Glyph";
 import { ActivePathBridge } from "../../components/ui/ActivePathBridge";
@@ -33,8 +33,17 @@ export default async function ArticlesPage() {
     { pattern: "111101111", hover: "111111111" },
   ];
 
+  const breadcrumbJson = breadcrumbsJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Writing", path: "/articles" }
+  ]);
+
   return (
     <div className="bg-bg min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJson) }}
+      />
       {/* Sync path segment on client */}
       <ActivePathBridge segment="writing" />
 

@@ -6,6 +6,7 @@ import { useCVData } from "@/hooks/useCVData";
 import { ActivePathBridge } from "@/components/ui/ActivePathBridge";
 import { Glyph } from "@/components/ui/Glyph";
 import { ArrowUpRight } from "lucide-react";
+import { contactJsonLd, breadcrumbsJsonLd } from "@/lib/seo";
 
 export default function ContactPage() {
   const { cv, isLoading } = useCVData();
@@ -37,8 +38,20 @@ export default function ContactPage() {
 
   const { profile } = cv;
 
+  const jsonLdData = [
+    contactJsonLd(cv),
+    breadcrumbsJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Contact", path: "/contact" }
+    ])
+  ];
+
   return (
     <div className="bg-bg min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+      />
       <ActivePathBridge segment="contact" />
 
       {/* Page Header */}

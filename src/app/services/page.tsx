@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getCVData } from "@/lib/cvStore";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, servicesJsonLd, breadcrumbsJsonLd } from "@/lib/seo";
 import { ActivePathBridge } from "@/components/ui/ActivePathBridge";
 import { Glyph } from "@/components/ui/Glyph";
 import { ArrowUpRight } from "lucide-react";
@@ -21,8 +21,20 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ServicesPage() {
   const cv = await getCVData();
 
+  const jsonLdData = [
+    servicesJsonLd(cv),
+    breadcrumbsJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Services", path: "/services" }
+    ])
+  ];
+
   return (
     <div className="bg-bg min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+      />
       <ActivePathBridge segment="services" />
 
       {/* Page Header */}

@@ -1,0 +1,20 @@
+import type { MetadataRoute } from "next";
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "Thoeun Lothin Portfolio",
+    short_name: "Lothin Dev",
+    description: "Professional portfolio of Thoeun Lothin, Senior Full-Stack Developer specialized in Vue/Nuxt, NestJS, Laravel, and Spring Boot.",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#141313",
+    theme_color: "#141313",
+    icons: [
+      {
+        src: "/icon.png",
+        sizes: "any",
+        type: "image/png",
+      },
+    ],
+  };
+}

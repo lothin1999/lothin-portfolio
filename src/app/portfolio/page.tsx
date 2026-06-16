@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getCVData } from "@/lib/cvStore";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, portfolioJsonLd, breadcrumbsJsonLd } from "@/lib/seo";
 import { ActivePathBridge } from "@/components/ui/ActivePathBridge";
 import { ScrambleText } from "@/components/ui/ScrambleText";
 import { Glyph } from "@/components/ui/Glyph";
@@ -32,8 +32,20 @@ export default async function PortfolioPage() {
     "010111010",
   ];
 
+  const jsonLdData = [
+    portfolioJsonLd(cv),
+    breadcrumbsJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Work", path: "/portfolio" }
+    ])
+  ];
+
   return (
     <div className="bg-bg min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+      />
       <ActivePathBridge segment="work" />
 
       {/* Page Header */}

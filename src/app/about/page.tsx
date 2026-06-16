@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getCVData } from "@/lib/cvStore";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, breadcrumbsJsonLd } from "@/lib/seo";
 import { ActivePathBridge } from "@/components/ui/ActivePathBridge";
 import { ScrambleText } from "@/components/ui/ScrambleText";
 import { Glyph } from "@/components/ui/Glyph";
@@ -25,8 +25,17 @@ export default async function AboutPage() {
   const cv = await getCVData();
   const { profile, experiences, skillGroups, references } = cv;
 
+  const breadcrumbJson = breadcrumbsJsonLd([
+    { name: "Home", path: "/" },
+    { name: "About", path: "/about" }
+  ]);
+
   return (
     <div className="bg-bg min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJson) }}
+      />
       <ActivePathBridge segment="about" />
 
       {/* Page Header */}

@@ -14,7 +14,7 @@ import { SettingsModal } from "@/components/layout/SettingsModal";
 import { AIChatDrawer } from "@/components/layout/AIChatDrawer";
 import { AdminButton } from "@/components/admin/AdminButton";
 import { getCVData } from "@/lib/cvStore";
-import { buildMetadata, personJsonLd } from "@/lib/seo";
+import { buildMetadata, personJsonLd, websiteJsonLd } from "@/lib/seo";
 import { CVContentWrapper } from "@/components/layout/CVContentWrapper";
 import Script from "next/script";
 
@@ -51,7 +51,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const cv = await getCVData();
-  const jsonLd = personJsonLd(cv);
+  const jsonLdList = [personJsonLd(cv), websiteJsonLd()];
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
@@ -63,7 +63,7 @@ export default async function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdList) }}
         />
         {gaId && (
           <>

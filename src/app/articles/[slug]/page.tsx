@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCVData } from "@/lib/cvStore";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, articleJsonLd, breadcrumbsJsonLd } from "@/lib/seo";
 import { ActivePathBridge } from "@/components/ui/ActivePathBridge";
 import { Glyph } from "@/components/ui/Glyph";
 
@@ -20,10 +20,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!article) return {};
 
+  let dateIso = "";
+  try {
+    dateIso = new Date(article.date).toISOString();
+  } catch (e) {
+    dateIso = new Date().toISOString();
+  }
+
   return buildMetadata(cv, {
     title: article.title,
     description: article.excerpt,
     path: `/articles/${article.slug}`,
+    ogType: "article",
+    articleDetails: {
+      publishedTime: dateIso,
+      tags: article.tags,
+    }
   });
 }
 
@@ -170,8 +182,21 @@ export default async function ArticleDetailsPage({ params }: PageProps) {
     notFound();
   }
 
+  const jsonLdData = [
+    articleJsonLd(cv, article),
+    breadcrumbsJsonLd([
+      { name: "Home", path: "/" },
+      { name: "Writing", path: "/articles" },
+      { name: article.title, path: `/articles/${article.slug}` }
+    ])
+  ];
+
   return (
     <div className="bg-bg min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
+      />
       {/* Set status bar segment label */}
       <ActivePathBridge segment="reading" />
 
