@@ -273,6 +273,21 @@ export function AdminEditPage() {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const draftRef = useRef(draft);
+  useEffect(() => { draftRef.current = draft; }, [draft]);
+
+  const applyAndSave = async (updater: (d: CVData) => CVData) => {
+    const newDraft = updater(draftRef.current);
+    setDraft(newDraft);
+    try {
+      await updateCV(newDraft);
+      setSaveMsg("Saved!");
+      setTimeout(() => setSaveMsg(""), 2000);
+    } catch (e) {
+      console.error("Auto-save failed", e);
+    }
+  };
+
   // Articles state
   const [selectedArticleIdx, setSelectedArticleIdx] = useState<number | null>(null);
   const [isCreatingArticle, setIsCreatingArticle] = useState(false);
@@ -534,7 +549,7 @@ export function AdminEditPage() {
             accept="image/*"
             compressMaxWidth={400}
             value={draft.profile.photoUrl || ""}
-            onChange={(url) => setDraft(d => ({ ...d, profile: { ...d.profile, photoUrl: url } }))}
+            onChange={(url) => applyAndSave(d => ({ ...d, profile: { ...d.profile, photoUrl: url } }))}
           />
         </div>
         <div>
@@ -542,7 +557,7 @@ export function AdminEditPage() {
             label="CV PDF Document"
             accept="application/pdf"
             value={draft.profile.cvPdfUrl || ""}
-            onChange={(url) => setDraft(d => ({ ...d, profile: { ...d.profile, cvPdfUrl: url } }))}
+            onChange={(url) => applyAndSave(d => ({ ...d, profile: { ...d.profile, cvPdfUrl: url } }))}
           />
         </div>
         <div>
@@ -550,7 +565,7 @@ export function AdminEditPage() {
             label="Cover Letter PDF Document"
             accept="application/pdf"
             value={draft.profile.coverLetterPdfUrl || ""}
-            onChange={(url) => setDraft(d => ({ ...d, profile: { ...d.profile, coverLetterPdfUrl: url } }))}
+            onChange={(url) => applyAndSave(d => ({ ...d, profile: { ...d.profile, coverLetterPdfUrl: url } }))}
           />
         </div>
       </div>
@@ -635,7 +650,7 @@ export function AdminEditPage() {
               multiple
               compressMaxWidth={1600}
               value={exp.images || []}
-              onChange={(urls) => setDraft(d => {
+              onChange={(urls) => applyAndSave(d => {
                 const ex = [...d.experiences];
                 ex[i] = { ...ex[i], images: urls };
                 return { ...d, experiences: ex };

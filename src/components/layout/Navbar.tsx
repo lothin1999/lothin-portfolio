@@ -130,11 +130,12 @@ export function Navbar() {
                 href={cv.profile.coverLetterPdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
+                className="px-3 py-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center gap-2 text-ink"
                 title="Download Cover Letter"
                 aria-label="Download Cover Letter"
               >
-                <Mail size={15} />
+                <Mail size={14} />
+                <span className="font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase">Cover Letter</span>
               </a>
             )}
             <button
@@ -169,11 +170,12 @@ export function Navbar() {
                 href={cv.profile.coverLetterPdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
+                className="px-2 py-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center gap-1.5 text-ink"
                 title="Download Cover Letter"
                 aria-label="Download Cover Letter"
               >
-                <Mail size={15} />
+                <Mail size={14} />
+                <span className="font-mono text-[9px] font-semibold tracking-wider uppercase">Cover Letter</span>
               </a>
             )}
             <button
