@@ -479,24 +479,26 @@ export function AIChatDrawer() {
   return (
     <AnimatePresence>
       {aiOpen && (
-        <>
-          {/* Backdrop Overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setAiOpen(false)}
-            className="fixed inset-0 backdrop-blur-[4px] z-[240] cursor-pointer"
-          />
+        <motion.div
+          key="backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          onClick={() => setAiOpen(false)}
+          className="fixed inset-0 backdrop-blur-[4px] z-[240] cursor-pointer"
+        />
+      )}
 
-          {/* Drawer container */}
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 26, stiffness: 220 }}
-            className="fixed right-0 top-0 h-full w-full sm:w-[440px] z-[250] bg-surface/85 backdrop-blur-xl border-l border-rule/50 shadow-[-10px_0_50px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden overscroll-contain"
-          >
+      {aiOpen && (
+        <motion.div
+          key="drawer"
+          initial={{ x: "100%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "100%" }}
+          transition={{ type: "spring", damping: 32, stiffness: 280 }}
+          className="fixed right-0 top-0 h-full w-full sm:w-[440px] z-[250] bg-surface/85 backdrop-blur-xl border-l border-rule/50 shadow-[-10px_0_50px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden overscroll-contain"
+        >
             {/* Ambient glows inside the drawer */}
             <div className="absolute top-1/4 -left-20 w-40 h-40 bg-accent/10 rounded-full blur-[80px] pointer-events-none" />
             <div className="absolute bottom-1/4 -left-20 w-40 h-40 bg-accent/5 rounded-full blur-[80px] pointer-events-none" />
@@ -714,24 +716,6 @@ export function AIChatDrawer() {
                 </div>
               )}
               <div className="relative flex items-center border border-rule/80 focus-within:border-accent/70 focus-within:ring-1 focus-within:ring-accent/20 rounded-xl bg-surface/80 backdrop-blur-sm shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-200">
-                {isSpeechSupported && (
-                  <button
-                    type="button"
-                    onClick={toggleListening}
-                    disabled={loading || transcribing}
-                    className={cn(
-                      "pl-3.5 pr-1.5 text-muted hover:text-ink transition-all cursor-pointer flex items-center justify-center disabled:opacity-50 select-none",
-                      isListening && "text-accent animate-pulse"
-                    )}
-                    title={transcribing ? "Transcribing..." : isListening ? "Listening... Click to stop" : "Voice input"}
-                  >
-                    {transcribing ? (
-                      <RefreshCw size={14} className="animate-spin text-accent" />
-                    ) : (
-                      <Mic size={15} />
-                    )}
-                  </button>
-                )}
                 <input
                   ref={inputRef}
                   type="text"
@@ -760,7 +744,6 @@ export function AIChatDrawer() {
               </div>
             </form>
           </motion.div>
-        </>
       )}
     </AnimatePresence>
   );
