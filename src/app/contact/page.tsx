@@ -119,7 +119,7 @@ export default function ContactPage() {
                     Direct Messenger (Preferred)
                   </span>
                   <h3 className="font-serif text-xl text-ink font-semibold mb-2">Telegram</h3>
-                  <p className="font-mono text-xs text-accent mb-4">{profile.telegramHandle || "@lothin01"}</p>
+                  <p className="font-mono text-xs text-accent mb-4">{profile.telegramHandle || "@lothindev"}</p>
                 </div>
                 <a
                   href={profile.telegram}

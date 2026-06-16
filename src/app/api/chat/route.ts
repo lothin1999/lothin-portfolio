@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
         location: cvData.profile?.location,
         languages: cvData.profile?.languages,
         contacts: {
-          telegram: cvData.profile?.telegramHandle || "@lothin01",
+          telegram: cvData.profile?.telegramHandle || "@lothindev",
           phone: cvData.profile?.phones || ["098 63 88 78"],
           website: cvData.profile?.website || "https://lothin-portfolio.pages.dev",
         },

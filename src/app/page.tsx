@@ -7,6 +7,7 @@ import { ActivePathBridge } from "@/components/ui/ActivePathBridge";
 import { ScrambleText } from "@/components/ui/ScrambleText";
 import { Glyph } from "@/components/ui/Glyph";
 import { Chip } from "@/components/ui/Chip";
+import { FAQSection } from "@/components/sections/FAQSection";
 
 export default function HomePage() {
   const { cv, isLoading } = useCVData();
@@ -367,7 +368,10 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 08 Let's Talk */}
+      {/* 08 // section.faq */}
+      <FAQSection />
+
+      {/* 09 Let's Talk */}
       <section className="py-20 text-center" aria-labelledby="talk-title">
         <div className="max-w-xl mx-auto px-6 flex flex-col items-center gap-4">
           <Glyph pattern="010111010" hoverPattern="111111111" size={42} gap={3} color="var(--accent-orange)" />
