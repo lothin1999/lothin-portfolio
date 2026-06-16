@@ -91,7 +91,8 @@ type Tab =
   | "about"
   | "services"
   | "articles"
-  | "storage";
+  | "storage"
+  | "vectorize";
 
 const CV_TABS: { id: Tab; label: string }[] = [
   { id: "profile", label: "Profile" },
@@ -107,6 +108,7 @@ const ADMIN_TABS: { id: Tab; label: string }[] = [
   { id: "services", label: "Services Page" },
   { id: "articles", label: "Articles" },
   { id: "storage", label: "Storage" },
+  { id: "vectorize", label: "Vectorize" },
 ];
 
 // ── Default Fallbacks ────────────────────────────────────────────────────────
@@ -307,6 +309,47 @@ export function AdminEditPage() {
   useEffect(() => {
     fetchCfFiles();
   }, [fetchCfFiles]);
+
+  // Vectorize states
+  const [vectorizeIndexes, setVectorizeIndexes] = useState<any[] | null>(null);
+  const [vectorizeUsage, setVectorizeUsage] = useState<any>({
+    requests: 0,
+    p95_latency: "0 ms",
+    total_vectors: 0,
+    billable_usage: "$0.00",
+  });
+  const [vectorizeLoading, setVectorizeLoading] = useState(false);
+  const [vectorizeLive, setVectorizeLive] = useState(false);
+  const [vectorizeSearch, setVectorizeSearch] = useState("");
+
+  // Index creation modal state
+  const [isCreatingIndex, setIsCreatingIndex] = useState(false);
+  const [newIndexName, setNewIndexName] = useState("");
+  const [newIndexDesc, setNewIndexDesc] = useState("");
+  const [newIndexDims, setNewIndexDims] = useState("1536"); // Preset 1536
+  const [newIndexMetric, setNewIndexMetric] = useState("cosine");
+  const [creatingIndexStatus, setCreatingIndexStatus] = useState("");
+
+  const fetchVectorizeData = useCallback(async () => {
+    setVectorizeLoading(true);
+    try {
+      const res = await fetch("/api/cv/vectorize");
+      if (res.ok) {
+        const json = await res.json();
+        setVectorizeIndexes(json.indexes || []);
+        setVectorizeUsage(json.usage || { requests: 0, p95_latency: "0 ms", total_vectors: 0, billable_usage: "$0.00" });
+        setVectorizeLive(!!json.live);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setVectorizeLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchVectorizeData();
+  }, [fetchVectorizeData]);
 
   const draftRef = useRef(draft);
   useEffect(() => { draftRef.current = draft; }, [draft]);
@@ -1426,6 +1469,373 @@ export function AdminEditPage() {
     );
   };
 
+  const renderVectorizeTab = () => {
+    const filteredIndexes = vectorizeIndexes
+      ? vectorizeIndexes.filter(idx =>
+          idx.name.toLowerCase().includes(vectorizeSearch.toLowerCase()) ||
+          (idx.description || "").toLowerCase().includes(vectorizeSearch.toLowerCase())
+        )
+      : [];
+
+    const handleCreateIndex = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newIndexName) return;
+      setCreatingIndexStatus("Creating...");
+      try {
+        const res = await fetch("/api/cv/vectorize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: newIndexName.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+            description: newIndexDesc,
+            config: {
+              dimensions: Number(newIndexDims),
+              metric: newIndexMetric,
+            }
+          })
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+          if (!json.live) {
+            // Mock mode client fallback: add to state
+            setVectorizeIndexes((prev: any[] | null) => [
+              ...(prev || []),
+              json.result
+            ]);
+            // Update total vectors in usage mock
+            setVectorizeUsage((prev: any) => ({
+              ...prev,
+              total_vectors: prev.total_vectors + (json.result.stats?.count || 0)
+            }));
+          } else {
+            fetchVectorizeData();
+          }
+          setIsCreatingIndex(false);
+          setNewIndexName("");
+          setNewIndexDesc("");
+          setNewIndexDims("1536");
+          setNewIndexMetric("cosine");
+        } else {
+          alert(json.error || "Failed to create Vectorize index");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error creating index");
+      } finally {
+        setCreatingIndexStatus("");
+      }
+    };
+
+    const handleDeleteIndex = async (indexName: string) => {
+      if (!confirm(`Are you sure you want to delete Vectorize index "${indexName}"?`)) return;
+      try {
+        const res = await fetch(`/api/cv/vectorize?name=${indexName}`, {
+          method: "DELETE",
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+          if (!json.live) {
+            // Mock mode client fallback: remove from state
+            setVectorizeIndexes((prev: any[] | null) => (prev || []).filter(idx => idx.name !== indexName));
+            // Update total vectors
+            const deletedIdx = (vectorizeIndexes || []).find(idx => idx.name === indexName);
+            const deletedCount = deletedIdx?.stats?.count || 0;
+            setVectorizeUsage((prev: any) => ({
+              ...prev,
+              total_vectors: Math.max(0, prev.total_vectors - deletedCount)
+            }));
+          } else {
+            fetchVectorizeData();
+          }
+        } else {
+          alert(json.error || "Failed to delete Vectorize index");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error deleting index");
+      }
+    };
+
+    return (
+      <div className="space-y-6 text-ink">
+        {/* Header Section */}
+        <div className="flex items-center justify-between pb-4 border-b border-rule">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-accent/10 rounded border border-accent/20 text-accent flex items-center justify-center shrink-0">
+                <List size={18} />
+              </div>
+              <h2 className="font-sans text-[20px] font-semibold text-ink leading-tight">Vectorize</h2>
+            </div>
+            <p className="text-[12px] text-muted max-w-2xl mt-1 leading-relaxed">
+              Build full-stack AI applications with Vectorize, Cloudflare's powerful vector database. Combine it with Workers AI to store and query embeddings, or bring-your-own embeddings to Vectorize.
+            </p>
+          </div>
+          <a
+            href="https://developers.cloudflare.com/vectorize/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-medium border border-rule hover:bg-tag-bg rounded px-3 py-1.5 text-ink no-underline transition-colors shrink-0"
+          >
+            Documentation
+          </a>
+        </div>
+
+        {/* Dashboard Grid split into Left (indices) and Right (usage) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Panel: Indexes Table */}
+          <div className="lg:col-span-8 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={vectorizeSearch}
+                  onChange={(e) => setVectorizeSearch(e.target.value)}
+                  className="w-full pl-8 pr-2.5 py-1.5 border border-rule rounded text-[13px] text-ink bg-bg placeholder:text-muted/50 focus:outline-none focus:border-accent transition-colors font-mono"
+                />
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted">
+                  <List size={13} />
+                </span>
+              </div>
+              <button
+                onClick={fetchVectorizeData}
+                className="p-2 border border-rule hover:bg-tag-bg rounded text-muted hover:text-ink transition-colors cursor-pointer bg-transparent"
+                title="Refresh"
+              >
+                <RefreshCw size={14} className={vectorizeLoading ? "animate-spin" : ""} />
+              </button>
+              <button
+                onClick={() => setIsCreatingIndex(true)}
+                className="inline-flex items-center gap-1 text-[11px] bg-ink hover:bg-accent text-white font-medium rounded px-3.5 py-2 transition-colors cursor-pointer border-none"
+              >
+                <Plus size={13} /> Create index
+              </button>
+            </div>
+
+            <div className="border border-rule rounded overflow-hidden bg-bg">
+              {vectorizeIndexes === null ? (
+                <div className="py-16 text-center">
+                  <RefreshCw size={24} className="text-accent animate-spin mx-auto mb-2" />
+                  <p className="font-mono text-[11px] text-muted">Loading Vectorize indexes...</p>
+                </div>
+              ) : filteredIndexes.length === 0 ? (
+                <div className="py-20 text-center font-sans">
+                  <p className="text-[14px] text-muted mb-4">No results</p>
+                  <div className="flex items-center justify-center gap-1.5 font-mono text-[11px]">
+                    <span className="px-2 py-1 border border-rule rounded text-muted/40 cursor-not-allowed select-none">&lt;&lt;</span>
+                    <span className="px-2 py-1 border border-rule rounded text-muted/40 cursor-not-allowed select-none">&lt;</span>
+                    <span className="px-3 py-1 border border-accent bg-tag-bg text-accent rounded font-bold">1</span>
+                    <span className="px-2 py-1 border border-rule rounded text-muted/40 cursor-not-allowed select-none">&gt;</span>
+                    <span className="px-2 py-1 border border-rule rounded text-muted/40 cursor-not-allowed select-none">&gt;&gt;</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-left font-mono text-[11px]">
+                    <thead>
+                      <tr className="border-b border-rule bg-surface font-sans text-muted text-[10px] uppercase tracking-wider">
+                        <th className="p-3 font-semibold">Index Name</th>
+                        <th className="p-3 font-semibold">Description</th>
+                        <th className="p-3 font-semibold text-right">Dimensions</th>
+                        <th className="p-3 font-semibold text-center">Metric</th>
+                        <th className="p-3 w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-rule/60">
+                      {filteredIndexes.map((idx) => (
+                        <tr key={idx.name} className="hover:bg-tag-bg/10 transition-colors">
+                          <td className="p-3 font-bold text-ink whitespace-nowrap">{idx.name}</td>
+                          <td className="p-3 text-muted max-w-[200px] truncate" title={idx.description}>{idx.description || "-"}</td>
+                          <td className="p-3 text-right font-semibold">{idx.config?.dimensions}</td>
+                          <td className="p-3 text-center">
+                            <span className="px-2 py-0.5 rounded bg-accent/10 text-accent font-semibold text-[10px]">
+                              {idx.config?.metric}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <button
+                              onClick={() => handleDeleteIndex(idx.name)}
+                              className="p-1.5 text-muted hover:text-red-500 hover:bg-red-500/10 border border-rule hover:border-red-500/20 rounded transition-colors cursor-pointer bg-transparent"
+                              title="Delete index"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+            {!vectorizeLive && vectorizeIndexes !== null && (
+              <p className="font-mono text-[9px] text-muted italic pl-1">
+                * Running in Local Mock mode. Creating or deleting indexes will update client state in local session cache.
+              </p>
+            )}
+          </div>
+
+          {/* Right Panel: Usage & Latency stats */}
+          <div className="lg:col-span-4 space-y-6">
+            <div>
+              <h3 className="font-sans text-[18px] font-semibold text-ink leading-none mb-1 flex items-center justify-between">
+                Usage
+                <span className="font-mono text-[10px] text-muted font-normal uppercase">
+                  {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </span>
+              </h3>
+            </div>
+
+            {/* Billing Dashboard Box */}
+            <div className="border border-rule rounded bg-surface p-4 shadow-sm space-y-4">
+              <a
+                href="https://dash.cloudflare.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between font-mono text-[12px] font-bold text-ink hover:text-accent no-underline transition-colors pb-2 border-b border-rule/60"
+              >
+                <span>Billing Dashboard</span>
+                <span>&rarr;</span>
+              </a>
+
+              <div className="flex flex-col items-center py-2 text-center">
+                <p className="font-mono text-[10px] uppercase text-muted tracking-wider mb-2">Billable usage (current period)</p>
+                <div className="w-28 h-28 rounded-full border-8 border-rule flex items-center justify-center relative">
+                  <span className="font-sans text-[18px] font-semibold text-ink">{vectorizeUsage.billable_usage}</span>
+                </div>
+                <p className="font-mono text-[10px] text-muted mt-4">No billable usage incurred yet</p>
+              </div>
+            </div>
+
+            {/* General Metrics boxes */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Requests */}
+              <div className="border border-rule rounded bg-surface p-4 shadow-sm space-y-2">
+                <span className="font-mono text-[10px] text-muted uppercase tracking-wider block">Requests</span>
+                <span className="font-sans text-[24px] font-bold text-ink block leading-none">{vectorizeUsage.requests}</span>
+              </div>
+
+              {/* P95 Latency */}
+              <div className="border border-rule rounded bg-surface p-4 shadow-sm space-y-2">
+                <span className="font-mono text-[10px] text-muted uppercase tracking-wider block">P95 latency</span>
+                <span className="font-sans text-[24px] font-bold text-ink block leading-none">{vectorizeUsage.p95_latency}</span>
+              </div>
+            </div>
+
+            {/* Total Vectors Card */}
+            <div className="border border-rule rounded bg-surface p-4 shadow-sm space-y-2">
+              <span className="font-mono text-[10px] text-muted uppercase tracking-wider block">Total vectors</span>
+              <span className="font-sans text-[24px] font-bold text-ink block leading-none">
+                {vectorizeLoading && vectorizeIndexes === null ? "..." : vectorizeUsage.total_vectors}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Create Index Modal */}
+        {isCreatingIndex && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-bg/65 backdrop-blur-md animate-alert-fade-in">
+            <form
+              onSubmit={handleCreateIndex}
+              className="bg-surface border border-rule max-w-md w-full rounded p-6 shadow-2xl relative overflow-hidden animate-alert-zoom-in space-y-4"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-accent to-accent-orange" />
+              <div className="pb-2 border-b border-rule">
+                <h3 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold">
+                  Create Vectorize Index
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-muted">
+                    Index Name (lowercase, alphanumeric, hyphens)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newIndexName}
+                    onChange={(e) => setNewIndexName(e.target.value)}
+                    placeholder="e.g. portfolio-articles"
+                    className="w-full px-2.5 py-2 border border-rule rounded text-[13px] text-ink bg-bg placeholder:text-muted/50 focus:outline-none focus:border-accent transition-colors font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-muted">
+                    Description
+                  </label>
+                  <input
+                    type="text"
+                    value={newIndexDesc}
+                    onChange={(e) => setNewIndexDesc(e.target.value)}
+                    placeholder="e.g. Index of OpenAI text-embedding-3-small vectors"
+                    className="w-full px-2.5 py-2 border border-rule rounded text-[13px] text-ink bg-bg placeholder:text-muted/50 focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-muted">
+                      Dimensions
+                    </label>
+                    <select
+                      value={newIndexDims}
+                      onChange={(e) => setNewIndexDims(e.target.value)}
+                      className="w-full px-2.5 py-2 border border-rule rounded text-[13px] text-ink bg-bg focus:outline-none focus:border-accent transition-colors font-mono"
+                    >
+                      <option value="1536">1536 (OpenAI, standard)</option>
+                      <option value="384">384 (MiniLM, light)</option>
+                      <option value="768">768 (Cohere, medium)</option>
+                      <option value="1024">1024 (Large embeddings)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-muted">
+                      Metric
+                    </label>
+                    <select
+                      value={newIndexMetric}
+                      onChange={(e) => setNewIndexMetric(e.target.value)}
+                      className="w-full px-2.5 py-2 border border-rule rounded text-[13px] text-ink bg-bg focus:outline-none focus:border-accent transition-colors font-mono"
+                    >
+                      <option value="cosine">Cosine</option>
+                      <option value="euclidean">Euclidean (L2)</option>
+                      <option value="dot-product">Dot Product</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t border-rule justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreatingIndex(false);
+                    setNewIndexName("");
+                    setNewIndexDesc("");
+                  }}
+                  className="py-2 px-4 border border-rule rounded text-muted hover:text-ink text-xs font-mono tracking-wide transition-colors cursor-pointer bg-transparent"
+                >
+                  CANCEL
+                </button>
+                <button
+                  type="submit"
+                  disabled={!!creatingIndexStatus}
+                  className="py-2 px-4 bg-ink hover:bg-accent text-white rounded text-xs font-mono tracking-wide transition-colors cursor-pointer disabled:opacity-50 border-none"
+                >
+                  {creatingIndexStatus || "CREATE"}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const tabContent: Record<Tab, React.ReactNode> = {
     profile: renderProfileTab(),
     experience: renderExperienceTab(),
@@ -1437,6 +1847,7 @@ export function AdminEditPage() {
     services: renderServicesTab(),
     articles: renderArticlesTab(),
     storage: renderStorageTab(),
+    vectorize: renderVectorizeTab(),
   };
 
   return (
