@@ -1,12 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyFirebaseIdToken, createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/auth";
 import { z } from "zod";
+import { isRateLimited } from "@/lib/rateLimit";
 
 const schema = z.object({ idToken: z.string().min(1) });
 
 export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
+  // Get client IP
+  const ip = req.ip || req.headers.get("cf-connecting-ip") || "127.0.0.1";
+
+  // Rate limit: Max 5 requests per 1 minute (60,000 ms) for login attempts
+  const { limited, retryAfter } = isRateLimited(ip, {
+    intervalMs: 60 * 1000,
+    maxRequests: 5,
+    limitName: "login"
+  });
+
+  if (limited) {
+    return NextResponse.json(
+      { error: "Too many login attempts. Please try again later.", retryAfter },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": retryAfter.toString(),
+        },
+      }
+    );
+  }
+
   try {
     const body = await req.json();
     const { idToken } = schema.parse(body);

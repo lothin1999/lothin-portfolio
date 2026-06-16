@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
+import { isRateLimited } from "@/lib/rateLimit";
 
 export const runtime = "edge";
 
@@ -147,6 +148,27 @@ async function uploadViaR2API(
 }
 
 export async function POST(req: NextRequest) {
+  const ip = req.ip || req.headers.get("cf-connecting-ip") || "127.0.0.1";
+
+  // Rate limit: Max 5 upload requests per 1 minute (60,000 ms)
+  const { limited, retryAfter } = isRateLimited(ip, {
+    intervalMs: 60 * 1000,
+    maxRequests: 5,
+    limitName: "upload_photo",
+  });
+
+  if (limited) {
+    return NextResponse.json(
+      { error: "Too Many Requests" },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": retryAfter.toString(),
+        },
+      }
+    );
+  }
+
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (!token || !(await verifySessionToken(token))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

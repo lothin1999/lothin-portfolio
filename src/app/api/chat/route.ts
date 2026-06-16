@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCVData } from "@/lib/cvStore";
+import { isRateLimited } from "@/lib/rateLimit";
 
 declare const process: {
   env: {
@@ -13,6 +14,29 @@ export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  const ip = req.ip || req.headers.get("cf-connecting-ip") || "127.0.0.1";
+
+  // Rate limit: Max 10 messages per 1 minute (60,000 ms)
+  const { limited, retryAfter } = isRateLimited(ip, {
+    intervalMs: 60 * 1000,
+    maxRequests: 10,
+    limitName: "chat",
+  });
+
+  if (limited) {
+    return NextResponse.json(
+      {
+        error: "Too Many Requests",
+        message: `You are sending messages too quickly. Please wait ${retryAfter} seconds before trying again.`,
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": retryAfter.toString(),
+        },
+      }
+    );
+  }
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const apiToken = process.env.CLOUDFLARE_AI_API_TOKEN;
 

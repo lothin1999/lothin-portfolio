@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSettings } from "./SettingsContext";
-import { Sparkles, X, Send, Bot, User, RefreshCw, AlertCircle } from "lucide-react";
+import { Sparkles, X, Send, Bot, User, RefreshCw, AlertCircle, Mic, MicOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+
 
 interface Message {
   id: string;
@@ -260,6 +261,101 @@ export function AIChatDrawer() {
   const [model, setModel] = useState("@cf/meta/llama-3.1-8b-instruct");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeechSupported, setIsSpeechSupported] = useState(false);
+  const [speechError, setSpeechError] = useState<string | null>(null);
+  const [transcribing, setTranscribing] = useState(false);
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Initialize Speech Recognition on component mount (client-side only)
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator.mediaDevices && window.MediaRecorder) {
+      setIsSpeechSupported(true);
+    }
+  }, []);
+
+  const startRecording = async () => {
+    setSpeechError(null);
+    audioChunksRef.current = [];
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        if (audioBlob.size === 0) return;
+
+        setTranscribing(true);
+        try {
+          const res = await fetch("/api/transcribe", {
+            method: "POST",
+            body: audioBlob,
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.message || data.error || "Transcription failed.");
+          }
+
+          if (data.text && data.text.trim()) {
+            setInput((prev) => {
+              const trimmed = prev.trim();
+              return trimmed ? `${trimmed} ${data.text.trim()}` : data.text.trim();
+            });
+          }
+        } catch (err: any) {
+          console.error("Transcription error:", err);
+          setSpeechError(err.message || "Failed to transcribe voice input.");
+        } finally {
+          setTranscribing(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsListening(true);
+    } catch (err: any) {
+      console.error("Microphone access error:", err);
+      setIsListening(false);
+      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        setSpeechError("Microphone permission denied. Please allow microphone access in your browser settings.");
+      } else {
+        setSpeechError("Failed to access microphone. Please verify your microphone is plugged in.");
+      }
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isListening) {
+      mediaRecorderRef.current.stop();
+      setIsListening(false);
+      // Close the stream tracks to turn off the microphone light
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
 
   // Load selected model from localStorage
   useEffect(() => {
@@ -602,22 +698,58 @@ export function AIChatDrawer() {
               }}
               className="relative p-4 border-t border-rule/50 bg-surface/40 backdrop-blur-md z-10"
             >
+              {speechError && (
+                <div className="mb-3 p-2.5 rounded-xl bg-accent-orange/5 border border-accent-orange/20 text-accent-orange text-[11.5px] font-sans flex items-center justify-between gap-2 shadow-sm">
+                  <div className="flex items-center gap-1.5">
+                    <AlertCircle size={13} className="shrink-0" />
+                    <span>{speechError}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSpeechError(null)}
+                    className="hover:text-ink transition-colors cursor-pointer p-0.5 shrink-0"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
               <div className="relative flex items-center border border-rule/80 focus-within:border-accent/70 focus-within:ring-1 focus-within:ring-accent/20 rounded-xl bg-surface/80 backdrop-blur-sm shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-200">
+                {isSpeechSupported && (
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    disabled={loading || transcribing}
+                    className={cn(
+                      "pl-3.5 pr-1.5 text-muted hover:text-ink transition-all cursor-pointer flex items-center justify-center disabled:opacity-50 select-none",
+                      isListening && "text-accent animate-pulse"
+                    )}
+                    title={transcribing ? "Transcribing..." : isListening ? "Listening... Click to stop" : "Voice input"}
+                  >
+                    {transcribing ? (
+                      <RefreshCw size={14} className="animate-spin text-accent" />
+                    ) : (
+                      <Mic size={15} />
+                    )}
+                  </button>
+                )}
                 <input
                   ref={inputRef}
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask about my projects, stack, experience..."
-                  disabled={loading}
-                  className="w-full pl-4 pr-12 py-3.5 bg-transparent text-[13px] text-ink placeholder:text-muted focus:outline-none disabled:opacity-50 font-sans"
+                  placeholder={transcribing ? "Transcribing..." : isListening ? "Listening... Click to stop" : "Ask about my projects, stack, experience..."}
+                  disabled={loading || transcribing}
+                  className={cn(
+                    "w-full pr-12 py-3.5 bg-transparent text-[13px] text-ink placeholder:text-muted focus:outline-none disabled:opacity-50 font-sans",
+                    isSpeechSupported ? "pl-1.5" : "pl-4"
+                  )}
                 />
                 <button
                   type="submit"
-                  disabled={!input.trim() || loading}
+                  disabled={!input.trim() || loading || transcribing}
                   className={cn(
                     "absolute right-2 p-2 rounded-lg transition-all duration-200 cursor-pointer",
-                    input.trim() && !loading
+                    input.trim() && !loading && !transcribing
                       ? "bg-accent text-white shadow-[0_2px_8px_rgba(27,93,239,0.25)] hover:bg-accent/90"
                       : "text-muted opacity-40 hover:bg-transparent"
                   )}
