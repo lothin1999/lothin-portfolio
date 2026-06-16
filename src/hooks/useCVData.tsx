@@ -18,10 +18,10 @@ interface CVContextValue {
 
 const CVContext = createContext<CVContextValue | null>(null);
 
-export function CVProvider({ children }: { children: React.ReactNode }) {
-  const [cv, setCV] = useState<CVData>(defaultCV);
+export function CVProvider({ children, initialData }: { children: React.ReactNode; initialData?: CVData }) {
+  const [cv, setCV] = useState<CVData>(initialData && initialData.profile ? initialData : defaultCV);
   const [isAdmin, setAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialData || !initialData.profile);
   const [isLocked, setIsLocked] = useState(false);
   const [ciphertext, setCiphertext] = useState<string | null>(null);
 
@@ -40,8 +40,8 @@ export function CVProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, []);
 
-  const refreshCV = useCallback(async () => {
-    setIsLoading(true);
+  const refreshCV = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     try {
       const res = await fetch("/api/cv");
       if (res.ok) {
@@ -59,8 +59,8 @@ export function CVProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refreshCV();
-  }, [refreshCV]);
+    refreshCV(!initialData || !initialData.profile);
+  }, [refreshCV, initialData]);
 
   const unlock = useCallback(async (passcode: string) => {
     return false;

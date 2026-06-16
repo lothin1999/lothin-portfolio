@@ -93,7 +93,7 @@ export default async function RootLayout({
           Skip to content
         </a>
         <ThemeProvider>
-          <CVProvider>
+          <CVProvider initialData={cv}>
             <SettingsProvider>
               <SmoothScrollProvider>
                 <CVContentWrapper>
