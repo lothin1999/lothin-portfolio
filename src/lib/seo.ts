@@ -21,10 +21,11 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
   const cvData = (cv && cv.profile) ? cv : defaultCV;
   const { profile } = cvData;
   const fullName = `${profile.name.first} ${profile.name.last}`;
-  const defaultTitle = `${fullName} (Chushin Dev) — ${profile.title}`;
+  const reverseName = `${profile.name.last} ${profile.name.first}`; // Common name order in Cambodia
+  const defaultTitle = `${reverseName} | Senior Full-Stack Developer (Laravel, NestJS, Spring Boot, Nuxt)`;
   const defaultDesc = `${profile.summary.slice(0, 155)}…`;
 
-  const title = page?.title ? `${page.title} — ${fullName} (Chushin Dev)` : defaultTitle;
+  const title = page?.title ? `${page.title} — ${reverseName}` : defaultTitle;
   const description = page?.description ?? defaultDesc;
   const url = `${SITE_URL}${page?.path ?? ""}`;
 
@@ -35,6 +36,7 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
     keywords: [
       profile.title,
       "Full-Stack Web Developer",
+      "Senior Full-Stack Developer",
       "Chushin Dev",
       "Chushin Technology",
       "Cambodia",
@@ -42,9 +44,15 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
       "Vue",
       "Nuxt",
       "React",
+      "Next.js",
       "NestJS",
       "Bakong KHQR",
+      "NestJS Developer Cambodia",
+      "Laravel Developer Phnom Penh",
+      "Spring Boot Developer",
+      "Docker",
       fullName,
+      reverseName,
     ],
     authors: [{ name: fullName, url: profile.website }],
     creator: fullName,
@@ -103,13 +111,16 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
 export function personJsonLd(cv: any): object {
   const cvData = (cv && cv.profile) ? cv : defaultCV;
   const { profile } = cvData;
+  const fullName = `${profile.name.first} ${profile.name.last}`;
+  const reverseName = `${profile.name.last} ${profile.name.first}`;
   return {
     "@context": "https://schema.org",
     "@type": "Person",
-    name: `${profile.name.first} ${profile.name.last}`,
+    name: reverseName,
+    alternateName: fullName,
     jobTitle: profile.title,
     url: profile.website,
-    sameAs: [profile.telegram, profile.linkedin].filter(Boolean),
+    sameAs: [profile.telegram, profile.linkedin, profile.facebook].filter(Boolean),
     address: {
       "@type": "PostalAddress",
       addressLocality: "Phnom Penh",
