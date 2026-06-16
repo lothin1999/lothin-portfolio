@@ -37,8 +37,9 @@ export async function POST(req: NextRequest) {
       }
     );
   }
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const apiToken = process.env.CLOUDFLARE_AI_API_TOKEN;
+  const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
+  const accountId = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+  const apiToken = clean(process.env.CLOUDFLARE_AI_API_TOKEN);
 
   if (!accountId || !apiToken || apiToken === "your_token_here") {
     return NextResponse.json(

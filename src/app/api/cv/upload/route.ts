@@ -21,130 +21,47 @@ async function uploadViaR2API(
   file: File,
   key: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-  const bucketName = process.env.R2_BUCKET_NAME || "portfolio-data";
+  const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
+  const accountId = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+  const apiToken = clean(process.env.CLOUDFLARE_AI_API_TOKEN);
+  const bucketName = clean(process.env.R2_BUCKET_NAME) || "portfolio-data";
 
-  if (!accountId || !accessKeyId || !secretAccessKey) {
+  if (!accountId || !apiToken) {
     return {
       ok: false,
       error:
-        "R2 credentials not configured. Set CLOUDFLARE_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY in .env",
+        "Cloudflare credentials not configured. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_API_TOKEN in .env",
     };
   }
 
-  const endpoint = `https://${accountId}.r2.cloudflarestorage.com`;
-  const url = `${endpoint}/${bucketName}/${key}`;
-
-  const now = new Date();
-  const dateStr = now.toISOString().replace(/[:-]/g, "").split(".")[0] + "Z";
-  const dateOnly = dateStr.slice(0, 8);
-
-  const buffer = await file.arrayBuffer();
-  const bodyBytes = new Uint8Array(buffer);
-
-  // Compute SHA-256 of payload
-  const hashBuffer = await crypto.subtle.digest("SHA-256", bodyBytes);
-  const payloadHash = Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects/${key}`;
   const contentType = file.type || "application/octet-stream";
-  const region = "auto";
-  const service = "s3";
+  const buffer = await file.arrayBuffer();
 
-  const canonicalHeaders =
-    `host:${accountId}.r2.cloudflarestorage.com\n` +
-    `x-amz-content-sha256:${payloadHash}\n` +
-    `x-amz-date:${dateStr}\n`;
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": contentType,
+      },
+      body: new Uint8Array(buffer),
+    });
 
-  const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+    if (!response.ok) {
+      const text = await response.text();
+      return { ok: false, error: `R2 API error ${response.status}: ${text}` };
+    }
 
-  const canonicalRequest = [
-    "PUT",
-    `/${bucketName}/${key}`,
-    "",
-    canonicalHeaders,
-    signedHeaders,
-    payloadHash,
-  ].join("\n");
+    const json = (await response.json()) as any;
+    if (!json.success) {
+      return { ok: false, error: `R2 API failure: ${JSON.stringify(json.errors)}` };
+    }
 
-  const credentialScope = `${dateOnly}/${region}/${service}/aws4_request`;
-  const requestHashBuffer = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(canonicalRequest)
-  );
-  const requestHash = Array.from(new Uint8Array(requestHashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
-  const stringToSign = [
-    "AWS4-HMAC-SHA256",
-    dateStr,
-    credentialScope,
-    requestHash,
-  ].join("\n");
-
-  // Derive signing key
-  const sign = async (key: CryptoKey, data: string): Promise<CryptoKey> => {
-    const sig = await crypto.subtle.sign(
-      "HMAC",
-      key,
-      new TextEncoder().encode(data)
-    );
-    return crypto.subtle.importKey(
-      "raw",
-      sig,
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-  };
-
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(`AWS4${secretAccessKey}`),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-
-  const kDate = await sign(keyMaterial, dateOnly);
-  const kRegion = await sign(kDate, region);
-  const kService = await sign(kRegion, service);
-  const kSigning = await sign(kService, "aws4_request");
-
-  const signatureBuffer = await crypto.subtle.sign(
-    "HMAC",
-    kSigning,
-    new TextEncoder().encode(stringToSign)
-  );
-  const signature = Array.from(new Uint8Array(signatureBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
-  const authHeader =
-    `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, ` +
-    `SignedHeaders=${signedHeaders}, Signature=${signature}`;
-
-  const response = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": contentType,
-      "x-amz-date": dateStr,
-      "x-amz-content-sha256": payloadHash,
-      Authorization: authHeader,
-    },
-    body: bodyBytes,
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    return { ok: false, error: `R2 API error ${response.status}: ${text}` };
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, error: err.message || "Fetch network error" };
   }
-
-  return { ok: true };
 }
 
 export async function POST(req: NextRequest) {
@@ -211,19 +128,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ url: relativeUrl });
     }
 
-    // --- Path 2: R2 S3-compatible API (local dev with credentials in .env) ---
+    // --- Path 2: R2 REST API (local dev with credentials in .env) ---
     const result = await uploadViaR2API(file, key);
     if (result.ok) {
       return NextResponse.json({ url: relativeUrl });
     }
 
-    // --- Path 3: No credentials at all — tell dev clearly what to do ---
+    // --- Path 3: Credentials present but upload failed, OR no credentials at all ---
+    if (result.error && result.error.includes("not configured")) {
+      return NextResponse.json(
+        {
+          error:
+            "Upload unavailable in local dev. " +
+            "Add CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AI_API_TOKEN to your .env.",
+          detail: result.error,
+        },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
       {
-        error:
-          "Upload unavailable in local dev. " +
-          "Add CLOUDFLARE_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY to your .env, " +
-          "OR run `pnpm preview` to use the full Cloudflare runtime locally.",
+        error: "R2 Upload failed",
         detail: result.error,
       },
       { status: 500 }

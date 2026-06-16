@@ -90,6 +90,12 @@ export function DragDropUploader({
   };
 
   const uploadFile = async (file: File): Promise<string | null> => {
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (ext === "heic" || ext === "heif" || file.type === "image/heic" || file.type === "image/heif") {
+      alert("HEIC/HEIF images are not natively supported by web browsers. Please convert your image to JPG, PNG, or WebP before uploading.");
+      return null;
+    }
+
     if (file.size > maxSizeMB * 1024 * 1024) {
       alert(`File "${file.name}" is too large. Max size is ${maxSizeMB}MB.`);
       return null;
