@@ -241,26 +241,29 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    const { url } = await req.json();
-    if (!url || typeof url !== "string") {
-      return NextResponse.json({ error: "No URL provided" }, { status: 400 });
-    }
+    const body = await req.json();
+    let key = body.key || "";
 
-    let key = "";
-    try {
-      // Use a dummy base URL to parse both relative and absolute URLs
-      const parsedUrl = new URL(url, "http://localhost");
-      const pathname = parsedUrl.pathname;
-      
-      if (pathname.startsWith("/api/images/")) {
-        key = `images/${pathname.substring("/api/images/".length)}`;
-      } else if (pathname.startsWith("/api/cv/pdf/")) {
-        key = `cv/${pathname.substring("/api/cv/pdf/".length)}`;
-      } else {
-        return NextResponse.json({ error: "Invalid file URL format" }, { status: 400 });
+    if (!key) {
+      const url = body.url;
+      if (!url || typeof url !== "string") {
+        return NextResponse.json({ error: "No URL or key provided" }, { status: 400 });
       }
-    } catch (e) {
-      return NextResponse.json({ error: "Invalid URL provided" }, { status: 400 });
+
+      try {
+        const parsedUrl = new URL(url, "http://localhost");
+        const pathname = parsedUrl.pathname;
+        
+        if (pathname.startsWith("/api/images/")) {
+          key = `images/${pathname.substring("/api/images/".length)}`;
+        } else if (pathname.startsWith("/api/cv/pdf/")) {
+          key = `cv/${pathname.substring("/api/cv/pdf/".length)}`;
+        } else {
+          return NextResponse.json({ error: "Invalid file URL format" }, { status: 400 });
+        }
+      } catch (e) {
+        return NextResponse.json({ error: "Invalid URL provided" }, { status: 400 });
+      }
     }
 
     // --- Path 1: Cloudflare Worker binding (production / pnpm preview) ---
@@ -290,6 +293,94 @@ export async function DELETE(req: NextRequest) {
     console.error("File delete exception:", e);
     return NextResponse.json(
       { error: e?.message || "Delete error" },
+      { status: 500 }
+    );
+  }
+}
+
+async function listViaR2API(): Promise<{ ok: boolean; objects?: any[]; error?: string }> {
+  const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
+  const accountId = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+  const apiToken = clean(process.env.CLOUDFLARE_AI_API_TOKEN);
+  const bucketName = clean(process.env.R2_BUCKET_NAME) || "portfolio-data";
+
+  if (!accountId || !apiToken) {
+    return { ok: false, error: "Cloudflare credentials not configured." };
+  }
+
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${apiToken}` },
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      return { ok: false, error: `R2 API error ${response.status}: ${text}` };
+    }
+
+    const json = (await response.json()) as any;
+    if (!json.success) {
+      return { ok: false, error: `R2 API failure: ${JSON.stringify(json.errors)}` };
+    }
+
+    return { ok: true, objects: json.result || [] };
+  } catch (err: any) {
+    return { ok: false, error: err.message || "Fetch network error" };
+  }
+}
+
+export async function GET(req: NextRequest) {
+  const ip = req.ip || req.headers.get("cf-connecting-ip") || "127.0.0.1";
+
+  const { limited, retryAfter } = isRateLimited(ip, {
+    intervalMs: 60 * 1000,
+    maxRequests: 30,
+    limitName: "list_files",
+  });
+
+  if (limited) {
+    return NextResponse.json(
+      { error: "Too Many Requests" },
+      { status: 429, headers: { "Retry-After": retryAfter.toString() } }
+    );
+  }
+
+  const token = req.cookies.get(SESSION_COOKIE)?.value;
+  if (!token || !(await verifySessionToken(token))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const context = await getCFContext();
+    const env = context?.env as any;
+    const bucket = env?.R2_BUCKET_NAME;
+
+    if (bucket) {
+      const listed = await bucket.list();
+      const objects = listed.objects.map((o: any) => ({
+        key: o.key,
+        size: o.size,
+        uploaded: o.uploaded,
+      }));
+      return NextResponse.json({ objects });
+    }
+
+    const result = await listViaR2API();
+    if (result.ok) {
+      return NextResponse.json({ objects: result.objects });
+    }
+
+    return NextResponse.json(
+      { error: "R2 List failed", detail: result.error },
+      { status: 500 }
+    );
+  } catch (e: any) {
+    console.error("File list exception:", e);
+    return NextResponse.json(
+      { error: e?.message || "List error" },
       { status: 500 }
     );
   }

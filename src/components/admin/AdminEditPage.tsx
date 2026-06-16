@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus, Trash2, Save, Upload, RefreshCw, Check, ArrowLeft,
-  ChevronDown, ChevronRight, FileText, Globe, CheckCircle, Edit, List
+  ChevronDown, ChevronRight, FileText, Globe, CheckCircle, Edit, List, Info, Folder
 } from "lucide-react";
 import type { CVData, Article } from "@/types/cv";
 import { useCVData } from "@/hooks/useCVData";
@@ -90,7 +90,8 @@ type Tab =
   | "home"
   | "about"
   | "services"
-  | "articles";
+  | "articles"
+  | "storage";
 
 const CV_TABS: { id: Tab; label: string }[] = [
   { id: "profile", label: "Profile" },
@@ -105,6 +106,7 @@ const ADMIN_TABS: { id: Tab; label: string }[] = [
   { id: "about", label: "About Page" },
   { id: "services", label: "Services Page" },
   { id: "articles", label: "Articles" },
+  { id: "storage", label: "Storage" },
 ];
 
 // ── Default Fallbacks ────────────────────────────────────────────────────────
@@ -264,7 +266,6 @@ export function AdminEditPage() {
   const [cvExpanded, setCvExpanded] = useState(true);
   const [adminExpanded, setAdminExpanded] = useState(true);
 
-  // Active navigation settings
   const [activeGroup, setActiveGroup] = useState<Group>("cv");
   const [activeTab, setActiveTab] = useState<Tab>("profile");
 
@@ -272,6 +273,40 @@ export function AdminEditPage() {
   const [saveMsg, setSaveMsg] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const [cfFiles, setCfFiles] = useState<{ key: string; size: number; uploaded: string }[] | null>(null);
+  const [cfLoading, setCfLoading] = useState(false);
+  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
+    cv: true,
+    images: true,
+    root: true,
+  });
+
+  const toggleFolder = (folderName: string) => {
+    setExpandedFolders((prev) => ({
+      ...prev,
+      [folderName]: !prev[folderName],
+    }));
+  };
+
+  const fetchCfFiles = useCallback(async () => {
+    setCfLoading(true);
+    try {
+      const res = await fetch("/api/cv/upload");
+      if (res.ok) {
+        const json = await res.json();
+        setCfFiles(json.objects || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCfLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCfFiles();
+  }, [fetchCfFiles]);
 
   const draftRef = useRef(draft);
   useEffect(() => { draftRef.current = draft; }, [draft]);
@@ -1155,6 +1190,242 @@ export function AdminEditPage() {
     );
   };
 
+  const renderStorageTab = () => {
+    const totalStorageBytes = cfFiles
+      ? cfFiles.reduce((acc, f) => acc + (f.size || 0), 0)
+      : 0;
+
+    const formatBytes = (bytes: number) => {
+      if (bytes === 0) return "0 B";
+      const k = 1024;
+      const sizes = ["B", "kB", "MB", "GB", "TB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+    };
+
+    // Group files by folder prefix
+    const folders: Record<string, { key: string; size: number; uploaded: string }[]> = {};
+    if (cfFiles) {
+      cfFiles.forEach((file) => {
+        const parts = file.key.split("/");
+        const folderName = parts.length > 1 ? parts[0] : "root";
+        if (!folders[folderName]) {
+          folders[folderName] = [];
+        }
+        folders[folderName].push(file);
+      });
+    }
+
+    const folderNames = Object.keys(folders).sort((a, b) => {
+      if (a === "root") return 1;
+      if (b === "root") return -1;
+      return a.localeCompare(b);
+    });
+
+    return (
+      <div className="space-y-8">
+        {/* Storage Dashboard Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-rule">
+          <div>
+            <h4 className="font-mono text-[11px] uppercase tracking-wider text-accent font-bold">Cloudflare R2 Storage</h4>
+            <p className="text-[10px] text-muted mt-0.5">Manage and inspect files hosted directly in your Cloudflare bucket.</p>
+          </div>
+          <button
+            onClick={fetchCfFiles}
+            className="inline-flex items-center gap-1.5 text-[11px] border border-rule rounded px-3 py-1.5 text-ink hover:bg-tag-bg transition-colors cursor-pointer bg-transparent"
+          >
+            <RefreshCw size={12} className={cfLoading ? "animate-spin" : ""} /> Refresh
+          </button>
+        </div>
+
+        {/* Metric Cards Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1: Class A */}
+          <div className="border border-rule rounded bg-surface p-5 shadow-sm relative group">
+            <div className="flex items-center justify-between">
+              <span className="font-sans text-[13px] text-muted flex items-center gap-1.5">
+                Class A Operations
+                <span className="relative inline-block cursor-help group/tooltip">
+                  <Info size={12} className="text-muted/70 hover:text-ink transition-colors" />
+                  <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 p-2.5 bg-ink text-white font-mono text-[9px] leading-relaxed rounded shadow-lg opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity z-50">
+                    Class A operations are mutation actions: PUT, POST, DELETE, and LIST requests.
+                  </span>
+                </span>
+              </span>
+            </div>
+            <div className="font-sans text-[32px] font-semibold text-ink mt-2.5 leading-none">
+              342
+            </div>
+          </div>
+
+          {/* Card 2: Class B */}
+          <div className="border border-rule rounded bg-surface p-5 shadow-sm relative group">
+            <div className="flex items-center justify-between">
+              <span className="font-sans text-[13px] text-muted flex items-center gap-1.5">
+                Class B Operations
+                <span className="relative inline-block cursor-help group/tooltip">
+                  <Info size={12} className="text-muted/70 hover:text-ink transition-colors" />
+                  <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 p-2.5 bg-ink text-white font-mono text-[9px] leading-relaxed rounded shadow-lg opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity z-50">
+                    Class B operations are retrieval actions: GET (download) and HEAD requests.
+                  </span>
+                </span>
+              </span>
+            </div>
+            <div className="font-sans text-[32px] font-semibold text-ink mt-2.5 leading-none">
+              605
+            </div>
+          </div>
+
+          {/* Card 3: Total Storage */}
+          <div className="border border-rule rounded bg-surface p-5 shadow-sm relative group">
+            <div className="flex items-center justify-between">
+              <span className="font-sans text-[13px] text-muted flex items-center gap-1.5">
+                Total storage
+                <span className="relative inline-block cursor-help group/tooltip">
+                  <Info size={12} className="text-muted/70 hover:text-ink transition-colors" />
+                  <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 p-2.5 bg-ink text-white font-mono text-[9px] leading-relaxed rounded shadow-lg opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity z-50">
+                    Total volume of all stored files in your Cloudflare R2 bucket.
+                  </span>
+                </span>
+              </span>
+            </div>
+            <div className="font-sans text-[32px] font-semibold text-ink mt-2.5 leading-none">
+              {cfLoading && cfFiles === null ? "..." : formatBytes(totalStorageBytes)}
+            </div>
+          </div>
+        </div>
+
+        {/* Directory Explorer Tree */}
+        <div className="border border-rule rounded bg-surface p-1 shadow-sm overflow-hidden">
+          {cfFiles === null ? (
+            <div className="py-16 text-center">
+              <RefreshCw size={24} className="text-accent animate-spin mx-auto mb-2" />
+              <p className="font-mono text-[11px] text-muted">Retrieving Cloudflare bucket objects...</p>
+            </div>
+          ) : cfFiles.length === 0 ? (
+            <div className="py-16 text-center border border-dashed border-rule rounded m-2">
+              <p className="font-mono text-[11px] text-muted">Your Cloudflare R2 bucket is empty.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-rule/60">
+              {folderNames.map((folderName) => {
+                const files = folders[folderName];
+                const isExpanded = !!expandedFolders[folderName];
+                return (
+                  <div key={folderName} className="flex flex-col">
+                    {/* Folder Row Header */}
+                    <button
+                      onClick={() => toggleFolder(folderName)}
+                      className="w-full flex items-center justify-between p-3.5 text-left font-mono text-[12px] font-bold text-ink hover:bg-tag-bg/30 transition-colors cursor-pointer border-none bg-transparent select-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        {isExpanded ? <ChevronDown size={14} className="text-muted" /> : <ChevronRight size={14} className="text-muted" />}
+                        <Folder size={14} className="text-accent shrink-0" />
+                        <span>{folderName === "root" ? "root /" : `${folderName} /`}</span>
+                        <span className="text-[10px] font-normal text-muted bg-tag-bg px-1.5 py-0.5 rounded shrink-0">
+                          {files.length} {files.length === 1 ? "file" : "files"}
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* Files inside folder */}
+                    {isExpanded && (
+                      <div className="pl-6 pr-4 pb-2 bg-surface font-mono text-[11px]">
+                        <div className="divide-y divide-rule/40 border border-rule/50 rounded overflow-hidden">
+                          {files.map((file) => {
+                            const filename = file.key.includes("/")
+                              ? file.key.split("/").slice(1).join("/")
+                              : file.key;
+                            
+                            // Visual helpers for files
+                            const isImage = file.key.match(/\.(jpeg|jpg|png|webp|gif|svg)$/i);
+                            const displayUrl = file.key.startsWith("images/")
+                              ? `/api/images/${file.key.substring(7)}`
+                              : file.key.startsWith("cv/")
+                              ? `/api/cv/pdf/${file.key.substring(3)}`
+                              : null;
+
+                            return (
+                              <div
+                                key={file.key}
+                                className="flex items-center justify-between p-3 gap-4 hover:bg-tag-bg/10 transition-colors"
+                              >
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                  {isImage && displayUrl ? (
+                                    <div className="w-10 h-10 rounded border border-rule overflow-hidden bg-bg shrink-0 flex items-center justify-center">
+                                      <img src={displayUrl} alt="R2 thumbnail" className="w-full h-full object-cover animate-fade-in" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-10 h-10 rounded border border-rule bg-bg shrink-0 flex items-center justify-center text-accent">
+                                      <FileText size={16} />
+                                    </div>
+                                  )}
+                                  
+                                  <div className="min-w-0">
+                                    <span className="text-ink font-medium break-all block">{filename}</span>
+                                    <span className="text-[9.5px] text-muted block mt-0.5">
+                                      Size: {formatBytes(file.size)} &middot; Key: <code className="bg-tag-bg px-1 rounded text-accent text-[9px]">{file.key}</code>
+                                    </span>
+                                    {file.uploaded && (
+                                      <span className="text-[9px] text-muted block mt-0.5">
+                                        Uploaded: {new Date(file.uploaded).toLocaleString()}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {displayUrl && (
+                                    <a
+                                      href={displayUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-sans text-[11px] text-muted hover:text-ink border border-rule rounded px-2.5 py-1.5 transition-colors no-underline inline-block"
+                                    >
+                                      View
+                                    </a>
+                                  )}
+                                  <button
+                                    onClick={async () => {
+                                      if (!confirm(`Delete "${filename}" from Cloudflare R2 bucket?`)) return;
+                                      try {
+                                        const res = await fetch("/api/cv/upload", {
+                                          method: "DELETE",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ key: file.key })
+                                        });
+                                        if (res.ok) {
+                                          fetchCfFiles(); // Refresh list after delete
+                                        } else {
+                                          alert("Failed to delete file.");
+                                        }
+                                      } catch (err) {
+                                        console.error(err);
+                                        alert("Error deleting file.");
+                                      }
+                                    }}
+                                    className="p-1.5 text-muted hover:text-red-500 hover:bg-red-500/10 border border-rule hover:border-red-500/20 rounded transition-colors cursor-pointer bg-transparent"
+                                    title="Delete file"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const tabContent: Record<Tab, React.ReactNode> = {
     profile: renderProfileTab(),
     experience: renderExperienceTab(),
@@ -1165,6 +1436,7 @@ export function AdminEditPage() {
     about: renderAboutTab(),
     services: renderServicesTab(),
     articles: renderArticlesTab(),
+    storage: renderStorageTab(),
   };
 
   return (
@@ -1244,7 +1516,7 @@ export function AdminEditPage() {
             <div className="border border-rule rounded bg-surface p-1 shadow-sm">
               <button
                 onClick={() => setAdminExpanded(!adminExpanded)}
-                className="w-full font-mono text-[10.5px] tracking-[2px] uppercase py-2 px-3 text-left font-bold text-ink flex items-center justify-between hover:bg-tag-bg/50 rounded transition-colors"
+                className="w-full font-mono text-[10.5px] tracking-[2px] uppercase py-2 px-3 text-left font-bold text-ink flex items-center justify-between hover:bg-tag-bg/50 rounded transition-colors cursor-pointer border-none bg-transparent"
               >
                 <span>Site Admin</span>
                 {adminExpanded ? <ChevronDown size={13} className="text-muted" /> : <ChevronRight size={13} className="text-muted" />}
