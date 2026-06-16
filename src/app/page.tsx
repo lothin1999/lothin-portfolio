@@ -59,7 +59,7 @@ export default function HomePage() {
                 // {profile.title} · based in {profile.location}
               </p>
               <p className="text-[16px] text-ink2 leading-relaxed font-sans font-light max-w-[580px] mb-8">
-                {cv.adminSettings?.homeIntro || "Your web platform feels sluggish, features drag, releases break things, and nobody can explain why. I find the structural problems, resolve database and state bottleneck drag, and organize the way forward."}
+                {cv.adminSettings?.homeIntro || "When web applications slow down, deployments become risky, or integrations stall, I help teams find the root cause. I clean up complex codebases, optimize database and rendering performance, and establish robust, type-safe development patterns to move your product forward."}
               </p>
               <div className="flex flex-wrap gap-4 items-center">
                 <Link
