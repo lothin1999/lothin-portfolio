@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
 import { isRateLimited } from "@/lib/rateLimit";
+import { getCVData } from "@/lib/cvStore";
 
 export const runtime = "edge";
 
@@ -179,9 +180,186 @@ export async function POST(req: NextRequest) {
   const { accountId, apiToken } = getCredentials();
 
   try {
-    const body = await req.json();
-    const { name, description, config } = body;
+    const urlParams = new URL(req.url).searchParams;
+    const action = urlParams.get("action");
+    
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch (e) {
+      // Body is optional if parameters are passed in query
+    }
 
+    const name = urlParams.get("name") || body.name;
+
+    if (action === "reindex") {
+      if (!name) {
+        return NextResponse.json({ error: "Missing index name parameter" }, { status: 400 });
+      }
+
+      const cvData = await getCVData();
+      const chunks: { id: string; text: string; metadata: any }[] = [];
+
+      // 1. Profile Summary
+      if (cvData.profile?.summary) {
+        chunks.push({
+          id: "profile-summary",
+          text: `Summary of Thoeun Lothin: ${cvData.profile.summary}`,
+          metadata: {
+            type: "profile",
+            title: "Biography Summary",
+            path: "/about",
+            text: cvData.profile.summary
+          }
+        });
+      }
+
+      // 2. Experiences
+      if (cvData.experiences) {
+        cvData.experiences.forEach((exp) => {
+          exp.bullets.forEach((bullet, bIdx) => {
+            chunks.push({
+              id: `exp-${exp.id}-${bIdx}`,
+              text: `Experience bullet point for Thoeun Lothin at ${exp.company} as ${exp.title}: ${bullet}. Skills used: ${exp.tags.join(", ")}`,
+              metadata: {
+                type: "experience",
+                company: exp.company,
+                title: exp.title,
+                path: "/portfolio",
+                text: bullet
+              }
+            });
+          });
+        });
+      }
+
+      // 3. Skill Groups
+      if (cvData.skillGroups) {
+        cvData.skillGroups.forEach((group, gIdx) => {
+          const text = group.skills.join(", ");
+          chunks.push({
+            id: `skill-group-${gIdx}`,
+            text: `Thoeun Lothin's skills in category ${group.label}: ${text}`,
+            metadata: {
+              type: "skill",
+              category: group.label,
+              path: "/about",
+              text
+            }
+          });
+        });
+      }
+
+      // 4. Educations
+      if (cvData.educations) {
+        cvData.educations.forEach((edu) => {
+          chunks.push({
+            id: `edu-${edu.id}`,
+            text: `Education degree ${edu.degree} from ${edu.school}: ${edu.description}. Courses completed: ${edu.courses.join(", ")}`,
+            metadata: {
+              type: "education",
+              school: edu.school,
+              degree: edu.degree,
+              path: "/about",
+              text: edu.description
+            }
+          });
+        });
+      }
+
+      // 5. Articles
+      if (cvData.articles) {
+        cvData.articles.forEach((art, aIdx) => {
+          chunks.push({
+            id: `article-${aIdx}`,
+            text: `Article written by Thoeun Lothin titled ${art.title}. Excerpt: ${art.excerpt}. Tags: ${art.tags?.join(", ")}`,
+            metadata: {
+              type: "article",
+              title: art.title,
+              slug: art.slug,
+              path: `/articles/${art.slug}`,
+              text: art.excerpt
+            }
+          });
+        });
+      }
+
+      if (!accountId || !apiToken) {
+        return NextResponse.json({
+          success: true,
+          live: false,
+          count: chunks.length,
+          message: `Mock indexed ${chunks.length} sections successfully.`
+        });
+      }
+
+      const vectors = [];
+      for (const chunk of chunks) {
+        try {
+          const embedUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/baai/bge-small-en-v1.5`;
+          const embedRes = await fetch(embedUrl, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              text: [chunk.text]
+            })
+          });
+          if (!embedRes.ok) {
+            const errTxt = await embedRes.text();
+            console.error(`Failed to get embedding for chunk ${chunk.id}: ${errTxt}`);
+            continue;
+          }
+          const embedJson = await embedRes.json() as any;
+          if (embedJson.success && embedJson.result?.data?.[0]) {
+            vectors.push({
+              id: chunk.id,
+              values: embedJson.result.data[0],
+              metadata: chunk.metadata
+            });
+          }
+        } catch (e) {
+          console.error(`Error embedding chunk ${chunk.id}:`, e);
+        }
+      }
+
+      if (vectors.length === 0) {
+        return NextResponse.json({ error: "Failed to generate any embeddings from Workers AI" }, { status: 500 });
+      }
+
+      const insertUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/vectorize/v2/indexes/${name}/insert`;
+      const insertRes = await fetch(insertUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          vectors
+        })
+      });
+
+      if (!insertRes.ok) {
+        const text = await insertRes.text();
+        return NextResponse.json({ error: `Vectorize insert failed: ${text}` }, { status: insertRes.status });
+      }
+
+      const insertJson = await insertRes.json() as any;
+      if (!insertJson.success) {
+        return NextResponse.json({ error: insertJson.errors }, { status: 400 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        live: true,
+        count: vectors.length,
+        result: insertJson.result
+      });
+    }
+
+    const { description, config } = body;
     if (!name || !config || !config.dimensions || !config.metric) {
       return NextResponse.json({ error: "Missing required fields (name, config.dimensions, config.metric)" }, { status: 400 });
     }

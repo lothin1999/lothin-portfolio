@@ -53,7 +53,7 @@ export function Navbar() {
       e.preventDefault();
       setAlertState({
         isOpen: true,
-        title: "Cover Letter Not Found",
+        title: "Letter Not Found",
         message: "The Cover Letter PDF document has not been uploaded to Cloudflare R2 yet. Please contact me directly or check back later.",
       });
     }
@@ -131,11 +131,11 @@ export function Navbar() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 py-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center gap-2 text-ink"
-                title="Download Cover Letter"
-                aria-label="Download Cover Letter"
+                title="Download Letter"
+                aria-label="Download Letter"
               >
                 <Mail size={14} />
-                <span className="font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase">Cover Letter</span>
+                <span className="font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase">Download Letter</span>
               </a>
             )}
             <button
@@ -171,11 +171,11 @@ export function Navbar() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-2 py-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center gap-1.5 text-ink"
-                title="Download Cover Letter"
-                aria-label="Download Cover Letter"
+                title="Download Letter"
+                aria-label="Download Letter"
               >
                 <Mail size={14} />
-                <span className="font-mono text-[9px] font-semibold tracking-wider uppercase">Cover Letter</span>
+                <span className="font-mono text-[9px] font-semibold tracking-wider uppercase">Download Letter</span>
               </a>
             )}
             <button

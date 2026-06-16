@@ -366,6 +366,35 @@ export function AdminEditPage() {
     }
   };
 
+  const deleteProfileAsset = async (field: "photoUrl" | "cvPdfUrl" | "coverLetterPdfUrl", label: string) => {
+    const url = draftRef.current.profile[field];
+    if (!url) return;
+    if (!confirm(`Are you sure you want to delete this ${label} from Cloudflare R2 bucket and profile?`)) return;
+
+    try {
+      const res = await fetch("/api/cv/upload", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+      if (res.ok) {
+        await applyAndSave(d => ({
+          ...d,
+          profile: {
+            ...d.profile,
+            [field]: ""
+          }
+        }));
+        fetchCfFiles();
+      } else {
+        alert(`Failed to delete ${label} from Cloudflare R2.`);
+      }
+    } catch (err) {
+      console.error(`Error deleting ${label}:`, err);
+      alert(`An error occurred while deleting ${label}`);
+    }
+  };
+
   // Articles state
   const [selectedArticleIdx, setSelectedArticleIdx] = useState<number | null>(null);
   const [isCreatingArticle, setIsCreatingArticle] = useState(false);
@@ -1334,6 +1363,103 @@ export function AdminEditPage() {
             </div>
             <div className="font-sans text-[32px] font-semibold text-ink mt-2.5 leading-none">
               {cfLoading && cfFiles === null ? "..." : formatBytes(totalStorageBytes)}
+            </div>
+          </div>
+        </div>
+
+        {/* Managed Cloudflare Profile Assets */}
+        <div className="border border-rule rounded bg-surface p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4 border-b border-rule/50 pb-2">
+            <h5 className="font-mono text-[11px] uppercase tracking-wider text-accent font-bold">Cloudflare</h5>
+            <span className="text-[10px] text-muted font-mono">[ Bound to Profile Settings ]</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* 1. Profile Photo */}
+            <div className="flex flex-col justify-between p-3.5 rounded border border-rule/60 bg-bg/40">
+              <div className="flex items-start gap-3">
+                {draft.profile.photoUrl ? (
+                  <div className="w-12 h-12 rounded border border-rule overflow-hidden bg-bg shrink-0">
+                    <img src={draft.profile.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded border border-rule flex items-center justify-center bg-bg shrink-0 text-muted">
+                    <FileText size={20} />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <span className="font-sans text-[12px] font-semibold text-ink block">Profile Image</span>
+                  <span className="text-[10px] text-muted font-mono truncate block mt-0.5">
+                    {draft.profile.photoUrl ? draft.profile.photoUrl.split("/").pop() : "Not Uploaded"}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-end">
+                {draft.profile.photoUrl ? (
+                  <button
+                    onClick={() => deleteProfileAsset("photoUrl", "Profile Photo")}
+                    className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-600 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/30 rounded px-2.5 py-1.5 transition-all cursor-pointer font-mono uppercase tracking-wide border-none bg-transparent"
+                  >
+                    <Trash2 size={11} /> Delete
+                  </button>
+                ) : (
+                  <span className="text-[9.5px] text-muted font-mono italic">Upload in Profile tab</span>
+                )}
+              </div>
+            </div>
+
+            {/* 2. CV PDF */}
+            <div className="flex flex-col justify-between p-3.5 rounded border border-rule/60 bg-bg/40">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded border border-rule flex items-center justify-center bg-bg shrink-0 text-accent">
+                  <FileText size={20} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="font-sans text-[12px] font-semibold text-ink block">CV PDF Document</span>
+                  <span className="text-[10px] text-muted font-mono truncate block mt-0.5">
+                    {draft.profile.cvPdfUrl ? draft.profile.cvPdfUrl.split("/").pop() : "Not Uploaded"}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-end">
+                {draft.profile.cvPdfUrl ? (
+                  <button
+                    onClick={() => deleteProfileAsset("cvPdfUrl", "CV PDF")}
+                    className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-600 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/30 rounded px-2.5 py-1.5 transition-all cursor-pointer font-mono uppercase tracking-wide border-none bg-transparent"
+                  >
+                    <Trash2 size={11} /> Delete
+                  </button>
+                ) : (
+                  <span className="text-[9.5px] text-muted font-mono italic">Upload in Profile tab</span>
+                )}
+              </div>
+            </div>
+
+            {/* 3. Cover Letter PDF */}
+            <div className="flex flex-col justify-between p-3.5 rounded border border-rule/60 bg-bg/40">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded border border-rule flex items-center justify-center bg-bg shrink-0 text-accent">
+                  <FileText size={20} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="font-sans text-[12px] font-semibold text-ink block">Cover Letter PDF</span>
+                  <span className="text-[10px] text-muted font-mono truncate block mt-0.5">
+                    {draft.profile.coverLetterPdfUrl ? draft.profile.coverLetterPdfUrl.split("/").pop() : "Not Uploaded"}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-end">
+                {draft.profile.coverLetterPdfUrl ? (
+                  <button
+                    onClick={() => deleteProfileAsset("coverLetterPdfUrl", "Cover Letter")}
+                    className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-600 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/30 rounded px-2.5 py-1.5 transition-all cursor-pointer font-mono uppercase tracking-wide border-none bg-transparent"
+                  >
+                    <Trash2 size={11} /> Delete
+                  </button>
+                ) : (
+                  <span className="text-[9.5px] text-muted font-mono italic">Upload in Profile tab</span>
+                )}
+              </div>
             </div>
           </div>
         </div>
