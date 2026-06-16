@@ -16,6 +16,7 @@ import { AdminButton } from "@/components/admin/AdminButton";
 import { getCVData } from "@/lib/cvStore";
 import { buildMetadata, personJsonLd } from "@/lib/seo";
 import { CVContentWrapper } from "@/components/layout/CVContentWrapper";
+import Script from "next/script";
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
@@ -51,6 +52,7 @@ export default async function RootLayout({
 }) {
   const cv = await getCVData();
   const jsonLd = personJsonLd(cv);
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
     <html
@@ -91,6 +93,23 @@ export default async function RootLayout({
             </SettingsProvider>
           </CVProvider>
         </ThemeProvider>
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+
+                gtag('config', '${gaId}');
+              `}
+            </Script>
+          </>
+        )}
       </body>
     </html>
   );
