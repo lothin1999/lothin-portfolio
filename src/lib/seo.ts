@@ -36,7 +36,7 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
     keywords: [
       profile.title,
       "Full-Stack Web Developer",
-      "Senior Full-Stack Developer",
+      "Full-Stack Developer",
       "Chushin Dev",
       "Chushin Technology",
       "Cambodia",
@@ -91,16 +91,16 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
     robots: page?.noIndex
       ? { index: false, follow: false }
       : {
+        index: true,
+        follow: true,
+        googleBot: {
           index: true,
           follow: true,
-          googleBot: {
-            index: true,
-            follow: true,
-            "max-video-preview": -1,
-            "max-image-preview": "large",
-            "max-snippet": -1,
-          },
+          "max-video-preview": -1,
+          "max-image-preview": "large",
+          "max-snippet": -1,
         },
+      },
     verification: {
       google: "ubtwP5KtvCl8qcDlgXh866qrykLOSi_QO0nWMX7C4Ps",
     },
