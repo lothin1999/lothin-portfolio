@@ -21,7 +21,7 @@ const CVContext = createContext<CVContextValue | null>(null);
 export function CVProvider({ children, initialData }: { children: React.ReactNode; initialData?: CVData }) {
   const [cv, setCV] = useState<CVData>(initialData && initialData.profile ? initialData : defaultCV);
   const [isAdmin, setAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(!initialData || !initialData.profile);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
   const [ciphertext, setCiphertext] = useState<string | null>(null);
 
@@ -43,24 +43,35 @@ export function CVProvider({ children, initialData }: { children: React.ReactNod
   const refreshCV = useCallback(async (showLoading = true) => {
     if (showLoading) setIsLoading(true);
     try {
-      const res = await fetch("/api/cv");
-      if (res.ok) {
-        const data = await res.json();
+      const [cvRes, authRes] = await Promise.all([
+        fetch("/api/cv"),
+        fetch("/api/auth/check"),
+      ]);
+
+      if (cvRes.ok) {
+        const data = await cvRes.json();
         if (data && data.profile) {
           setCV(data);
           setIsLocked(false);
         }
       }
+
+      if (authRes.ok) {
+        const authData = await authRes.json();
+        if (authData.authorized) {
+          setAdmin(true);
+        }
+      }
     } catch (err) {
-      console.error("Error loading CV data:", err);
+      console.error("Error loading CV/auth data:", err);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    refreshCV(!initialData || !initialData.profile);
-  }, [refreshCV, initialData]);
+    refreshCV(true);
+  }, [refreshCV]);
 
   const unlock = useCallback(async (passcode: string) => {
     return false;

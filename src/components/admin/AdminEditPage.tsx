@@ -233,7 +233,7 @@ export function AdminEditPage() {
 
   // Deep clone for editing
   const [draft, setDraft] = useState<CVData>({
-    profile: { name: { first: "", last: "" }, title: "", tagline: "", summary: "", location: "", website: "", telegram: "", telegramHandle: "", linkedin: "", phones: [], cvPdfUrl: "", languages: [] },
+    profile: { name: { first: "", last: "" }, title: "", tagline: "", summary: "", location: "", website: "", telegram: "", telegramHandle: "", linkedin: "", phones: [], cvPdfUrl: "", coverLetterPdfUrl: "", languages: [] },
     experiences: [],
     skillGroups: [],
     educations: [],
@@ -249,6 +249,7 @@ export function AdminEditPage() {
       if (!cloned.adminSettings) cloned.adminSettings = {};
       if (!cloned.articles) cloned.articles = [];
       if (!cloned.profile.cvPdfUrl) cloned.profile.cvPdfUrl = "";
+      if (!cloned.profile.coverLetterPdfUrl) cloned.profile.coverLetterPdfUrl = "";
       if (cloned.experiences) {
         cloned.experiences = cloned.experiences.map((exp: any) => ({
           ...exp,
@@ -526,7 +527,7 @@ export function AdminEditPage() {
           onChange={(v) => setDraft(d => { const p = [...d.profile.phones]; p[1] = v; return { ...d, profile: { ...d.profile, phones: p } }; })} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-rule">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-rule">
         <div>
           <DragDropUploader
             label="Profile Photo"
@@ -542,6 +543,14 @@ export function AdminEditPage() {
             accept="application/pdf"
             value={draft.profile.cvPdfUrl || ""}
             onChange={(url) => setDraft(d => ({ ...d, profile: { ...d.profile, cvPdfUrl: url } }))}
+          />
+        </div>
+        <div>
+          <DragDropUploader
+            label="Cover Letter PDF Document"
+            accept="application/pdf"
+            value={draft.profile.coverLetterPdfUrl || ""}
+            onChange={(url) => setDraft(d => ({ ...d, profile: { ...d.profile, coverLetterPdfUrl: url } }))}
           />
         </div>
       </div>

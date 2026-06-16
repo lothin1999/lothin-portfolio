@@ -14,6 +14,7 @@ export const defaultCV: CVData = {
     phones: [],
     photoUrl: "",
     cvPdfUrl: "",
+    coverLetterPdfUrl: "",
     languages: [],
   },
   experiences: [],

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Menu, X, Sparkles, FileText } from "lucide-react";
+import { Menu, X, Sparkles, FileText, Mail, AlertCircle } from "lucide-react";
 import { DarkModeToggle } from "@/components/ui/DarkModeToggle";
 import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar";
 import { useCVData } from "@/hooks/useCVData";
@@ -26,6 +26,38 @@ export function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const [alertState, setAlertState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+  });
+
+  const handleDownloadCV = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!cv.profile?.cvPdfUrl) {
+      e.preventDefault();
+      setAlertState({
+        isOpen: true,
+        title: "CV Not Found",
+        message: "The CV PDF document has not been uploaded to Cloudflare R2 yet. Please contact me directly or check back later.",
+      });
+    }
+  };
+
+  const handleDownloadCoverLetter = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!cv.profile?.coverLetterPdfUrl) {
+      e.preventDefault();
+      setAlertState({
+        isOpen: true,
+        title: "Cover Letter Not Found",
+        message: "The Cover Letter PDF document has not been uploaded to Cloudflare R2 yet. Please contact me directly or check back later.",
+      });
+    }
+  };
 
   // Track scroll shadow
   useEffect(() => {
@@ -81,17 +113,30 @@ export function Navbar() {
                 </li>
               ))}
             </ul>
-            <a
-              href={cv.profile?.cvPdfUrl || "/api/cv/download"}
-              download={!cv.profile?.cvPdfUrl ? "LOTHIN_THOEUN_CV.html" : undefined}
-              target={cv.profile?.cvPdfUrl ? "_blank" : undefined}
-              rel="noopener noreferrer"
-              className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
-              title="Download CV"
-              aria-label="Download CV"
-            >
-              <FileText size={15} />
-            </a>
+            {cv.profile?.cvPdfUrl && (
+              <a
+                href={cv.profile.cvPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
+                title="Download CV"
+                aria-label="Download CV"
+              >
+                <FileText size={15} />
+              </a>
+            )}
+            {cv.profile?.coverLetterPdfUrl && (
+              <a
+                href={cv.profile.coverLetterPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
+                title="Download Cover Letter"
+                aria-label="Download Cover Letter"
+              >
+                <Mail size={15} />
+              </a>
+            )}
             <button
               onClick={() => setAiOpen(!aiOpen)}
               className={cn(
@@ -107,17 +152,30 @@ export function Navbar() {
           </div>
 
           <div className="md:hidden flex items-center gap-2">
-            <a
-              href={cv.profile?.cvPdfUrl || "/api/cv/download"}
-              download={!cv.profile?.cvPdfUrl ? "LOTHIN_THOEUN_CV.html" : undefined}
-              target={cv.profile?.cvPdfUrl ? "_blank" : undefined}
-              rel="noopener noreferrer"
-              className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
-              title="Download CV"
-              aria-label="Download CV"
-            >
-              <FileText size={15} />
-            </a>
+            {cv.profile?.cvPdfUrl && (
+              <a
+                href={cv.profile.cvPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
+                title="Download CV"
+                aria-label="Download CV"
+              >
+                <FileText size={15} />
+              </a>
+            )}
+            {cv.profile?.coverLetterPdfUrl && (
+              <a
+                href={cv.profile.coverLetterPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
+                title="Download Cover Letter"
+                aria-label="Download Cover Letter"
+              >
+                <Mail size={15} />
+              </a>
+            )}
             <button
               onClick={() => setAiOpen(!aiOpen)}
               className={cn(
@@ -165,6 +223,33 @@ export function Navbar() {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {alertState.isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-bg/65 backdrop-blur-md animate-alert-fade-in">
+          <div className="bg-surface border border-rule max-w-sm w-full rounded p-6 shadow-2xl relative overflow-hidden animate-alert-zoom-in">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-accent to-accent-orange" />
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                <AlertCircle size={22} />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold">
+                  {alertState.title}
+                </h3>
+                <p className="text-[12.5px] text-ink2 leading-relaxed font-sans font-light">
+                  {alertState.message}
+                </p>
+              </div>
+              <button
+                onClick={() => setAlertState(prev => ({ ...prev, isOpen: false }))}
+                className="mt-2 w-full py-2 px-4 bg-ink hover:bg-accent text-white hover:text-white dark:bg-ink dark:hover:bg-accent text-xs font-mono rounded tracking-wide transition-all duration-200 cursor-pointer"
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

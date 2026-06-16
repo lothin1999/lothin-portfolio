@@ -15,6 +15,7 @@ export interface Profile {
   phones: string[];
   photoUrl?: string;
   cvPdfUrl?: string;
+  coverLetterPdfUrl?: string;
   languages: { name: string; level: string }[];
 }
 
