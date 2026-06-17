@@ -433,7 +433,7 @@ export const cvTemplate = `<!DOCTYPE html>
     <!-- START_CL_CONTACT -->
 <div style="font-size:11px; color:#9a8a78; line-height:1.9; font-weight:300; text-align:right;">
       <div style="color:#e8dece;">098 63 88 78 &nbsp;/&nbsp; 066 69 55 37</div>
-      <div><a href="https://lothin-dev.vercel.app" style="color:#c4a882; text-decoration:none;">lothin-dev.vercel.app</a></div>
+      <div><a href="https://lothin-portfolio.pages.dev" style="color:#c4a882; text-decoration:none;">lothin-portfolio.pages.dev</a></div>
       <div><a href="https://t.me/lothindev" style="color:#c4a882; text-decoration:none;">t.me/lothindev</a></div>
       <div><a href="https://linkedin.com/in/lothin-dev" style="color:#c4a882; text-decoration:none;">linkedin.com/in/lothin-dev</a></div>
       <div style="margin-top:4px;">Phnom Penh, Cambodia &nbsp;·&nbsp; June 2026</div>
@@ -558,7 +558,7 @@ export const cvTemplate = `<!DOCTYPE html>
       </div>
       <div class="contact-item">
         <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
-        <span class="contact-text"><a href="https://lothin-dev.vercel.app">lothin-dev.vercel.app</a></span>
+        <span class="contact-text"><a href="https://lothin-portfolio.pages.dev">lothin-portfolio.pages.dev</a></span>
       </div>
       <div class="contact-item">
         <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21.5 4.5L2.5 10.5l7 2.5m12-8.5l-5 15-5-7.5m10-7.5l-12 8"/></svg>
