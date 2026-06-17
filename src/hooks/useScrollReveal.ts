@@ -68,11 +68,12 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(
             }
           );
         } catch {
-          // SplitText not available (free GSAP), fall back to fadeUp
           gsap.fromTo(el,
             { opacity: 0, y },
-            { opacity: 1, y: 0, duration, delay, ease: "power3.out",
-              scrollTrigger: { trigger: el, start, toggleActions: "play none none none" } }
+            {
+              opacity: 1, y: 0, duration, delay, ease: "power3.out",
+              scrollTrigger: { trigger: el, start, toggleActions: "play none none none" }
+            }
           );
         }
         return;
@@ -125,7 +126,6 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(
   return ref;
 }
 
-/** Parallax hook — element moves at a different rate while scrolling */
 export function useParallax<T extends HTMLElement = HTMLDivElement>(
   speed: number = 0.3
 ) {
@@ -154,7 +154,6 @@ export function useParallax<T extends HTMLElement = HTMLDivElement>(
   return ref;
 }
 
-/** Scroll progress line — draws a line from 0 to 100% as page scrolls */
 export function useScrollProgress<T extends HTMLElement = HTMLDivElement>() {
   const ref = useRef<T>(null);
 

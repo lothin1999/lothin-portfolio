@@ -1,8 +1,8 @@
 // src/lib/rateLimit.ts
 
 interface RateLimitConfig {
-  intervalMs: number; // e.g. 60000 for 1 minute
-  maxRequests: number; // e.g. 5 requests per interval
+  intervalMs: number;
+  maxRequests: number;
   limitName?: string;
 }
 
@@ -11,9 +11,6 @@ interface RequestRecord {
   resetTime: number;
 }
 
-// In-memory store for rate limiting.
-// Note: Since Cloudflare Worker/Edge instances are distributed, this limits per edge instance (warm container).
-// This is highly effective against bot-nets and spam attacks without needing a database.
 const stores: Record<string, Map<string, RequestRecord>> = {};
 
 export function isRateLimited(
@@ -28,7 +25,6 @@ export function isRateLimited(
   const store = stores[limitName];
   const now = Date.now();
 
-  // Clean up old entries periodically to prevent memory leaks (keep map size bounded to 5,000)
   if (store.size > 5000) {
     store.forEach((record, key) => {
       if (now > record.resetTime) {
@@ -40,7 +36,6 @@ export function isRateLimited(
   const record = store.get(ip);
 
   if (!record || now > record.resetTime) {
-    // New window or expired record
     store.set(ip, {
       count: 1,
       resetTime: now + config.intervalMs,

@@ -1,8 +1,4 @@
 // src/lib/cvStore.ts
-// Abstraction over CV data persistence.
-// - Cloudflare R2: Primary edge object storage (production)
-// - Local API: Persistent local JSON endpoint (local development)
-
 import { defaultCV } from "./data";
 import type { CVData } from "@/types/cv";
 import localCV from "../../cv.json";
@@ -16,7 +12,6 @@ interface MinimalR2Bucket {
   put(key: string, value: string): Promise<any>;
 }
 
-// Safely get Cloudflare Request Context using dynamic import to prevent loading crashes in non-Cloudflare environments
 async function getCFContext() {
   try {
     const { getRequestContext } = await import("@cloudflare/next-on-pages");
@@ -39,7 +34,6 @@ async function ensureDecrypted(data: any): Promise<CVData> {
     }
   }
 
-  // Ensure robust properties to prevent crashes on outdated schema shapes
   const result = { ...decrypted } as CVData;
   if (!result.profile) result.profile = (localCV as any).profile || {};
   if (!result.experiences) {
@@ -60,10 +54,8 @@ async function ensureDecrypted(data: any): Promise<CVData> {
 }
 
 export async function getCVData(): Promise<CVData> {
-  // 1. Try in-memory cache first
   if (memCache) return memCache;
 
-  // 2. Try Cloudflare R2 Object Storage
   try {
     const context = await getCFContext();
     const env = context?.env as any;
@@ -81,10 +73,8 @@ export async function getCVData(): Promise<CVData> {
       }
     }
   } catch (err) {
-    // Silence warning when running outside Cloudflare env
   }
 
-  // 3. Try fetching from local save endpoint in local development
   if (process.env.NODE_ENV === "development") {
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -99,11 +89,9 @@ export async function getCVData(): Promise<CVData> {
         return memCache;
       }
     } catch (err) {
-      // ignore local dev endpoint failures
     }
   }
 
-  // 4. Try env-injected data
   try {
     const raw = process.env.CV_JSON_DATA;
     if (raw) {
@@ -116,10 +104,8 @@ export async function getCVData(): Promise<CVData> {
       return decrypted;
     }
   } catch {
-    // ignore
   }
 
-  // 5. Fall back to local cv.json seed data
   const fallback = await ensureDecrypted(localCV);
   fallback.updatedAt = new Date().toISOString();
   memCache = fallback;
@@ -156,7 +142,6 @@ export async function saveCVData(data: CVData): Promise<void> {
   const updatedData = { ...data, updatedAt: new Date().toISOString() };
   memCache = updatedData;
 
-  // 1. Write to Cloudflare R2 Object Storage (if running inside Cloudflare runtime with binding)
   try {
     const context = await getCFContext();
     const env = context?.env as any;
@@ -166,17 +151,13 @@ export async function saveCVData(data: CVData): Promise<void> {
       return;
     }
   } catch (err) {
-    // Ignore
   }
 
-  // 2. Write to Cloudflare R2 via API (if running locally/elsewhere and credentials are present)
   try {
     await saveToR2API(updatedData);
   } catch (err) {
-    // Ignore
   }
 
-  // 3. Save locally via Node save endpoint in development
   if (process.env.NODE_ENV === "development") {
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -191,6 +172,5 @@ export async function saveCVData(data: CVData): Promise<void> {
     }
   }
 
-  // 4. Fallback to process.env
   process.env.CV_JSON_DATA = JSON.stringify(updatedData);
 }

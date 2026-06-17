@@ -13,8 +13,6 @@
 
 import { SignJWT, jwtVerify, createRemoteJWKSet } from "jose";
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
 const cleanEnvVar = (val: string | undefined) => (val || "").trim().replace(/^['"]|['"]$/g, "");
 
 function getSecret(): Uint8Array {
@@ -28,7 +26,6 @@ function getSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-/** HMAC-SHA256 using the Web Crypto API — works on Edge & Node */
 async function hmacSha256(key: string, data: string): Promise<string> {
   const keyData = new TextEncoder().encode(key);
   const dataBytes = new TextEncoder().encode(data);
@@ -41,7 +38,6 @@ async function hmacSha256(key: string, data: string): Promise<string> {
     .join("");
 }
 
-/** Constant-time string comparison to prevent timing attacks */
 function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
@@ -51,15 +47,10 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-// ── Public API ────────────────────────────────────────────────────────────────
-
 const JWKS = createRemoteJWKSet(
   new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com")
 );
 
-/**
- * Verify a Firebase ID token.
- */
 export async function verifyFirebaseIdToken(token: string) {
   const projectId = cleanEnvVar(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
   if (!projectId) {
@@ -70,7 +61,7 @@ export async function verifyFirebaseIdToken(token: string) {
       issuer: `https://securetoken.google.com/${projectId}`,
       audience: projectId,
     });
-    return payload as { email?: string; email_verified?: boolean; [key: string]: any };
+    return payload as { email?: string; email_verified?: boolean;[key: string]: any };
   } catch (err) {
     console.error("Firebase ID Token verification failed:", err);
     return null;
