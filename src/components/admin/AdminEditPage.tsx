@@ -700,6 +700,7 @@ export function AdminEditPage() {
           <DragDropUploader
             label="CV PDF Document"
             accept="application/pdf"
+            uploadType="cv"
             value={draft.profile.cvPdfUrl || ""}
             onChange={(url) => applyAndSave(d => ({ ...d, profile: { ...d.profile, cvPdfUrl: url } }))}
           />
@@ -708,6 +709,7 @@ export function AdminEditPage() {
           <DragDropUploader
             label="Cover Letter PDF Document"
             accept="application/pdf"
+            uploadType="letter"
             value={draft.profile.coverLetterPdfUrl || ""}
             onChange={(url) => applyAndSave(d => ({ ...d, profile: { ...d.profile, coverLetterPdfUrl: url } }))}
           />
@@ -1549,6 +1551,8 @@ export function AdminEditPage() {
                               ? `/api/images/${file.key.substring(7)}`
                               : file.key.startsWith("cv/")
                               ? `/api/cv/pdf/${file.key.substring(3)}`
+                              : file.key.startsWith("letter/")
+                              ? `/api/cv/pdf/${file.key.substring(7)}`
                               : null;
 
                             return (

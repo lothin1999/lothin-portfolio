@@ -100,6 +100,7 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const uploadType = formData.get("type") as string | null;
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
@@ -112,9 +113,15 @@ export async function POST(req: NextRequest) {
     let relativeUrl = "";
 
     if (isPdf) {
-      const filename = `cv-${Date.now()}.pdf`;
-      key = `cv/${filename}`;
-      relativeUrl = `/api/cv/pdf/${filename}`;
+      if (uploadType === "letter") {
+        const filename = `letter-${Date.now()}.pdf`;
+        key = `letter/${filename}`;
+        relativeUrl = `/api/cv/pdf/${filename}`;
+      } else {
+        const filename = `cv-${Date.now()}.pdf`;
+        key = `cv/${filename}`;
+        relativeUrl = `/api/cv/pdf/${filename}`;
+      }
     } else {
       const filename = `img-${Date.now()}.${extension}`;
       key = `images/${filename}`;
@@ -257,7 +264,12 @@ export async function DELETE(req: NextRequest) {
         if (pathname.startsWith("/api/images/")) {
           key = `images/${pathname.substring("/api/images/".length)}`;
         } else if (pathname.startsWith("/api/cv/pdf/")) {
-          key = `cv/${pathname.substring("/api/cv/pdf/".length)}`;
+          const filename = pathname.substring("/api/cv/pdf/".length);
+          if (filename.startsWith("letter-")) {
+            key = `letter/${filename}`;
+          } else {
+            key = `cv/${filename}`;
+          }
         } else {
           return NextResponse.json({ error: "Invalid file URL format" }, { status: 400 });
         }

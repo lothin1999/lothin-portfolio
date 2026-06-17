@@ -50,7 +50,7 @@ export async function GET(
 ) {
   try {
     const filename = params.filename;
-    const key = `cv/${filename}`;
+    const key = filename.startsWith("letter-") ? `letter/${filename}` : `cv/${filename}`;
 
     // --- Path 1: Cloudflare Worker binding (production / pnpm preview) ---
     const context = await getCFContext();

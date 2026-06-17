@@ -11,6 +11,7 @@ interface DragDropUploaderProps {
   multiple?: boolean;
   maxSizeMB?: number;
   compressMaxWidth?: number;
+  uploadType?: string;
 }
 
 // Client-side image compression helper
@@ -74,6 +75,7 @@ export function DragDropUploader({
   multiple = false,
   maxSizeMB = 5,
   compressMaxWidth = 1200,
+  uploadType,
 }: DragDropUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -141,6 +143,9 @@ export function DragDropUploader({
 
     const fd = new FormData();
     fd.append("file", fileToUpload);
+    if (uploadType) {
+      fd.append("type", uploadType);
+    }
 
     try {
       const res = await fetch("/api/cv/upload", {

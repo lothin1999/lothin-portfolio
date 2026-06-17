@@ -53,8 +53,55 @@ async function ensureDecrypted(data: any): Promise<CVData> {
   return result;
 }
 
+interface R2Object {
+  key: string;
+  size?: number;
+  uploaded?: string;
+}
+
+async function listR2Files(): Promise<R2Object[]> {
+  try {
+    const context = await getCFContext();
+    const env = context?.env as any;
+    const bucket = env?.R2_BUCKET_NAME;
+    if (bucket && typeof bucket.list === "function") {
+      const listed = await bucket.list();
+      return listed.objects || [];
+    }
+  } catch (err) {
+    console.error("Worker R2 list failed:", err);
+  }
+
+  try {
+    const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
+    const accountId = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+    const apiToken = clean(process.env.CLOUDFLARE_AI_API_TOKEN);
+    const bucketName = clean(process.env.R2_BUCKET_NAME) || "portfolio-data";
+
+    if (accountId && apiToken) {
+      const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      if (response.ok) {
+        const json = await response.json() as any;
+        if (json.success) {
+          return json.result || [];
+        }
+      }
+    }
+  } catch (err) {
+    console.error("REST API R2 list failed:", err);
+  }
+
+  return [];
+}
+
 export async function getCVData(): Promise<CVData> {
   if (memCache) return memCache;
+
+  let decrypted: CVData | null = null;
 
   try {
     const context = await getCFContext();
@@ -64,52 +111,102 @@ export async function getCVData(): Promise<CVData> {
       const object = await bucket.get(R2_FILE_KEY);
       if (object) {
         const parsed = (await object.json()) as any;
-        const decrypted = await ensureDecrypted(parsed);
-        if (!decrypted.articles || decrypted.articles.length === 0) {
-          decrypted.articles = defaultCV.articles;
-        }
-        memCache = decrypted;
-        return memCache;
+        decrypted = await ensureDecrypted(parsed);
       }
     }
   } catch (err) {
+    console.error("Failed to load CV from R2 bucket:", err);
   }
 
-  if (process.env.NODE_ENV === "development") {
+  if (!decrypted && process.env.NODE_ENV === "development") {
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
       const res = await fetch(`${siteUrl}/api/cv/local-save`, { cache: "no-store" });
       if (res.ok) {
         const parsed = await res.json();
-        const decrypted = await ensureDecrypted(parsed);
-        if (!decrypted.articles || decrypted.articles.length === 0) {
-          decrypted.articles = defaultCV.articles;
-        }
-        memCache = decrypted;
-        return memCache;
+        decrypted = await ensureDecrypted(parsed);
       }
     } catch (err) {
+      console.error("Failed to load CV from local-save:", err);
     }
   }
 
-  try {
-    const raw = process.env.CV_JSON_DATA;
-    if (raw) {
-      const parsed = JSON.parse(raw) as any;
-      const decrypted = await ensureDecrypted(parsed);
-      if (!decrypted.articles || decrypted.articles.length === 0) {
-        decrypted.articles = defaultCV.articles;
+  if (!decrypted) {
+    try {
+      const raw = process.env.CV_JSON_DATA;
+      if (raw) {
+        const parsed = JSON.parse(raw) as any;
+        decrypted = await ensureDecrypted(parsed);
       }
-      memCache = decrypted;
-      return decrypted;
+    } catch (err) {
+      console.error("Failed to load CV from env:", err);
     }
-  } catch {
   }
 
-  const fallback = await ensureDecrypted(localCV);
-  fallback.updatedAt = new Date().toISOString();
-  memCache = fallback;
-  return fallback;
+  if (!decrypted) {
+    decrypted = await ensureDecrypted(localCV);
+    decrypted.updatedAt = new Date().toISOString();
+  }
+
+  if (!decrypted.articles || decrypted.articles.length === 0) {
+    decrypted.articles = defaultCV.articles;
+  }
+
+  // Query Cloudflare R2 files dynamically to set cvPdfUrl and coverLetterPdfUrl
+  try {
+    const files = await listR2Files();
+
+    // CV: key starts with "cv/" and ends with ".pdf"
+    const cvFiles = files.filter(f => f.key.startsWith("cv/") && f.key.endsWith(".pdf"));
+    if (cvFiles.length > 0) {
+      cvFiles.sort((a, b) => {
+        const timeA = a.uploaded ? new Date(a.uploaded).getTime() : 0;
+        const timeB = b.uploaded ? new Date(b.uploaded).getTime() : 0;
+        if (timeA && timeB) return timeB - timeA;
+
+        const matchA = a.key.match(/cv-(\d+)\.pdf/);
+        const matchB = b.key.match(/cv-(\d+)\.pdf/);
+        if (matchA && matchB) {
+          return parseInt(matchB[1], 10) - parseInt(matchA[1], 10);
+        }
+        return b.key.localeCompare(a.key);
+      });
+      
+      const latestCv = cvFiles[0];
+      const filename = latestCv.key.substring(3); // Remove "cv/"
+      decrypted.profile.cvPdfUrl = `/api/cv/pdf/${filename}`;
+    } else {
+      decrypted.profile.cvPdfUrl = "";
+    }
+
+    // Cover Letter: key starts with "letter/" and ends with ".pdf"
+    const letterFiles = files.filter(f => f.key.startsWith("letter/") && f.key.endsWith(".pdf"));
+    if (letterFiles.length > 0) {
+      letterFiles.sort((a, b) => {
+        const timeA = a.uploaded ? new Date(a.uploaded).getTime() : 0;
+        const timeB = b.uploaded ? new Date(b.uploaded).getTime() : 0;
+        if (timeA && timeB) return timeB - timeA;
+
+        const matchA = a.key.match(/letter-(\d+)\.pdf/);
+        const matchB = b.key.match(/letter-(\d+)\.pdf/);
+        if (matchA && matchB) {
+          return parseInt(matchB[1], 10) - parseInt(matchA[1], 10);
+        }
+        return b.key.localeCompare(a.key);
+      });
+      
+      const latestLetter = letterFiles[0];
+      const filename = latestLetter.key.substring(7); // Remove "letter/"
+      decrypted.profile.coverLetterPdfUrl = `/api/cv/pdf/${filename}`;
+    } else {
+      decrypted.profile.coverLetterPdfUrl = "";
+    }
+  } catch (err) {
+    console.error("Error setting dynamic CV/Letter URLs from R2:", err);
+  }
+
+  memCache = decrypted;
+  return memCache;
 }
 
 async function saveToR2API(jsonData: any): Promise<boolean> {
@@ -148,14 +245,17 @@ export async function saveCVData(data: CVData): Promise<void> {
     const bucket = env?.R2_BUCKET_NAME as MinimalR2Bucket | undefined;
     if (bucket) {
       await bucket.put(R2_FILE_KEY, JSON.stringify(updatedData));
+      memCache = null;
       return;
     }
   } catch (err) {
+    console.error("Failed to save CV to R2 bucket:", err);
   }
 
   try {
     await saveToR2API(updatedData);
   } catch (err) {
+    console.error("Failed to save CV via API:", err);
   }
 
   if (process.env.NODE_ENV === "development") {
@@ -166,6 +266,7 @@ export async function saveCVData(data: CVData): Promise<void> {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),
       });
+      memCache = null;
       return;
     } catch (err) {
       console.error("Failed to save CV data to local endpoint:", err);
@@ -173,4 +274,5 @@ export async function saveCVData(data: CVData): Promise<void> {
   }
 
   process.env.CV_JSON_DATA = JSON.stringify(updatedData);
+  memCache = null;
 }
