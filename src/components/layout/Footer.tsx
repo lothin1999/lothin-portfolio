@@ -84,6 +84,20 @@ export function Footer() {
                     </a>
                   </li>
                 )}
+                {profile.cvPdfUrl && (
+                  <li>
+                    <a href={profile.cvPdfUrl} target="_blank" rel="noopener noreferrer" className="font-sans text-xs text-accent hover:text-accent-orange transition-colors">
+                      CV (PDF)
+                    </a>
+                  </li>
+                )}
+                {profile.coverLetterPdfUrl && (
+                  <li>
+                    <a href={profile.coverLetterPdfUrl} target="_blank" rel="noopener noreferrer" className="font-sans text-xs text-accent hover:text-accent-orange transition-colors">
+                      Cover Letter (PDF)
+                    </a>
+                  </li>
+                )}
                 {profile.phones && profile.phones.map((phone) => (
                   <li key={phone}>
                     <span className="font-mono text-[11px] text-muted">{phone}</span>

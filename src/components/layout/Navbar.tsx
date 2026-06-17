@@ -130,12 +130,11 @@ export function Navbar() {
                 href={cv.profile.coverLetterPdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center gap-2 text-ink"
-                title="Download Letter"
-                aria-label="Download Letter"
+                className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
+                title="Download Cover Letter"
+                aria-label="Download Cover Letter"
               >
-                <Mail size={14} />
-                <span className="font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase">Download Letter</span>
+                <Mail size={15} />
               </a>
             )}
             <button
@@ -170,12 +169,11 @@ export function Navbar() {
                 href={cv.profile.coverLetterPdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-2 py-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center gap-1.5 text-ink"
-                title="Download Letter"
-                aria-label="Download Letter"
+                className="p-1.5 rounded border border-rule hover:border-ink hover:text-accent transition-all duration-200 flex items-center justify-center text-ink"
+                title="Download Cover Letter"
+                aria-label="Download Cover Letter"
               >
-                <Mail size={14} />
-                <span className="font-mono text-[9px] font-semibold tracking-wider uppercase">Download Letter</span>
+                <Mail size={15} />
               </a>
             )}
             <button
@@ -225,6 +223,38 @@ export function Navbar() {
               </li>
             ))}
           </ul>
+
+          {(cv.profile?.cvPdfUrl || cv.profile?.coverLetterPdfUrl) && (
+            <div className="mt-auto pt-6 border-t border-rule space-y-3">
+              <p className="font-mono text-[9px] uppercase tracking-[1.5px] text-muted font-semibold">// downloads</p>
+              <div className="grid grid-cols-1 gap-2.5">
+                {cv.profile?.cvPdfUrl && (
+                  <a
+                    href={cv.profile.cvPdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={handleNavClick}
+                    className="w-full py-2.5 px-4 bg-surface border border-rule hover:border-ink text-ink text-xs font-mono rounded tracking-wide transition-all duration-200 inline-flex items-center justify-center gap-1.5"
+                  >
+                    <FileText size={14} className="text-accent" />
+                    Download CV (PDF)
+                  </a>
+                )}
+                {cv.profile?.coverLetterPdfUrl && (
+                  <a
+                    href={cv.profile.coverLetterPdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={handleNavClick}
+                    className="w-full py-2.5 px-4 bg-surface border border-rule hover:border-ink text-ink text-xs font-mono rounded tracking-wide transition-all duration-200 inline-flex items-center justify-center gap-1.5"
+                  >
+                    <Mail size={14} className="text-accent" />
+                    Download Cover Letter (PDF)
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

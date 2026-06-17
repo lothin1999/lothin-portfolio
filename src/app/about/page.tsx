@@ -138,7 +138,7 @@ export default async function AboutPage() {
                     )}
                   </div>
                 ))}
-                <div className="pt-4 border-t border-rule mt-4">
+                <div className="pt-4 border-t border-rule mt-4 space-y-2">
                   <a
                     href="/api/cv/download"
                     download
@@ -146,6 +146,26 @@ export default async function AboutPage() {
                   >
                     Download CV (HTML)
                   </a>
+                  {profile.cvPdfUrl && (
+                    <a
+                      href={profile.cvPdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2.5 px-4 bg-surface border border-rule hover:border-ink text-ink hover:text-accent text-xs font-mono rounded tracking-wide transition-all duration-200 inline-flex items-center justify-center gap-1.5"
+                    >
+                      Download CV (PDF)
+                    </a>
+                  )}
+                  {profile.coverLetterPdfUrl && (
+                    <a
+                      href={profile.coverLetterPdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2.5 px-4 bg-surface border border-rule hover:border-ink text-ink hover:text-accent text-xs font-mono rounded tracking-wide transition-all duration-200 inline-flex items-center justify-center gap-1.5"
+                    >
+                      Download Letter (PDF)
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

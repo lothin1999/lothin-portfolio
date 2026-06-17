@@ -126,11 +126,37 @@ export async function getCVData(): Promise<CVData> {
   return fallback;
 }
 
+async function saveToR2API(jsonData: any): Promise<boolean> {
+  const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
+  const accountId = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+  const apiToken = clean(process.env.CLOUDFLARE_AI_API_TOKEN);
+  const bucketName = clean(process.env.R2_BUCKET_NAME) || "portfolio-data";
+
+  if (!accountId || !apiToken) return false;
+
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects/${R2_FILE_KEY}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(jsonData),
+    });
+    return response.ok;
+  } catch (err) {
+    console.error("Failed to save cv.json to R2 via API:", err);
+    return false;
+  }
+}
+
 export async function saveCVData(data: CVData): Promise<void> {
   const updatedData = { ...data, updatedAt: new Date().toISOString() };
   memCache = updatedData;
 
-  // 1. Write to Cloudflare R2 Object Storage
+  // 1. Write to Cloudflare R2 Object Storage (if running inside Cloudflare runtime with binding)
   try {
     const context = await getCFContext();
     const env = context?.env as any;
@@ -140,10 +166,17 @@ export async function saveCVData(data: CVData): Promise<void> {
       return;
     }
   } catch (err) {
-    console.error("Cloudflare R2 save error (might be running locally without binding):", err);
+    // Ignore
   }
 
-  // 2. Save locally via Node save endpoint in development
+  // 2. Write to Cloudflare R2 via API (if running locally/elsewhere and credentials are present)
+  try {
+    await saveToR2API(updatedData);
+  } catch (err) {
+    // Ignore
+  }
+
+  // 3. Save locally via Node save endpoint in development
   if (process.env.NODE_ENV === "development") {
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -158,6 +191,6 @@ export async function saveCVData(data: CVData): Promise<void> {
     }
   }
 
-  // 3. Fallback to process.env
+  // 4. Fallback to process.env
   process.env.CV_JSON_DATA = JSON.stringify(updatedData);
 }
