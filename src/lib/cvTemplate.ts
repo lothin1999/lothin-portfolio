@@ -475,7 +475,7 @@ export const cvTemplate = `<!DOCTYPE html>
       <div style="font-size:11.5px; color:#e8dece; font-weight:300; line-height:1.8;">
         <div style="color:#c4a882; font-weight:500; margin-top:4px;">Pheap Sopheaktra</div>
         <div style="color:#9a8a78; font-size:10.5px;">Full-Stack Dev · IDG</div>
-        <div style="color:#9a8a78; font-size:10.5px; margin-bottom:14px;">096 92 84 202</div>
+        <div style="color:#9a8a78; font-size:10.5px; margin-bottom:14px;">+855 96 92 84 202</div>
         <div style="color:#c4a882; font-weight:500;">Sopheak HUN</div>
         <div style="color:#9a8a78; font-size:10.5px;">Backend Developer</div>
         <div style="color:#9a8a78; font-size:10.5px;">TurboTech Co., LTD</div>
@@ -776,7 +776,7 @@ export const cvTemplate = `<!DOCTYPE html>
         <div class="ref-card">
           <div class="ref-name">Pheap Sopheaktra</div>
           <div class="ref-role">Full-Stack Developer &nbsp;·&nbsp; IDG Technology Solutions</div>
-          <div class="ref-link">096 92 84 202</div>
+          <div class="ref-link">+855 96 92 84 202</div>
         </div>
         <div class="ref-card">
           <div class="ref-name">Sopheak HUN</div>
