@@ -351,6 +351,43 @@ export function AdminEditPage() {
     fetchVectorizeData();
   }, [fetchVectorizeData]);
 
+  // Auto-bind / fall back profile photo to an existing bucket image if the configured image doesn't exist
+  useEffect(() => {
+    if (!cfFiles || cfFiles.length === 0 || !draft.profile) return;
+
+    const currentUrl = draft.profile.photoUrl || "";
+    const isBucketAsset = currentUrl.startsWith("/api/images/") || currentUrl.startsWith("/images/");
+    
+    let currentKey = "";
+    if (isBucketAsset) {
+      if (currentUrl.startsWith("/api/images/")) {
+        currentKey = `images/${currentUrl.substring("/api/images/".length)}`;
+      } else {
+        currentKey = `images/${currentUrl.substring("/images/".length)}`;
+      }
+    }
+
+    const exists = currentKey ? cfFiles.some(f => f.key === currentKey) : false;
+
+    if ((isBucketAsset && !exists) || !currentUrl) {
+      const firstImage = cfFiles.find(f => 
+        f.key.startsWith("images/") && 
+        /\.(jpeg|jpg|png|webp|gif|svg)$/i.test(f.key)
+      );
+      if (firstImage) {
+        const newPhotoUrl = `/api/images/${firstImage.key.substring("images/".length)}`;
+        console.log(`Auto-changing profile photoUrl from "${currentUrl}" to existing image in bucket "${newPhotoUrl}"`);
+        applyAndSave(d => ({
+          ...d,
+          profile: {
+            ...d.profile,
+            photoUrl: newPhotoUrl
+          }
+        }));
+      }
+    }
+  }, [cfFiles, draft.profile?.photoUrl]);
+
   const draftRef = useRef(draft);
   useEffect(() => { draftRef.current = draft; }, [draft]);
 

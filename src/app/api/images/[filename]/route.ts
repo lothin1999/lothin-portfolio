@@ -51,6 +51,7 @@ export async function GET(
   try {
     const filename = params.filename;
     const key = `images/${filename}`;
+    const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
 
     // --- Path 1: Cloudflare Worker binding (production / pnpm preview) ---
     const context = await getCFContext();
@@ -58,7 +59,16 @@ export async function GET(
     const bucket = env?.R2_BUCKET_NAME;
 
     if (bucket) {
-      const object = await bucket.get(key);
+      let object = await bucket.get(key);
+      if (!object) {
+        // Fallback to first available image key in bucket
+        const listed = await bucket.list({ prefix: "images/" });
+        const firstImage = listed.objects.find((o: any) => o.key !== key && /\.(jpeg|jpg|png|webp|gif|svg)$/i.test(o.key));
+        if (firstImage) {
+          object = await bucket.get(firstImage.key);
+        }
+      }
+
       if (!object) {
         return new NextResponse("Image not found", { status: 404 });
       }
@@ -70,13 +80,43 @@ export async function GET(
     }
 
     // --- Path 2: R2 S3-compatible API (local dev with credentials in .env) ---
-    const r2Response = await fetchFromR2API(key);
+    let r2Response = await fetchFromR2API(key);
 
     if (r2Response) {
       if (r2Response.status === 404) {
+        // Fallback: search for first available image via S3 API listing
+        const accountId = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+        const apiToken = clean(process.env.CLOUDFLARE_AI_API_TOKEN);
+        const bucketName = clean(process.env.R2_BUCKET_NAME) || "portfolio-data";
+        if (accountId && apiToken) {
+          try {
+            const listUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects`;
+            const listRes = await fetch(listUrl, {
+              method: "GET",
+              headers: { Authorization: `Bearer ${apiToken}` },
+            });
+            if (listRes.ok) {
+              const listJson = await listRes.json() as any;
+              if (listJson.success && listJson.result) {
+                const firstImage = listJson.result.find((o: any) => 
+                  o.key.startsWith("images/") && 
+                  /\.(jpeg|jpg|png|webp|gif|svg)$/i.test(o.key)
+                );
+                if (firstImage) {
+                  r2Response = await fetchFromR2API(firstImage.key);
+                }
+              }
+            }
+          } catch (listErr) {
+            console.error("Failed to list fallback image in dev:", listErr);
+          }
+        }
+      }
+
+      if (r2Response && r2Response.status === 404) {
         return new NextResponse("Image not found", { status: 404 });
       }
-      if (r2Response.ok) {
+      if (r2Response && r2Response.ok) {
         const contentType =
           r2Response.headers.get("Content-Type") || "image/jpeg";
         return new NextResponse(r2Response.body, {
@@ -87,11 +127,13 @@ export async function GET(
           },
         });
       }
-      console.error(
-        "R2 API fetch failed:",
-        r2Response.status,
-        await r2Response.text()
-      );
+      if (r2Response) {
+        console.error(
+          "R2 API fetch failed:",
+          r2Response.status,
+          await r2Response.text()
+        );
+      }
     }
 
     // --- Path 3: No credentials configured ---
