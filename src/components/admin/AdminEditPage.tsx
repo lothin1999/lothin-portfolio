@@ -2037,6 +2037,12 @@ export function AdminEditPage() {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <a
+              href="/dashboard"
+              className="text-[12px] text-muted hover:text-ink border border-rule rounded px-3 py-1.5 transition-colors no-underline inline-flex items-center gap-1.5"
+            >
+              <Globe size={12} /> Cloudflare
+            </a>
+            <a
               href="/api/cv/download"
               download
               className="text-[12px] text-muted hover:text-ink border border-rule rounded px-3 py-1.5 transition-colors no-underline inline-flex items-center"
