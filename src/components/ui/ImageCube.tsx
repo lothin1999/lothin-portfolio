@@ -3,13 +3,9 @@
 import { useState, useRef } from "react";
 
 interface ImageCubeProps {
-  /** URL of the image to show on cube faces */
   imageUrl?: string;
-  /** Fallback text if no image */
   fallbackText?: string;
-  /** Size of the cube in px */
   size?: number;
-  /** CSS class */
   className?: string;
 }
 

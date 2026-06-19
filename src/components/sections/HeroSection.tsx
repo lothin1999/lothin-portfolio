@@ -63,7 +63,6 @@ export function HeroSection() {
   return (
     <section ref={containerRef} className="max-w-6xl mx-auto px-6 py-16 md:py-24">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-        {/* Left main info */}
         <div className="lg:col-span-8 flex flex-col items-start">
           <p className="hero-eyebrow flex items-center gap-2 font-mono text-[11px] tracking-[2px] uppercase text-accent mb-4">
             <span className="w-5 h-px bg-accent inline-block" />
@@ -86,8 +85,6 @@ export function HeroSection() {
           <p className="hero-desc text-[15px] text-ink2 leading-relaxed max-w-[580px] font-sans font-light mb-8">
             {profile.summary}
           </p>
-
-          {/* Technology tags */}
           <div className="flex flex-wrap gap-2 mb-8">
             {heroChips.map((chip) => (
               <span key={chip} className="hero-chip">
@@ -95,8 +92,6 @@ export function HeroSection() {
               </span>
             ))}
           </div>
-
-          {/* Social CTA Links */}
           <div className="flex flex-wrap gap-3 items-center">
             <a
               href={profile.website}
