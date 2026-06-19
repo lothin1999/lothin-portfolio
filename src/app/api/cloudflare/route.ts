@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
     // 5. Workers scripts
     cfApiFetch(`/accounts/${accountId}/workers/scripts`, apiToken),
     // 6. Zones list
-    cfApiFetch(`/accounts/${accountId}/zones`, apiToken),
+    cfApiFetch("/zones", apiToken),
   ]);
 
   // ─── R2 Stats ────────────────────────────────────────────────
@@ -126,17 +126,37 @@ export async function GET(req: NextRequest) {
     aiGatewayStats.gatewayName = gw.name || "default";
     aiGatewayStats.gatewayId = gw.id || "";
 
-    // Fetch gateway analytics
+    // Fetch gateway analytics via GraphQL
     if (gw.id) {
-      const gwAnalytics = await cfApiFetch(
-        `/accounts/${accountId}/ai-gateway/gateways/${gw.id}/analytics?start_date=${sevenDaysAgo}&end_date=${today}`,
-        apiToken
-      );
-      if (gwAnalytics?.result) {
-        aiGatewayStats.totalRequests = gwAnalytics.result.total_requests || gwAnalytics.result.request_count || 0;
-        aiGatewayStats.totalTokens = gwAnalytics.result.total_tokens || gwAnalytics.result.token_count || 0;
-        aiGatewayStats.totalCost = gwAnalytics.result.total_cost || 0;
+      const aiGatewayQuery = `
+        query AIGatewayAnalytics($accountTag: String!, $since: Date!, $until: Date!) {
+          viewer {
+            accounts(filter: { accountTag: $accountTag }) {
+              aiGatewayRequestsAdaptiveGroups(
+                limit: 100
+                filter: { date_geq: $since, date_leq: $until }
+              ) {
+                count
+                sum {
+                  uncachedTokensIn
+                  uncachedTokensOut
+                }
+              }
+            }
+          }
+        }
+      `;
+      const gwAnalytics = await cfGraphQL(apiToken, aiGatewayQuery, {
+        accountTag: accountId,
+        since: sevenDaysAgo,
+        until: today,
+      });
+      const groups = gwAnalytics?.data?.viewer?.accounts?.[0]?.aiGatewayRequestsAdaptiveGroups || [];
+      for (const group of groups) {
+        aiGatewayStats.totalRequests += group.count || 0;
+        aiGatewayStats.totalTokens += (group.sum?.uncachedTokensIn || 0) + (group.sum?.uncachedTokensOut || 0);
       }
+      aiGatewayStats.totalCost = +(aiGatewayStats.totalTokens * 0.000002).toFixed(4);
     }
   }
 
