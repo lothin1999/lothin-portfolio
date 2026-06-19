@@ -17,7 +17,7 @@ async function cfApiFetch(path: string, token: string, method = "GET", body?: an
   });
   if (!res.ok) {
     const text = await res.text();
-    console.error(`CF API error [${res.status}] ${path}:`, text);
+    // console.error(`CF API error [${res.status}] ${path}:`, text);
     return null;
   }
   return res.json();
@@ -88,15 +88,15 @@ export async function GET(req: NextRequest) {
   const r2Buckets = Array.isArray(r2BucketsRes?.result)
     ? r2BucketsRes.result
     : Array.isArray(r2BucketsRes?.result?.buckets)
-    ? r2BucketsRes.result.buckets
-    : [];
+      ? r2BucketsRes.result.buckets
+      : [];
   const r2BucketCount = r2Buckets.length;
 
   const r2Objects = Array.isArray(r2ObjectsRes?.result)
     ? r2ObjectsRes.result
     : Array.isArray(r2ObjectsRes?.result?.objects)
-    ? r2ObjectsRes.result.objects
-    : [];
+      ? r2ObjectsRes.result.objects
+      : [];
   const r2ObjectCount = r2Objects.length;
   const r2TotalSize = r2Objects.reduce((sum: number, obj: any) => sum + (obj.size || 0), 0);
 
@@ -119,8 +119,8 @@ export async function GET(req: NextRequest) {
   const gateways = Array.isArray(aiGatewayRes?.result)
     ? aiGatewayRes.result
     : Array.isArray(aiGatewayRes?.result?.gateways)
-    ? aiGatewayRes.result.gateways
-    : [];
+      ? aiGatewayRes.result.gateways
+      : [];
   if (gateways.length > 0) {
     const gw = gateways[0];
     aiGatewayStats.gatewayName = gw.name || "default";
@@ -164,8 +164,8 @@ export async function GET(req: NextRequest) {
   const workersScripts = Array.isArray(workersRes?.result)
     ? workersRes.result
     : Array.isArray(workersRes?.result?.scripts)
-    ? workersRes.result.scripts
-    : [];
+      ? workersRes.result.scripts
+      : [];
   const workersList = workersScripts.map((w: any) => ({
     id: w.id,
     name: w.id,
@@ -200,8 +200,8 @@ export async function GET(req: NextRequest) {
   const zones = Array.isArray(zoneListRes?.result)
     ? zoneListRes.result
     : Array.isArray(zoneListRes?.result?.zones)
-    ? zoneListRes.result.zones
-    : [];
+      ? zoneListRes.result.zones
+      : [];
   if (zones.length > 0) {
     const zoneId = zones[0].id;
     const zoneName = zones[0].name;
