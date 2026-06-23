@@ -67,7 +67,7 @@
         "Implemented interactive time-series line charts and sortable data tables for product and order reporting",
         "Architected date-range filtering with live data refresh and optimised SQL aggregations",
         "Framework Migration: Managed the full upgrade path through three Nuxt major versions (Nuxt 2 → 3 → 4) and Options to Composition API migration",
-        "Backend Migration: Led the full replacement of Laravel MVC backend with modular NestJS + Prisma ORM backend with JWT auth"
+        "API Migration: Migrated the legacy Laravel API to a modular NestJS API, optimizing databases with Prisma ORM and enforcing secure JWT authentication"
       ],
       "tags": [
         "Nuxt 2/3/4",

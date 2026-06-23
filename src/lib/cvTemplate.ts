@@ -498,7 +498,7 @@ export const cvTemplate = `<!DOCTYPE html>
       </p>
 
       <p style="font-size:13px; color:#3a3228; line-height:1.9; margin-bottom:18px;">
-        I have led major system migrations — including full Nuxt 2 → 3 → 4 and Laravel → NestJS upgrades — designed scalable monorepo architectures, optimized database performance, and deployed production systems on Linux servers and cloud infrastructure. I have also applied <strong style="font-weight:500;">AI model training and data analysis</strong> using Google AI Studio to drive intelligent feature development.
+        I have led major system migrations — including full Nuxt 2 → 3 → 4 and Laravel API to NestJS API migrations — designed scalable monorepo architectures, optimized database performance, and deployed production systems on Linux servers and cloud infrastructure. I have also applied <strong style="font-weight:500;">AI model training and data analysis</strong> using Google AI Studio to drive intelligent feature development.
       </p>
 
       <p style="font-size:13px; color:#3a3228; line-height:1.9; margin-bottom:32px;">
@@ -694,7 +694,7 @@ export const cvTemplate = `<!DOCTYPE html>
         <ul class="exp-bullets">
           <li>Built POS system in Nuxt 2 with 8-metric admin dashboard, revenue charts, and Khmer-language UI</li>
           <li>Led full Nuxt 2 → 3 → 4 migration, resolving breaking changes and adopting Composition API</li>
-          <li>Replaced Laravel backend with modular NestJS + Prisma monorepo with JWT auth and DTO validation</li>
+          <li>Migrated project legacy Laravel API to modular NestJS API with Prisma ORM, JWT authentication, and strict request validation</li>
           <li>Developed enterprise Banking Platform with real-time transaction processing and multi-branch support</li>
         </ul>
       </div>
