@@ -28,10 +28,10 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
   const { profile } = cvData;
   const fullName = `${profile.name.first} ${profile.name.last}`;
   const reverseName = `${profile.name.last} ${profile.name.first}`; // Common name order in Cambodia
-  const defaultTitle = `${reverseName} | Full-Stack Developer (Laravel, NestJS, Spring Boot, Nuxt)`;
+  const defaultTitle = `${reverseName} (Lothin Dev) | Senior Full-Stack Web Developer (Laravel, NestJS, Spring Boot, Nuxt)`;
   const defaultDesc = `${profile.summary.slice(0, 155)}…`;
 
-  const title = page?.title ? `${page.title} — ${reverseName}` : defaultTitle;
+  const title = page?.title ? `${page.title} — ${reverseName} (Lothin Dev)` : defaultTitle;
   const description = page?.description ?? defaultDesc;
   const url = `${SITE_URL}${page?.path ?? ""}`;
 
@@ -46,8 +46,16 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
       profile.title,
       "Full-Stack Web Developer",
       "Full-Stack Developer",
-      "Chushin Dev",
-      "Chushin Technology",
+      "Senior Full-Stack Developer",
+      "Lothin Dev",
+      "Lothin Thoeun",
+      "Thoeun Lothin",
+      "lothindev",
+      "lothin-dev",
+      "lothin-portfolio",
+      "thoeun-lothin",
+      "Lothin Dev",
+      "Lothin Technology",
       "Cambodia",
       "Phnom Penh",
       "Vue",
@@ -159,7 +167,7 @@ export function personJsonLd(cv: any): object {
     "@type": "Person",
     "@id": `${SITE_URL}/#person`,
     name: reverseName,
-    alternateName: fullName,
+    alternateName: [fullName, "Lothin Dev", "lothindev", "Lothin Thoeun", "Thoeun Lothin", "lothin-dev"],
     jobTitle: profile.title,
     url: profile.website,
     image: `${SITE_URL}/og-image.png`,
@@ -192,8 +200,8 @@ export function websiteJsonLd(): object {
     "@type": "WebSite",
     "@id": `${SITE_URL}/#website`,
     url: SITE_URL,
-    name: "Lothin Thoeun | Full-Stack Developer",
-    description: "Professional portfolio of Lothin Thoeun, Full-Stack Developer specialized in Vue/Nuxt, React/Next.js, NestJS, Laravel, and Spring Boot.",
+    name: "Lothin Thoeun (Lothin Dev) | Senior Full-Stack Web Developer",
+    description: "Professional portfolio of Lothin Thoeun (Lothin Dev), Senior Full-Stack Web Developer specialized in Vue/Nuxt, React/Next.js, NestJS, Laravel, and Spring Boot.",
     publisher: {
       "@id": `${SITE_URL}/#person`
     },
