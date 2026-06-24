@@ -99,7 +99,18 @@ export function CVProvider({ children, initialData }: { children: React.ReactNod
 
 export function useCVData() {
   const ctx = useContext(CVContext);
-  if (!ctx) throw new Error("useCVData must be used inside CVProvider");
+  if (!ctx) {
+    return {
+      cv: defaultCV,
+      isAdmin: false,
+      isLoading: false,
+      isLocked: false,
+      setAdmin: () => {},
+      updateCV: async () => {},
+      refreshCV: async () => {},
+      unlock: async () => false,
+    };
+  }
   return ctx;
 }
 

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thoeun Lothin — CV & Cover Letter</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #c8c8c8;
+    color: #1a1a1a;
+    font-size: 8.5pt;
+    line-height: 1.45;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    background: #f0f0f0;
+    margin: 20px auto;
+    padding: 14mm 14mm 12mm 14mm;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    position: relative;
+  }
+
+  /* ── COVER LETTER ── */
+  .cover-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1.5px solid #1a1a1a;
+  }
+  .cover-name-block .cover-name {
+    font-family: 'EB Garamond', serif;
+    font-size: 28pt;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    color: #1a1a1a;
+  }
+  .cover-name-block .cover-title {
+    font-size: 7pt;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #555;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .cover-header-right {
+    text-align: right;
+    font-size: 7.5pt;
+    color: #444;
+    line-height: 1.8;
+  }
+  .cover-header-right span {
+    display: block;
+  }
+  .cover-header-right a { color: #444; text-decoration: none; }
+
+  .cover-body {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 24px;
+    margin-top: 14px;
+  }
+  .cover-sidebar {
+    font-size: 7.5pt;
+    color: #333;
+  }
+  .cover-sidebar .cs-label {
+    font-size: 6.5pt;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #1a1a1a;
+    border-bottom: 1px solid #1a1a1a;
+    padding-bottom: 3px;
+    margin-bottom: 7px;
+    margin-top: 14px;
+  }
+  .cover-sidebar .cs-label:first-child { margin-top: 0; }
+  .cover-sidebar ul { list-style: none; }
+  .cover-sidebar ul li { padding: 2px 0; }
+  .cover-sidebar ul li::before { content: "+ "; color: #888; }
+
+  .cover-main .cover-date {
+    font-size: 7.5pt;
+    color: #888;
+    margin-bottom: 16px;
+  }
+  .cover-main p {
+    font-size: 8.5pt;
+    line-height: 1.65;
+    color: #2a2a2a;
+    margin-bottom: 12px;
+    text-align: justify;
+  }
+  .cover-sign {
+    margin-top: 22px;
+  }
+  .cover-sign .sig-name {
+    font-family: 'EB Garamond', serif;
+    font-size: 16pt;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .cover-sign .sig-title {
+    font-size: 6.5pt;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #666;
+    margin-top: 2px;
+  }
+
+  /* ── CV PAGE ── */
+  .cv-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .cv-name-block {}
+  .cv-name {
+    font-family: 'EB Garamond', serif;
+    font-size: 34pt;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.5px;
+    color: #1a1a1a;
+  }
+  .cv-title {
+    font-size: 7pt;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #555;
+    margin-top: 5px;
+    font-weight: 500;
+  }
+  .cv-title::before { content: "+ "; color: #1a1a1a; font-weight: 700; }
+
+  .cv-layout {
+    display: grid;
+    grid-template-columns: 1fr 170px;
+    gap: 22px;
+  }
+
+  /* Shared section label */
+  .sec-label {
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #1a1a1a;
+    margin-bottom: 5px;
+  }
+  .sec-rule {
+    border: none;
+    border-top: 1px solid #888;
+    margin-bottom: 10px;
+  }
+
+  /* Summary */
+  .summary-text {
+    font-size: 8pt;
+    line-height: 1.6;
+    color: #333;
+    text-align: justify;
+  }
+
+  /* Experience */
+  .exp-block { margin-bottom: 14px; }
+  .exp-row {
+    display: grid;
+    grid-template-columns: 62px 1fr;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+  .exp-year {
+    font-size: 7pt;
+    font-weight: 600;
+    color: #555;
+    padding-top: 1px;
+    white-space: nowrap;
+  }
+  .exp-title {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .exp-company {
+    font-size: 7.5pt;
+    color: #666;
+    font-style: italic;
+    margin-bottom: 4px;
+  }
+  .exp-bullets {
+    list-style: none;
+    padding-left: 0;
+  }
+  .exp-bullets li {
+    font-size: 7.5pt;
+    color: #333;
+    padding: 2px 0 2px 12px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .exp-bullets li::before {
+    content: "•";
+    position: absolute;
+    left: 2px;
+    color: #888;
+  }
+
+  /* Education */
+  .edu-block { margin-bottom: 10px; }
+  .edu-row {
+    display: grid;
+    grid-template-columns: 62px 1fr;
+    gap: 8px;
+  }
+  .edu-year {
+    font-size: 7pt;
+    font-weight: 600;
+    color: #555;
+    padding-top: 1px;
+  }
+  .edu-degree {
+    font-size: 8pt;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .edu-school {
+    font-size: 7.5pt;
+    color: #666;
+    font-style: italic;
+  }
+  .edu-note {
+    font-size: 7pt;
+    color: #888;
+    margin-top: 2px;
+  }
+
+  /* References */
+  .ref-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .ref-block {
+    text-align: center;
+    font-size: 7pt;
+    line-height: 1.7;
+  }
+  .ref-name { font-weight: 700; font-size: 7.5pt; }
+  .ref-role { color: #666; }
+  .ref-contact { color: #444; }
+
+  /* RIGHT COLUMN */
+  .right-col {}
+
+  /* Contact */
+  .contact-list {
+    list-style: none;
+    font-size: 7.5pt;
+    color: #333;
+    line-height: 2;
+  }
+  .contact-list li::before { content: "+ "; color: #888; }
+  .contact-list a { color: #333; text-decoration: none; }
+
+  /* Skills */
+  .skill-cat {
+    font-size: 7pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-top: 9px;
+    margin-bottom: 5px;
+    letter-spacing: 0.2px;
+  }
+  .skill-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .skill-name { font-size: 7.5pt; color: #333; }
+  .skill-track {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    margin-left: 6px;
+  }
+  .skill-line {
+    width: 40px;
+    height: 0.7px;
+    background: #aaa;
+    flex-shrink: 0;
+  }
+  .dots { display: flex; gap: 2.5px; }
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #888;
+  }
+  .dot.full { background: #1a1a1a; }
+
+  /* Personal skills */
+  .personal-list {
+    list-style: none;
+    font-size: 7.5pt;
+    color: #333;
+    line-height: 1.9;
+  }
+  .personal-list li::before { content: "• "; color: #888; }
+
+  /* Languages */
+  .lang-list {
+    list-style: none;
+    font-size: 7.5pt;
+    color: #333;
+    line-height: 1.9;
+  }
+  .lang-list li::before { content: "• "; color: #888; }
+
+  @media print {
+    body { background: white; }
+    .page { margin: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ -->
+<!--                COVER LETTER               -->
+<!-- ══════════════════════════════════════════ -->
+<div class="page">
+
+  <div class="cover-header">
+    <div class="cover-name-block">
+      <div class="cover-name">THOEUN LOTHIN</div>
+      <div class="cover-title">FULL-STACK WEB DEVELOPER</div>
+    </div>
+    <div class="cover-header-right">
+      <span>+ 098 63 88 78 / 066 69 55 37</span>
+      <span>+ <a href="#">lothin-portfolio.pages.dev</a></span>
+      <span>+ Phnom Penh, Cambodia</span>
+      <span>+ linkedin.com/in/lothin-dev</span>
+    </div>
+  </div>
+
+  <div class="cover-body">
+    <div class="cover-sidebar">
+      <div class="cs-label">DATE</div>
+      <p style="font-size:7.5pt;color:#555;">June 2026<br>Phnom Penh, Cambodia</p>
+
+      <div class="cs-label">KEY SKILLS</div>
+      <ul>
+        <li>Vue.js / Nuxt 2·3·4</li>
+        <li>Next.js</li>
+        <li>Angular / TypeScript</li>
+        <li>NestJS / Laravel</li>
+        <li>Spring Boot</li>
+        <li>Docker / Cloudflare</li>
+        <li>Firebase / Firestore</li>
+        <li>Bakong KHQR</li>
+        <li>Google AI Studio</li>
+      </ul>
+
+      <div class="cs-label">REFERENCES</div>
+      <div style="font-size:7.5pt;line-height:1.8;color:#444;">
+        <strong>Pheap Sopheaktra</strong><br>
+        Full-Stack Dev · IDG<br>
+        096 92 84 202<br><br>
+        <strong>Sopheak HUN</strong><br>
+        Backend Developer<br>
+        TurboTech Co., LTD<br>
+        +855 93 259 390
+      </div>
+    </div>
+
+    <div class="cover-main">
+      <div class="cover-date">June 2026 · Phnom Penh, Cambodia</div>
+      <p>Dear Hiring Manager,</p>
+      <p>
+        I am writing to express my interest in a Full-Stack Web Developer position.
+        With more than three years of professional experience, I have designed and
+        developed enterprise applications, nationwide rental marketplaces, POS systems,
+        banking platforms, CRM solutions, and document management systems.
+      </p>
+      <p>
+        My core technical expertise spans Vue.js / Nuxt, Next.js, Angular, NestJS,
+        Laravel, Spring Boot, Docker, Cloudflare, Firebase, Google AI Studio (Gemini),
+        and Bakong KHQR integration.
+      </p>
+      <p>
+        I have led major system migrations — including full Nuxt 2 → 3 → 4 and
+        Laravel → NestJS upgrades — designed scalable monorepo architectures, optimised
+        database performance, and deployed production systems on Linux servers and cloud
+        infrastructure. I have also applied AI model training and data analysis using
+        Google AI Studio to drive intelligent feature development.
+      </p>
+      <p>
+        I am passionate about building high-quality software, learning new technologies,
+        and collaborating with teams to deliver real business value through technology.
+        I welcome the opportunity to discuss how my experience can contribute to your
+        organisation.
+      </p>
+      <p>Thank you for your time and consideration.</p>
+
+      <div class="cover-sign">
+        <div class="sig-name">Thoeun Lothin</div>
+        <div class="sig-title">Full-Stack Web Developer</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /cover page -->
+
+
+<!-- ══════════════════════════════════════════ -->
+<!--                  CV PAGE                  -->
+<!-- ══════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- Name Block -->
+  <div class="cv-top">
+    <div class="cv-name-block">
+      <div class="cv-name">THOEUN LOTHIN</div>
+      <div class="cv-title">FULL-STACK WEB DEVELOPER</div>
+    </div>
+  </div>
+
+  <hr class="sec-rule" style="margin-bottom:14px;">
+
+  <div class="cv-layout">
+
+    <!-- ── LEFT COLUMN ── -->
+    <div class="left-col">
+
+      <!-- Summary -->
+      <div class="sec-label">SUMMARY</div>
+      <hr class="sec-rule">
+      <p class="summary-text">
+        Full-Stack Web Developer with 3+ years of production experience building enterprise applications
+        across Vue/Nuxt, React/Next.js, and Angular — with NestJS, Laravel, and Spring Boot on the back end.
+        Delivered nationwide rental marketplaces, enterprise POS, banking, and loan platforms.
+        Specialised in Cloudflare edge infrastructure, Firebase real-time systems, and
+        Cambodia-native Bakong KHQR payment integration.
+      </p>
+
+      <!-- Experience -->
+      <div class="sec-label" style="margin-top:14px;">Professional Experience</div>
+      <hr class="sec-rule">
+
+      <!-- Job 1 -->
+      <div class="exp-block">
+        <div class="exp-row">
+          <div class="exp-year">2025 – NOW</div>
+          <div>
+            <div class="exp-title">Full-Stack Web Developer</div>
+            <div class="exp-company">IDG Technology Solutions, Phnom Penh</div>
+          </div>
+        </div>
+        <ul class="exp-bullets" style="padding-left:70px;">
+          <li>Built nationwide motorbike rental marketplace with Nuxt 4 SSR and province-based filtering across 25+ Cambodian provinces.</li>
+          <li>Developed complete booking engine — availability calendar, pricing engine, and special deals module.</li>
+          <li>Integrated multi-language Khmer/English support with mobile-first responsive UI.</li>
+          <li>Used Google AI Studio (Gemini) to train and fine-tune AI models, analyse datasets, and integrate smart search and data classification features.</li>
+        </ul>
+      </div>
+
+      <!-- Job 2 -->
+      <div class="exp-block">
+        <div class="exp-row">
+          <div class="exp-year">2024 – NOW</div>
+          <div>
+            <div class="exp-title">Full-Stack Web Developer</div>
+            <div class="exp-company">IDG Technology Solutions, Phnom Penh</div>
+          </div>
+        </div>
+        <ul class="exp-bullets" style="padding-left:70px;">
+          <li>Built POS system in Nuxt 2 with 8-metric admin dashboard, revenue charts, and Khmer-language UI.</li>
+          <li>Led full Nuxt 2 → 3 → 4 migration, resolving breaking changes and adopting Composition API.</li>
+          <li>Replaced Laravel backend with modular NestJS + Prisma monorepo with JWT auth and DTO validation.</li>
+          <li>Developed enterprise Banking Platform with real-time transaction processing and multi-branch support.</li>
+        </ul>
+      </div>
+
+      <!-- Job 3 -->
+      <div class="exp-block">
+        <div class="exp-row">
+          <div class="exp-year">2023 – 2024</div>
+          <div>
+            <div class="exp-title">Full-Stack Web Developer</div>
+            <div class="exp-company">IDG Technology Solutions, Phnom Penh</div>
+          </div>
+        </div>
+        <ul class="exp-bullets" style="padding-left:70px;">
+          <li>Delivered CRM, Hotel Management, KDMS, Loan, Pool/Billiard, and VIP systems end-to-end.</li>
+          <li>Built real-time pool hall management with Pusher — table booking, session billing, live status board.</li>
+          <li>Integrated Firebase and Pusher for live notifications across multiple projects.</li>
+          <li>Managed cPanel hosting, DB migrations, and Ubuntu Server production deployments.</li>
+        </ul>
+      </div>
+
+      <!-- Education -->
+      <div class="sec-label" style="margin-top:4px;">Education</div>
+      <hr class="sec-rule">
+
+      <div class="edu-block">
+        <div class="edu-row">
+          <div class="edu-year">2019 – 2023</div>
+          <div>
+            <div class="edu-degree">Bachelor's Degree in Information Technology</div>
+            <div class="edu-school">Setec Institute · Phnom Penh, Cambodia</div>
+            <div class="edu-note">Software development, networking, database systems, UX/UI, e-commerce, and Linux administration.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="edu-block">
+        <div class="edu-row">
+          <div class="edu-year">Ongoing</div>
+          <div>
+            <div class="edu-degree">Full-Stack Development &amp; Java</div>
+            <div class="edu-school">Piset Java School · Phnom Penh, Cambodia</div>
+            <div class="edu-note">Intensive program: Full-Stack Web, Java, Core Spring Framework, Spring Boot, Angular.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- References -->
+      <div class="sec-label" style="margin-top:4px;">Personal References</div>
+      <hr class="sec-rule">
+      <div class="ref-grid">
+        <div class="ref-block">
+          <div class="ref-name">Pheap Sopheaktra</div>
+          <div class="ref-role">Full-Stack Dev · IDG Technology Solutions</div>
+          <div class="ref-contact">P: 096 92 84 202</div>
+        </div>
+        <div class="ref-block">
+          <div class="ref-name">Sopheak HUN</div>
+          <div class="ref-role">Backend Developer · TurboTech Co., LTD</div>
+          <div class="ref-contact">P: +855 93 259 390</div>
+        </div>
+      </div>
+
+    </div><!-- /left col -->
+
+    <!-- ── RIGHT COLUMN ── -->
+    <div class="right-col">
+
+      <!-- Contact -->
+      <div class="sec-label">Contact</div>
+      <hr class="sec-rule">
+      <ul class="contact-list">
+        <li>098 63 88 78 / 066 69 55 37</li>
+        <li><a href="#">lothin-portfolio.pages.dev</a></li>
+        <li>Phnom Penh, Cambodia</li>
+        <li>t.me/lothindev</li>
+        <li>linkedin.com/in/lothin-dev</li>
+      </ul>
+
+      <!-- Professional Skills -->
+      <div class="sec-label" style="margin-top:12px;">Professional Skills</div>
+      <hr class="sec-rule">
+
+      <div class="skill-cat">Front-End</div>
+      <!-- skill dots: 5 = expert, 4 = advanced, 3 = mid -->
+      <div class="skill-row"><span class="skill-name">Vue 3 / Nuxt</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span></div></div></div>
+      <div class="skill-row"><span class="skill-name">Next.js / React</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot"></span></div></div></div>
+      <div class="skill-row"><span class="skill-name">Angular / TypeScript</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot"></span></div></div></div>
+      <div class="skill-row"><span class="skill-name">Tailwind CSS</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span></div></div></div>
+
+      <div class="skill-cat">Back-End</div>
+      <div class="skill-row"><span class="skill-name">NestJS</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span></div></div></div>
+      <div class="skill-row"><span class="skill-name">Laravel</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot"></span></div></div></div>
+      <div class="skill-row"><span class="skill-name">Spring Boot</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot"></span><span class="dot"></span></div></div></div>
+      <div class="skill-row"><span class="skill-name">Prisma ORM</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot"></span></div></div></div>
+
+      <div class="skill-cat">DevOps &amp; Cloud</div>
+      <div class="skill-row"><span class="skill-name">Docker</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot"></span></div></div></div>
+      <div class="skill-row"><span class="skill-name">Cloudflare</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot"></span></div></div></div>
+      <div class="skill-row"><span class="skill-name">Firebase</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot"></span></div></div></div>
+      <div class="skill-row"><span class="skill-name">Nginx / Ubuntu</span><div class="skill-track"><div class="skill-line"></div><div class="dots"><span class="dot full"></span><span class="dot full"></span><span class="dot full"></span><span class="dot"></span><span class="dot"></span></div></div></div>
+
+      <!-- Personal Skills -->
+      <div class="sec-label" style="margin-top:12px;">Personal Skills</div>
+      <hr class="sec-rule">
+      <ul class="personal-list">
+        <li>Problem Solving</li>
+        <li>Team Collaboration</li>
+        <li>Continuous Learning</li>
+        <li>Time Management</li>
+        <li>Detail-Oriented</li>
+        <li>Effective Communication</li>
+      </ul>
+
+      <!-- Languages -->
+      <div class="sec-label" style="margin-top:12px;">Languages</div>
+      <hr class="sec-rule">
+      <ul class="lang-list">
+        <li>Khmer (Native)</li>
+        <li>English (Professional)</li>
+      </ul>
+
+    </div><!-- /right col -->
+
+  </div><!-- /cv-layout -->
+
+</div><!-- /cv page -->
+
+</body>
+</html>

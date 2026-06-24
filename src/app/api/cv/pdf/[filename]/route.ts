@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
 
 export const runtime = "edge";
 
@@ -49,6 +50,14 @@ export async function GET(
   { params }: { params: { filename: string } }
 ) {
   try {
+    const token = req.cookies.get(SESSION_COOKIE)?.value || "";
+    const isAdmin = await verifySessionToken(token);
+
+    if (!isAdmin) {
+      // Redirect visitors to the HTML CV preview endpoint
+      return NextResponse.redirect(new URL("/api/cv/download", req.url));
+    }
+
     const filename = params.filename;
     const key = filename.startsWith("letter-") ? `letter/${filename}` : `cv/${filename}`;
 

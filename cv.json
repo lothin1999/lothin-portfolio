@@ -45,14 +45,20 @@
         "Developed a complete booking engine — availability calendar, pricing engine, and special deals module",
         "Implemented merchant review & rating system with verified badges and star ratings",
         "Added multi-language support (Khmer / English) with responsive mobile-first UI",
-        "Integrated backend APIs for inventory management, discount price overlays, and photo-rich listings"
+        "Integrated backend APIs for inventory management, discount price overlays, and photo-rich listings",
+        "Integrated Google Maps API for interactive location mapping and store filters",
+        "Configured transactional email alert systems using Nodemailer for bookings and reviews",
+        "Streamlined collaborative team workflows using GitLab for version control and issue tracking"
       ],
       "tags": [
         "Nuxt 4 SSR",
         "Vue 3",
         "NestJS",
         "PostgreSQL",
-        "Docker"
+        "Docker",
+        "GitLab",
+        "Google Maps API",
+        "Nodemailer"
       ]
     },
     {
@@ -67,7 +73,11 @@
         "Implemented interactive time-series line charts and sortable data tables for product and order reporting",
         "Architected date-range filtering with live data refresh and optimised SQL aggregations",
         "Framework Migration: Managed the full upgrade path through three Nuxt major versions (Nuxt 2 → 3 → 4) and Options to Composition API migration",
-        "API Migration: Migrated the legacy Laravel API to a modular NestJS API, optimizing databases with Prisma ORM and enforcing secure JWT authentication"
+        "API Migration: Migrated the legacy Laravel API to a modular NestJS API, optimizing databases with Prisma ORM and enforcing secure JWT authentication",
+        "Designed and documented RESTful APIs with Swagger/OpenAPI for clear front-end contract integration",
+        "Conducted endpoint testing and API validation using Postman collection environments",
+        "Integrated SMS gateway OTP verification for admin login security and cashier validation",
+        "Managed version control, feature branches, and code reviews on GitHub"
       ],
       "tags": [
         "Nuxt 2/3/4",
@@ -76,7 +86,11 @@
         "NestJS",
         "Prisma",
         "MySQL",
-        "Chart.js"
+        "Chart.js",
+        "GitHub",
+        "Swagger",
+        "Postman",
+        "OTP Verification"
       ]
     },
     {

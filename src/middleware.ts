@@ -7,7 +7,9 @@ export function middleware(request: NextRequest) {
 
   if (
     decodedPath === "/THOEUN LOTHIN CV & LETTER HEAD.html" ||
-    url.pathname === "/THOEUN%20LOTHIN%20CV%20&%20LETTER%20HEAD.html"
+    url.pathname === "/THOEUN%20LOTHIN%20CV%20&%20LETTER%20HEAD.html" ||
+    url.pathname === "/cv" ||
+    url.pathname === "/cv/"
   ) {
     return NextResponse.rewrite(new URL("/api/cv/download", request.url));
   }
@@ -19,5 +21,7 @@ export const config = {
   matcher: [
     "/THOEUN LOTHIN CV & LETTER HEAD.html",
     "/THOEUN%20LOTHIN%20CV%20&%20LETTER%20HEAD.html",
+    "/cv",
+    "/cv/",
   ],
 };
