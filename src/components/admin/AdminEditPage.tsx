@@ -4,7 +4,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus, Trash2, Save, Upload, RefreshCw, Check, ArrowLeft,
-  ChevronDown, ChevronRight, FileText, Globe, CheckCircle, Edit, List, Info, Folder
+  ChevronDown, ChevronRight, FileText, Globe, CheckCircle, Edit, List, Info, Folder,
+  AlertTriangle
 } from "lucide-react";
 import type { CVData, Article, DocumentItem } from "@/types/cv";
 import { useCVData } from "@/hooks/useCVData";
@@ -338,6 +339,36 @@ export function AdminEditPage() {
   const [docUploading, setDocUploading] = useState(false);
   const [docDragActive, setDocDragActive] = useState(false);
 
+  // Custom confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmLabel?: string;
+    onConfirm: (() => void) | (() => Promise<void>) | null;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    confirmLabel: "Delete",
+    onConfirm: null,
+  });
+
+  const openConfirmModal = (
+    title: string,
+    message: string,
+    onConfirm: (() => void) | (() => Promise<void>),
+    confirmLabel = "Delete"
+  ) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      confirmLabel,
+      onConfirm,
+    });
+  };
+
   const fetchVectorizeData = useCallback(async () => {
     setVectorizeLoading(true);
     try {
@@ -414,30 +445,35 @@ export function AdminEditPage() {
   const deleteProfileAsset = async (field: "photoUrl" | "cvPdfUrl" | "coverLetterPdfUrl", label: string) => {
     const url = draftRef.current.profile[field];
     if (!url) return;
-    if (!confirm(`Are you sure you want to delete this ${label} from Cloudflare R2 bucket and profile?`)) return;
 
-    try {
-      const res = await fetch("/api/cv/upload", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      });
-      if (res.ok) {
-        await applyAndSave(d => ({
-          ...d,
-          profile: {
-            ...d.profile,
-            [field]: ""
+    openConfirmModal(
+      "Delete Asset",
+      `Are you sure you want to delete this ${label} from Cloudflare R2 bucket and profile?`,
+      async () => {
+        try {
+          const res = await fetch("/api/cv/upload", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url })
+          });
+          if (res.ok) {
+            await applyAndSave(d => ({
+              ...d,
+              profile: {
+                ...d.profile,
+                [field]: ""
+              }
+            }));
+            fetchCfFiles();
+          } else {
+            alert(`Failed to delete ${label} from Cloudflare R2.`);
           }
-        }));
-        fetchCfFiles();
-      } else {
-        alert(`Failed to delete ${label} from Cloudflare R2.`);
+        } catch (err) {
+          console.error(`Error deleting ${label}:`, err);
+          alert(`An error occurred while deleting ${label}`);
+        }
       }
-    } catch (err) {
-      console.error(`Error deleting ${label}:`, err);
-      alert(`An error occurred while deleting ${label}`);
-    }
+    );
   };
 
   // Articles state
@@ -654,9 +690,14 @@ export function AdminEditPage() {
   }
 
   function handleDeleteArticle(index: number) {
-    if (!confirm("Are you sure you want to delete this article?")) return;
-    const articles = (draft.articles || []).filter((_, i) => i !== index);
-    setDraft(d => ({ ...d, articles }));
+    openConfirmModal(
+      "Delete Article",
+      "Are you sure you want to delete this article?",
+      () => {
+        const articles = (draft.articles || []).filter((_, i) => i !== index);
+        setDraft(d => ({ ...d, articles }));
+      }
+    );
   }
 
   // ── Profile Tab ──
@@ -1410,26 +1451,31 @@ export function AdminEditPage() {
     };
 
     const handleDeleteDoc = async (doc: any) => {
-      if (!confirm(`Are you sure you want to delete the document "${doc.name}"?`)) return;
-      try {
-        const res = await fetch("/api/cv/upload", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: doc.url }),
-        });
-        if (res.ok) {
-          await applyAndSave((d) => ({
-            ...d,
-            documents: (d.documents || []).filter((item) => item.id !== doc.id),
-          }));
-          fetchCfFiles();
-        } else {
-          alert("Failed to delete the document from Cloudflare R2.");
+      openConfirmModal(
+        "Delete Document",
+        `Are you sure you want to delete the document "${doc.name}"?`,
+        async () => {
+          try {
+            const res = await fetch("/api/cv/upload", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: doc.url }),
+            });
+            if (res.ok) {
+              await applyAndSave((d) => ({
+                ...d,
+                documents: (d.documents || []).filter((item) => item.id !== doc.id),
+              }));
+              fetchCfFiles();
+            } else {
+              alert("Failed to delete the document from Cloudflare R2.");
+            }
+          } catch (e) {
+            console.error(e);
+            alert("An error occurred while deleting the document.");
+          }
         }
-      } catch (e) {
-        console.error(e);
-        alert("An error occurred while deleting the document.");
-      }
+      );
     };
 
     return (
@@ -1849,23 +1895,28 @@ export function AdminEditPage() {
                                     </a>
                                   )}
                                   <button
-                                    onClick={async () => {
-                                      if (!confirm(`Delete "${filename}" from Cloudflare R2 bucket?`)) return;
-                                      try {
-                                        const res = await fetch("/api/cv/upload", {
-                                          method: "DELETE",
-                                          headers: { "Content-Type": "application/json" },
-                                          body: JSON.stringify({ key: file.key })
-                                        });
-                                        if (res.ok) {
-                                          fetchCfFiles(); // Refresh list after delete
-                                        } else {
-                                          alert("Failed to delete file.");
+                                    onClick={() => {
+                                      openConfirmModal(
+                                        "Delete File",
+                                        `Delete "${filename}" from Cloudflare R2 bucket?`,
+                                        async () => {
+                                          try {
+                                            const res = await fetch("/api/cv/upload", {
+                                              method: "DELETE",
+                                              headers: { "Content-Type": "application/json" },
+                                              body: JSON.stringify({ key: file.key })
+                                            });
+                                            if (res.ok) {
+                                              fetchCfFiles(); // Refresh list after delete
+                                            } else {
+                                              alert("Failed to delete file.");
+                                            }
+                                          } catch (err) {
+                                            console.error(err);
+                                            alert("Error deleting file.");
+                                          }
                                         }
-                                      } catch (err) {
-                                        console.error(err);
-                                        alert("Error deleting file.");
-                                      }
+                                      );
                                     }}
                                     className="p-1.5 text-muted hover:text-red-500 hover:bg-red-500/10 border border-rule hover:border-red-500/20 rounded transition-colors cursor-pointer bg-transparent"
                                     title="Delete file"
@@ -1947,33 +1998,38 @@ export function AdminEditPage() {
     };
 
     const handleDeleteIndex = async (indexName: string) => {
-      if (!confirm(`Are you sure you want to delete Vectorize index "${indexName}"?`)) return;
-      try {
-        const res = await fetch(`/api/cv/vectorize?name=${indexName}`, {
-          method: "DELETE",
-        });
-        const json = await res.json();
-        if (res.ok && json.success) {
-          if (!json.live) {
-            // Mock mode client fallback: remove from state
-            setVectorizeIndexes((prev: any[] | null) => (prev || []).filter(idx => idx.name !== indexName));
-            // Update total vectors
-            const deletedIdx = (vectorizeIndexes || []).find(idx => idx.name === indexName);
-            const deletedCount = deletedIdx?.stats?.count || 0;
-            setVectorizeUsage((prev: any) => ({
-              ...prev,
-              total_vectors: Math.max(0, prev.total_vectors - deletedCount)
-            }));
-          } else {
-            fetchVectorizeData();
+      openConfirmModal(
+        "Delete Vectorize Index",
+        `Are you sure you want to delete Vectorize index "${indexName}"?`,
+        async () => {
+          try {
+            const res = await fetch(`/api/cv/vectorize?name=${indexName}`, {
+              method: "DELETE",
+            });
+            const json = await res.json();
+            if (res.ok && json.success) {
+              if (!json.live) {
+                // Mock mode client fallback: remove from state
+                setVectorizeIndexes((prev: any[] | null) => (prev || []).filter(idx => idx.name !== indexName));
+                // Update total vectors
+                const deletedIdx = (vectorizeIndexes || []).find(idx => idx.name === indexName);
+                const deletedCount = deletedIdx?.stats?.count || 0;
+                setVectorizeUsage((prev: any) => ({
+                  ...prev,
+                  total_vectors: Math.max(0, prev.total_vectors - deletedCount)
+                }));
+              } else {
+                fetchVectorizeData();
+              }
+            } else {
+              alert(json.error || "Failed to delete Vectorize index");
+            }
+          } catch (err) {
+            console.error(err);
+            alert("Error deleting index");
           }
-        } else {
-          alert(json.error || "Failed to delete Vectorize index");
         }
-      } catch (err) {
-        console.error(err);
-        alert("Error deleting index");
-      }
+      );
     };
 
     return (
@@ -2390,6 +2446,46 @@ export function AdminEditPage() {
           </div>
         </div>
       </div>
+
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-bg/65 backdrop-blur-md animate-alert-fade-in">
+          <div className="bg-surface border border-rule/80 max-w-sm w-full rounded-xl p-6 shadow-2xl relative overflow-hidden animate-alert-zoom-in">
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500" />
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 animate-pulse">
+                <AlertTriangle size={22} />
+              </div>
+              <div className="space-y-1.5 w-full">
+                <h3 className="font-mono text-xs uppercase tracking-[2px] text-ink font-semibold">
+                  {confirmModal.title}
+                </h3>
+                <p className="text-[12.5px] text-ink2 leading-relaxed font-sans font-light">
+                  {confirmModal.message}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 w-full mt-2">
+                <button
+                  onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                  className="py-2 px-4 border border-rule hover:border-ink/30 rounded text-xs font-mono tracking-wide transition-all duration-200 cursor-pointer bg-transparent text-muted hover:text-ink hover:bg-tag-bg/20 uppercase"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (confirmModal.onConfirm) {
+                      await confirmModal.onConfirm();
+                    }
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                  }}
+                  className="py-2 px-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white hover:text-white text-xs font-mono rounded tracking-wide transition-all duration-200 cursor-pointer border-none shadow-[0_2px_8px_rgba(239,68,68,0.2)] hover:shadow-[0_4px_12px_rgba(239,68,68,0.3)] uppercase"
+                >
+                  {confirmModal.confirmLabel || "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
