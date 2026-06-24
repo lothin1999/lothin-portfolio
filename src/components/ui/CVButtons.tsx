@@ -31,11 +31,12 @@ export function CVButtons() {
             </a>
           )}
           <a
-            href="/api/cv/download"
-            download
+            href="/cv"
+            target="_blank"
+            rel="noopener noreferrer"
             className="w-full py-2.5 px-4 bg-ink hover:bg-accent text-white hover:text-white dark:bg-ink dark:hover:bg-accent text-xs font-mono rounded tracking-wide transition-all duration-200 inline-flex items-center justify-center gap-1.5"
           >
-            Download CV (HTML)
+            View CV (HTML Preview)
           </a>
         </>
       ) : (

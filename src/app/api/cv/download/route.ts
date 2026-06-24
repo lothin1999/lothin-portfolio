@@ -258,34 +258,15 @@ export async function GET(req: NextRequest) {
       <!-- END_P2_LANGUAGE -->`
     );
 
-    // 5. Auth check: is visitor or admin?
-    const token = req.cookies.get(SESSION_COOKIE)?.value || "";
-    const isAdmin = await verifySessionToken(token);
-
-    const filename = `${profile.name.first.toUpperCase()} ${profile.name.last.toUpperCase()} CV & LETTER HEAD.html`;
-
-    // 6. Return response
-    if (isAdmin) {
-      // Admin downloads it
-      return new NextResponse(html, {
-        status: 200,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Content-Disposition": `attachment; filename="${filename}"`,
-          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-        },
-      });
-    } else {
-      // Visitor sees the HTML preview inline
-      return new NextResponse(html, {
-        status: 200,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Content-Disposition": "inline",
-          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-        },
-      });
-    }
+    // 5. Return response: always serve inline for view-only
+    return new NextResponse(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Disposition": "inline",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      },
+    });
   } catch (err: any) {
     console.error("Error generating dynamic CV:", err);
     return NextResponse.json({ error: err.message || "Failed to load CV" }, { status: 500 });

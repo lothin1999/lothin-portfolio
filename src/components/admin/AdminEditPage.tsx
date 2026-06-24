@@ -2043,11 +2043,12 @@ export function AdminEditPage() {
               <Globe size={12} /> Cloudflare
             </a>
             <a
-              href="/api/cv/download"
-              download
+              href="/cv"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[12px] text-muted hover:text-ink border border-rule rounded px-3 py-1.5 transition-colors no-underline inline-flex items-center"
             >
-              Download HTML
+              View HTML
             </a>
             <button onClick={handleLogout}
               className="text-[12px] text-muted hover:text-ink border border-rule rounded px-3 py-1.5 transition-colors cursor-pointer bg-transparent">
