@@ -128,17 +128,8 @@ function renderMarkdown(content: string) {
       continue;
     }
 
-    // 6. Raw HTML Tags Handler
-    if (block.startsWith("<details") || block.startsWith("<div") || block.startsWith("<p")) {
-      renderedBlocks.push(
-        <div
-          key={i}
-          className="my-4"
-          dangerouslySetInnerHTML={{ __html: parseInline(block) }}
-        />
-      );
-      continue;
-    }
+    // 6. Raw HTML Tags Handler — REMOVED (XSS risk: never render untrusted HTML from markdown directly)
+    // Raw HTML blocks are intentionally treated as plain text paragraphs for safety.
 
     // 7. Standard Paragraph
     renderedBlocks.push(
@@ -153,15 +144,47 @@ function renderMarkdown(content: string) {
   return renderedBlocks;
 }
 
-// Inline Markdown formatter (bold, italic, code tags, hyperlinks)
+// Sanitize HTML to prevent XSS — strips script, event handlers, and dangerous URL schemes.
+// All dangerouslySetInnerHTML calls MUST pass output through this function.
+function sanitizeHtml(html: string): string {
+  return html
+    // Remove entire <script>, <style>, <iframe>, <object>, <embed>, <link> blocks
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<object[\s\S]*?>/gi, "")
+    .replace(/<embed[\s\S]*?>/gi, "")
+    // Remove dangerous event handler attributes (onclick, onload, onerror, etc.)
+    .replace(/\s+on\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]*)/gi, "")
+    // Remove javascript: and data: URL schemes from href/src attributes
+    .replace(/(href|src)\s*=\s*"javascript:[^"]*"/gi, "")
+    .replace(/(href|src)\s*=\s*'javascript:[^']*'/gi, "")
+    .replace(/(href|src)\s*=\s*"data:[^"]*"/gi, "")
+    .replace(/(href|src)\s*=\s*'data:[^']*'/gi, "");
+}
+
+// Inline Markdown formatter (bold, italic, code tags, hyperlinks) — XSS-safe.
 function parseInline(text: string): string {
-  return text
+  // First, escape any raw HTML tags in the input text (except our own generated markup)
+  // We do this by escaping < and > BEFORE applying markdown transformations
+  const escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const html = escaped
     .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-ink">$1</strong>')
     .replace(/__([^_]+)__/g, '<strong class="font-semibold text-ink">$1</strong>')
     .replace(/\*([^*]+)\*/g, '<em class="italic text-ink2">$1</em>')
     .replace(/_([^_]+)_/g, '<em class="italic text-ink2">$1</em>')
     .replace(/`([^`]+)`/g, '<code class="font-mono text-xs bg-[var(--color-surface-subtle)] border border-rule px-1 py-0.5 rounded text-accent">$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline inline-flex items-center gap-0.5">$1</a>');
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
+      // Only allow http/https URLs in links — block javascript: and data: schemes
+      const safeUrl = /^https?:\/\//i.test(url) ? url : "#";
+      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline inline-flex items-center gap-0.5">${label}</a>`;
+    });
+
+  return sanitizeHtml(html);
 }
 
 export default function DocumentsPage() {
@@ -358,12 +381,34 @@ export default function DocumentsPage() {
                   const ext = selectedDoc.filename.split(".").pop()?.toLowerCase();
                   if (ext === "pdf") {
                     return (
-                      <div className="w-full h-[650px] rounded-lg overflow-hidden border border-rule bg-surface">
-                        <iframe
-                          src={selectedDoc.url}
-                          className="w-full h-full border-none"
-                          title={selectedDoc.name}
-                        />
+                      <div className="w-full flex flex-col gap-3">
+                        {/* PDF Action Buttons */}
+                        <div className="flex items-center gap-2 pb-2">
+                          <a
+                            href={selectedDoc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-[10px] tracking-wide bg-accent text-white rounded-md px-4 py-2 inline-flex items-center gap-1.5 hover:opacity-80 transition-opacity no-underline"
+                          >
+                            <ExternalLink size={12} />
+                            OPEN IN NEW TAB
+                          </a>
+                          <a
+                            href={selectedDoc.url}
+                            download={selectedDoc.filename}
+                            className="font-mono text-[10px] tracking-wide border border-rule text-ink rounded-md px-4 py-2 inline-flex items-center gap-1.5 hover:border-ink transition-colors no-underline"
+                          >
+                            ↓ DOWNLOAD PDF
+                          </a>
+                        </div>
+                        {/* Embedded PDF viewer */}
+                        <div className="w-full h-[700px] rounded-lg overflow-hidden border border-rule bg-surface">
+                          <iframe
+                            src={`${selectedDoc.url}#toolbar=1&navpanes=0&view=FitH`}
+                            className="w-full h-full border-none"
+                            title={selectedDoc.name}
+                          />
+                        </div>
                       </div>
                     );
                   }

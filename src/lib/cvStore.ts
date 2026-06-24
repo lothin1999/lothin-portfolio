@@ -67,7 +67,11 @@ async function listR2Files(): Promise<R2Object[]> {
     const bucket = env?.R2_BUCKET_NAME;
     if (bucket && typeof bucket.list === "function") {
       const listed = await bucket.list();
-      return listed.objects || [];
+      return (listed.objects || []).map((o: any) => ({
+        key: o.key,
+        size: o.size,
+        uploaded: o.uploaded || o.last_modified,
+      }));
     }
   } catch (err) {
     console.error("Worker R2 list failed:", err);
@@ -88,7 +92,12 @@ async function listR2Files(): Promise<R2Object[]> {
       if (response.ok) {
         const json = await response.json() as any;
         if (json.success) {
-          return json.result || [];
+          // Cloudflare REST API returns `last_modified`, normalize to `uploaded`
+          return (json.result || []).map((o: any) => ({
+            key: o.key,
+            size: o.size,
+            uploaded: o.uploaded || o.last_modified,
+          }));
         }
       }
     }
@@ -202,8 +211,37 @@ export async function getCVData(): Promise<CVData> {
     } else {
       decrypted.profile.coverLetterPdfUrl = "";
     }
+
+    // Documents: auto-sync all files in the "documents/" R2 prefix
+    // Any file in R2 that isn't already registered in cv.documents gets added automatically.
+    const docFiles = files.filter(f => f.key.startsWith("documents/") && f.key !== "documents/");
+    if (docFiles.length > 0) {
+      const existingKeys = new Set((decrypted.documents || []).map((d: any) => d.key));
+      const newDocs = docFiles
+        .filter(f => !existingKeys.has(f.key))
+        .map(f => {
+          const filename = f.key.substring("documents/".length);
+          // Auto-generate a readable display name from the filename
+          const name = filename
+            .replace(/\.[^/.]+$/, "")       // strip extension
+            .replace(/[-_]/g, " ")           // dashes/underscores → spaces
+            .replace(/\b\w/g, c => c.toUpperCase()); // Title Case
+          return {
+            id: `doc-r2-${filename.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`,
+            name,
+            filename,
+            key: f.key,
+            url: `/api/documents/${filename}`,
+            uploadedAt: f.uploaded || new Date().toISOString(),
+          };
+        });
+
+      if (newDocs.length > 0) {
+        decrypted.documents = [...(decrypted.documents || []), ...newDocs];
+      }
+    }
   } catch (err) {
-    console.error("Error setting dynamic CV/Letter URLs from R2:", err);
+    console.error("Error syncing R2 files into CV data:", err);
   }
 
   memCache = decrypted;
