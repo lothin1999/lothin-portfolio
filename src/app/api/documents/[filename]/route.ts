@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
+// Force Node.js runtime in local dev so the fs fallback can read local files.
+// In production (Cloudflare Pages), this route is served via the CF Worker binding (Path 1).
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function getCFContext() {
@@ -20,6 +22,8 @@ async function fetchFromR2API(key: string): Promise<Response | null> {
 
   if (!accountId || !apiToken) return null;
 
+  // NOTE: Per Cloudflare docs, slashes in R2 object keys must NOT be percent-encoded
+  // when using the REST API endpoint. Only encode each path segment (not the /).
   const encodedKey = key
     .split("/")
     .map((s) => encodeURIComponent(s))
@@ -68,7 +72,7 @@ export async function GET(
       }
     }
 
-    // --- Path 2: R2 S3-compatible API (local dev with credentials in .env) ---
+    // --- Path 2: R2 REST API (local dev with credentials in .env) ---
     const r2Response = await fetchFromR2API(key);
     if (r2Response && r2Response.ok) {
       return new NextResponse(r2Response.body, {
@@ -80,26 +84,25 @@ export async function GET(
       });
     }
 
-    // --- Path 3: Local Filesystem Fallback (e.g. README.md or Hackers.md in root) ---
-    if (typeof process !== "undefined" && process.env && process.env.NEXT_RUNTIME !== "edge") {
-      try {
-        const fs = eval('require("fs")');
-        const path = eval('require("path")');
-        const rootDir = process.cwd();
-        const filePath = path.join(rootDir, filename);
-        if (fs.existsSync(filePath)) {
-          const content = fs.readFileSync(filePath, "utf-8");
-          return new NextResponse(content, {
-            status: 200,
-            headers: {
-              "Content-Type": contentType,
-              "Cache-Control": "public, max-age=3600",
-            },
-          });
-        }
-      } catch (fsErr) {
-        console.warn("Local filesystem fallback bypassed:", fsErr);
+    // --- Path 3: Local Filesystem Fallback (Node.js runtime in dev) ---
+    // Handles files like README.md that live in the project root but aren't in R2.
+    // Uses eval('require(...)') to prevent webpack from bundling 'fs' at compile time.
+    try {
+      const fs = eval('require("fs")');
+      const path = eval('require("path")');
+      const filePath = path.join(process.cwd(), filename);
+      if (fs.existsSync(filePath)) {
+        const fileContent = fs.readFileSync(filePath, "utf-8");
+        return new NextResponse(fileContent, {
+          status: 200,
+          headers: {
+            "Content-Type": contentType,
+            "Cache-Control": "no-cache",
+          },
+        });
       }
+    } catch {
+      // fs module not available (edge runtime in production) — expected
     }
 
     return new NextResponse("Document not found", { status: 404 });
