@@ -6,7 +6,7 @@ import {
   Plus, Trash2, Save, Upload, RefreshCw, Check, ArrowLeft,
   ChevronDown, ChevronRight, FileText, Globe, CheckCircle, Edit, List, Info, Folder
 } from "lucide-react";
-import type { CVData, Article } from "@/types/cv";
+import type { CVData, Article, DocumentItem } from "@/types/cv";
 import { useCVData } from "@/hooks/useCVData";
 import { DragDropUploader } from "./DragDropUploader";
 
@@ -91,6 +91,7 @@ type Tab =
   | "about"
   | "services"
   | "articles"
+  | "documents"
   | "storage"
   | "vectorize";
 
@@ -107,6 +108,7 @@ const ADMIN_TABS: { id: Tab; label: string }[] = [
   { id: "about", label: "About Page" },
   { id: "services", label: "Services Page" },
   { id: "articles", label: "Articles" },
+  { id: "documents", label: "Documents" },
   { id: "storage", label: "Storage" },
   { id: "vectorize", label: "Vectorize" },
 ];
@@ -275,6 +277,7 @@ export function AdminEditPage() {
   const [saveMsg, setSaveMsg] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const docFileInputRef = useRef<HTMLInputElement>(null);
 
   const [cfFiles, setCfFiles] = useState<{ key: string; size: number; uploaded: string }[] | null>(null);
   const [cfLoading, setCfLoading] = useState(false);
@@ -329,6 +332,11 @@ export function AdminEditPage() {
   const [newIndexDims, setNewIndexDims] = useState("1536"); // Preset 1536
   const [newIndexMetric, setNewIndexMetric] = useState("cosine");
   const [creatingIndexStatus, setCreatingIndexStatus] = useState("");
+
+  // Documents uploader states
+  const [docInputName, setDocInputName] = useState("");
+  const [docUploading, setDocUploading] = useState(false);
+  const [docDragActive, setDocDragActive] = useState(false);
 
   const fetchVectorizeData = useCallback(async () => {
     setVectorizeLoading(true);
@@ -1301,6 +1309,250 @@ export function AdminEditPage() {
     );
   };
 
+  // ── Documents Manager Tab ──
+  const renderDocumentsTab = () => {
+    const list = draft.documents || [];
+
+    const handleDocDrag = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.type === "dragenter" || e.type === "dragover") {
+        setDocDragActive(true);
+      } else if (e.type === "dragleave") {
+        setDocDragActive(false);
+      }
+    };
+
+    const handleDocDrop = async (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDocDragActive(false);
+
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        await handleFilesUpload(e.dataTransfer.files);
+      }
+    };
+
+    const handleFilesUpload = async (files: FileList) => {
+      setDocUploading(true);
+      let nameUsed = false;
+      const uploadedDocs: DocumentItem[] = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split(".").pop()?.toLowerCase();
+        if (ext !== "md" && ext !== "txt") {
+          alert(`File "${file.name}" is not a Markdown (.md) or Text (.txt) file. Only readable document files are supported.`);
+          continue;
+        }
+
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("type", "document");
+
+        try {
+          const res = await fetch("/api/cv/upload", {
+            method: "POST",
+            body: fd,
+          });
+
+          if (!res.ok) {
+            const json = await res.json() as any;
+            alert(`Failed to upload ${file.name}: ${json.error || res.statusText}`);
+            continue;
+          }
+
+          const json = await res.json() as { url: string };
+          
+          const displayName = !nameUsed && docInputName
+            ? docInputName
+            : file.name.replace(/\.[^/.]+$/, "").split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+          
+          if (!nameUsed && docInputName) nameUsed = true;
+
+          const newDoc = {
+            id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: displayName,
+            filename: file.name,
+            key: `documents/${file.name}`,
+            url: json.url,
+            uploadedAt: new Date().toISOString(),
+          };
+
+          uploadedDocs.push(newDoc);
+        } catch (err) {
+          console.error(err);
+          alert(`Upload failed for ${file.name}`);
+        }
+      }
+
+      if (uploadedDocs.length > 0) {
+        if (nameUsed) setDocInputName("");
+        await applyAndSave((d) => {
+          const current = d.documents || [];
+          const filenamesToReplace = new Set(uploadedDocs.map(ud => ud.filename));
+          const filtered = current.filter(item => !filenamesToReplace.has(item.filename));
+          return {
+            ...d,
+            documents: [...filtered, ...uploadedDocs],
+          };
+        });
+        fetchCfFiles();
+      }
+      setDocUploading(false);
+    };
+
+    const handleFileSelectChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+        await handleFilesUpload(e.target.files);
+      }
+    };
+
+    const handleDeleteDoc = async (doc: any) => {
+      if (!confirm(`Are you sure you want to delete the document "${doc.name}"?`)) return;
+      try {
+        const res = await fetch("/api/cv/upload", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: doc.url }),
+        });
+        if (res.ok) {
+          await applyAndSave((d) => ({
+            ...d,
+            documents: (d.documents || []).filter((item) => item.id !== doc.id),
+          }));
+          fetchCfFiles();
+        } else {
+          alert("Failed to delete the document from Cloudflare R2.");
+        }
+      } catch (e) {
+        console.error(e);
+        alert("An error occurred while deleting the document.");
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between pb-3 border-b border-rule">
+          <div>
+            <h4 className="font-mono text-[11px] uppercase tracking-wider text-accent font-bold">Documents Manager</h4>
+            <p className="text-[10px] text-muted mt-0.5">Upload Markdown files like Hackers.md and set premium display names.</p>
+          </div>
+        </div>
+
+        <div className="max-w-md">
+          <Field
+            label="Document Display Name (Optional)"
+            value={docInputName}
+            onChange={setDocInputName}
+            placeholder="e.g. Hackers Guide, Project Proposal..."
+          />
+          <p className="text-[9.5px] text-muted font-mono mt-1">
+            If left blank, the filename will be auto-formatted as the display name.
+          </p>
+        </div>
+
+        <div
+          onDragEnter={handleDocDrag}
+          onDragOver={handleDocDrag}
+          onDragLeave={handleDocDrag}
+          onDrop={handleDocDrop}
+          onClick={() => docFileInputRef.current?.click()}
+          className={`relative border-2 border-dashed rounded p-6 text-center cursor-pointer transition-all duration-200 ${
+            docDragActive
+              ? "border-accent bg-accent/[0.02] scale-[0.99]"
+              : "border-rule hover:border-ink hover:bg-tag-bg/20"
+          }`}
+        >
+          <input
+            ref={docFileInputRef}
+            type="file"
+            accept=".md,text/markdown,.txt,text/plain"
+            multiple
+            onChange={handleFileSelectChange}
+            className="hidden"
+          />
+
+          <div className="flex flex-col items-center justify-center gap-2">
+            {docUploading ? (
+              <>
+                <RefreshCw size={18} className="text-accent animate-spin" />
+                <p className="font-mono text-[11px] text-ink animate-pulse uppercase tracking-wider">
+                  uploading.documents...
+                </p>
+              </>
+            ) : (
+              <>
+                <Upload size={18} className="text-muted" />
+                <p className="font-mono text-[11px] text-ink uppercase tracking-wider font-semibold">
+                  Drag & drop multiple Markdown files
+                </p>
+                <p className="font-mono text-[9px] text-muted">
+                  [ or click to select ]
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <h5 className="font-mono text-[10px] tracking-[1.5px] uppercase text-muted mb-3 font-semibold">
+            Uploaded Documents ({list.length})
+          </h5>
+
+          {list.length === 0 ? (
+            <div className="py-10 text-center border border-dashed border-rule rounded">
+              <p className="font-mono text-[11px] text-muted">No documents uploaded yet.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-rule border border-rule rounded overflow-hidden bg-bg">
+              {list.map((doc: any, idx: number) => (
+                <div
+                  key={doc.id || idx}
+                  className="p-4 flex items-center justify-between gap-4 hover:bg-tag-bg/20 transition-colors"
+                >
+                  <div className="min-w-0 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded bg-accent/5 border border-accent/10 flex items-center justify-center text-accent shrink-0">
+                      <FileText size={15} />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="font-sans text-[13px] text-ink font-semibold truncate block">
+                        {doc.name}
+                      </span>
+                      <span className="font-mono text-[9px] text-muted tracking-wide mt-0.5 block truncate">
+                        filename: {doc.filename} · uploaded: {new Date(doc.uploadedAt).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] font-mono text-accent hover:text-accent-orange border border-rule hover:border-accent rounded px-2 py-0.5 transition-all no-underline"
+                    >
+                      View
+                    </a>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteDoc(doc);
+                      }}
+                      className="p-1 text-muted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors cursor-pointer border-none bg-transparent"
+                      title="Delete document"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderStorageTab = () => {
     const totalStorageBytes = cfFiles
       ? cfFiles.reduce((acc, f) => acc + (f.size || 0), 0)
@@ -2013,6 +2265,7 @@ export function AdminEditPage() {
     about: renderAboutTab(),
     services: renderServicesTab(),
     articles: renderArticlesTab(),
+    documents: renderDocumentsTab(),
     storage: renderStorageTab(),
     vectorize: renderVectorizeTab(),
   };

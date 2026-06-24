@@ -17,6 +17,7 @@ const DEFAULT_NAV_LINKS = [
   { href: "/portfolio", label: "Work", sectionId: "work", pathMatch: "/portfolio" },
   { href: "/services", label: "Services", sectionId: "services", pathMatch: "/services" },
   { href: "/articles", label: "Writing", sectionId: "writing", pathMatch: "/articles" },
+  { href: "/documents", label: "Documents", sectionId: "documents", pathMatch: "/documents" },
   { href: "/contact", label: "Reach Out", sectionId: "contact", pathMatch: "/contact" },
 ];
 

@@ -48,6 +48,7 @@ async function ensureDecrypted(data: any): Promise<CVData> {
   if (!result.skillGroups) result.skillGroups = [];
   if (!result.references) result.references = [];
   if (!result.articles) result.articles = [];
+  if (!result.documents) result.documents = (localCV as any).documents || [];
   if (!result.adminSettings) result.adminSettings = (localCV as any).adminSettings || {};
 
   return result;

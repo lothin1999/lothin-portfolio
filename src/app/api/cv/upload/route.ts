@@ -108,11 +108,16 @@ export async function POST(req: NextRequest) {
     const name = file.name || "file";
     const extension = name.split(".").pop()?.toLowerCase() || "bin";
     const isPdf = file.type === "application/pdf" || extension === "pdf";
+    const isDoc = uploadType === "document" || extension === "md";
 
     let key = "";
     let relativeUrl = "";
 
-    if (isPdf) {
+    if (isDoc) {
+      const sanitizedName = name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      key = `documents/${sanitizedName}`;
+      relativeUrl = `/api/documents/${sanitizedName}`;
+    } else if (isPdf) {
       if (uploadType === "letter") {
         const filename = `letter-${Date.now()}.pdf`;
         key = `letter/${filename}`;
@@ -135,8 +140,12 @@ export async function POST(req: NextRequest) {
 
     if (bucket) {
       const buffer = await file.arrayBuffer();
+      let cType = file.type || (isPdf ? "application/pdf" : "image/jpeg");
+      if (isDoc) {
+        cType = "text/markdown; charset=utf-8";
+      }
       await bucket.put(key, new Uint8Array(buffer), {
-        httpMetadata: { contentType: file.type || (isPdf ? "application/pdf" : "image/jpeg") },
+        httpMetadata: { contentType: cType },
       });
       return NextResponse.json({ url: relativeUrl });
     }
@@ -263,6 +272,8 @@ export async function DELETE(req: NextRequest) {
         
         if (pathname.startsWith("/api/images/")) {
           key = `images/${pathname.substring("/api/images/".length)}`;
+        } else if (pathname.startsWith("/api/documents/")) {
+          key = `documents/${pathname.substring("/api/documents/".length)}`;
         } else if (pathname.startsWith("/api/cv/pdf/")) {
           const filename = pathname.substring("/api/cv/pdf/".length);
           if (filename.startsWith("letter-")) {

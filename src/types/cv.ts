@@ -103,6 +103,15 @@ export interface AdminSettings {
   contactSteps?: { step: string; title: string; desc: string }[];
 }
 
+export interface DocumentItem {
+  id: string;
+  name: string;
+  filename: string;
+  key: string;
+  url: string;
+  uploadedAt: string;
+}
+
 export interface CVData {
   profile: Profile;
   experiences: Experience[];
@@ -110,6 +119,7 @@ export interface CVData {
   educations: Education[];
   references: Reference[];
   articles?: Article[];
+  documents?: DocumentItem[];
   adminSettings?: AdminSettings;
   updatedAt?: string;
 }
