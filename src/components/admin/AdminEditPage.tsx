@@ -1341,8 +1341,9 @@ export function AdminEditPage() {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const ext = file.name.split(".").pop()?.toLowerCase();
-        if (ext !== "md" && ext !== "txt") {
-          alert(`File "${file.name}" is not a Markdown (.md) or Text (.txt) file. Only readable document files are supported.`);
+        const allowedExts = ["md", "txt", "pdf", "html", "htm"];
+        if (!allowedExts.includes(ext || "")) {
+          alert(`File "${file.name}" is not supported. Supported extensions: .md, .txt, .pdf, .html, .htm`);
           continue;
         }
 
@@ -1467,7 +1468,7 @@ export function AdminEditPage() {
           <input
             ref={docFileInputRef}
             type="file"
-            accept=".md,text/markdown,.txt,text/plain"
+            accept=".md,text/markdown,.txt,text/plain,.pdf,application/pdf,.html,text/html"
             multiple
             onChange={handleFileSelectChange}
             className="hidden"
@@ -1485,7 +1486,7 @@ export function AdminEditPage() {
               <>
                 <Upload size={18} className="text-muted" />
                 <p className="font-mono text-[11px] text-ink uppercase tracking-wider font-semibold">
-                  Drag & drop multiple Markdown files
+                  Drag & drop multiple files (.md, .txt, .pdf, .html)
                 </p>
                 <p className="font-mono text-[9px] text-muted">
                   [ or click to select ]

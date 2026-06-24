@@ -192,6 +192,17 @@ export default function DocumentsPage() {
   // Load document content dynamically when selected file changes
   useEffect(() => {
     if (!selectedFilename) return;
+
+    const doc = list.find((d) => d.filename === selectedFilename);
+    if (doc) {
+      const ext = doc.filename.split(".").pop()?.toLowerCase();
+      if (ext === "pdf" || ext === "html" || ext === "htm") {
+        setContent("");
+        setContentLoading(false);
+        return;
+      }
+    }
+
     let active = true;
     setContentLoading(true);
 
@@ -217,7 +228,7 @@ export default function DocumentsPage() {
     return () => {
       active = false;
     };
-  }, [selectedFilename]);
+  }, [selectedFilename, list]);
 
   // Copy deep-link sharing option
   const handleCopyLink = () => {
@@ -343,11 +354,37 @@ export default function DocumentsPage() {
                       fetching.document...
                     </span>
                   </div>
-                ) : (
-                  <article className="article-body select-text">
-                    {renderMarkdown(content)}
-                  </article>
-                )}
+                ) : (() => {
+                  const ext = selectedDoc.filename.split(".").pop()?.toLowerCase();
+                  if (ext === "pdf") {
+                    return (
+                      <div className="w-full h-[650px] rounded-lg overflow-hidden border border-rule bg-surface">
+                        <iframe
+                          src={selectedDoc.url}
+                          className="w-full h-full border-none"
+                          title={selectedDoc.name}
+                        />
+                      </div>
+                    );
+                  }
+                  if (ext === "html" || ext === "htm") {
+                    return (
+                      <div className="w-full h-[650px] rounded-lg overflow-hidden border border-rule bg-white">
+                        <iframe
+                          src={selectedDoc.url}
+                          className="w-full h-full border-none"
+                          title={selectedDoc.name}
+                          sandbox="allow-scripts allow-same-origin"
+                        />
+                      </div>
+                    );
+                  }
+                  return (
+                    <article className="article-body select-text">
+                      {renderMarkdown(content)}
+                    </article>
+                  );
+                })()}
 
               </div>
             ) : (

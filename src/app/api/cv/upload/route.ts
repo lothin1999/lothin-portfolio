@@ -142,7 +142,15 @@ export async function POST(req: NextRequest) {
       const buffer = await file.arrayBuffer();
       let cType = file.type || (isPdf ? "application/pdf" : "image/jpeg");
       if (isDoc) {
-        cType = "text/markdown; charset=utf-8";
+        if (extension === "pdf") {
+          cType = "application/pdf";
+        } else if (extension === "html" || extension === "htm") {
+          cType = "text/html; charset=utf-8";
+        } else if (extension === "txt") {
+          cType = "text/plain; charset=utf-8";
+        } else {
+          cType = "text/markdown; charset=utf-8";
+        }
       }
       await bucket.put(key, new Uint8Array(buffer), {
         httpMetadata: { contentType: cType },

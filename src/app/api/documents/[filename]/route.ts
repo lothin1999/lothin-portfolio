@@ -54,13 +54,15 @@ export async function GET(
     const env = context?.env as any;
     const bucket = env?.R2_BUCKET_NAME;
 
+    const contentType = getContentType(filename);
+
     if (bucket) {
       const object = await bucket.get(key);
       if (object) {
         const headers = new Headers();
         object.writeHttpMetadata(headers);
         headers.set("etag", object.httpEtag);
-        headers.set("Content-Type", "text/markdown; charset=utf-8");
+        headers.set("Content-Type", contentType);
         headers.set("Cache-Control", "public, max-age=3600");
         return new NextResponse(object.body, { headers });
       }
@@ -72,30 +74,32 @@ export async function GET(
       return new NextResponse(r2Response.body, {
         status: 200,
         headers: {
-          "Content-Type": "text/markdown; charset=utf-8",
+          "Content-Type": contentType,
           "Cache-Control": "public, max-age=3600",
         },
       });
     }
 
     // --- Path 3: Local Filesystem Fallback (e.g. README.md or Hackers.md in root) ---
-    try {
-      const fs = eval('require("fs")');
-      const path = eval('require("path")');
-      const rootDir = process.cwd();
-      const filePath = path.join(rootDir, filename);
-      if (fs.existsSync(filePath)) {
-        const content = fs.readFileSync(filePath, "utf-8");
-        return new NextResponse(content, {
-          status: 200,
-          headers: {
-            "Content-Type": "text/markdown; charset=utf-8",
-            "Cache-Control": "public, max-age=3600",
-          },
-        });
+    if (typeof process !== "undefined" && process.env && process.env.NEXT_RUNTIME !== "edge") {
+      try {
+        const fs = eval('require("fs")');
+        const path = eval('require("path")');
+        const rootDir = process.cwd();
+        const filePath = path.join(rootDir, filename);
+        if (fs.existsSync(filePath)) {
+          const content = fs.readFileSync(filePath, "utf-8");
+          return new NextResponse(content, {
+            status: 200,
+            headers: {
+              "Content-Type": contentType,
+              "Cache-Control": "public, max-age=3600",
+            },
+          });
+        }
+      } catch (fsErr) {
+        console.warn("Local filesystem fallback bypassed:", fsErr);
       }
-    } catch (fsErr) {
-      console.warn("Local filesystem fallback bypassed:", fsErr);
     }
 
     return new NextResponse("Document not found", { status: 404 });
@@ -103,4 +107,12 @@ export async function GET(
     console.error("Error serving document:", err);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
+}
+
+function getContentType(filename: string): string {
+  const ext = filename.split(".").pop()?.toLowerCase();
+  if (ext === "pdf") return "application/pdf";
+  if (ext === "html" || ext === "htm") return "text/html; charset=utf-8";
+  if (ext === "txt") return "text/plain; charset=utf-8";
+  return "text/markdown; charset=utf-8";
 }
