@@ -45,6 +45,7 @@ export interface Education {
   period: string;
   description: string;
   courses: string[];
+  link?: string;
 }
 
 export interface Reference {

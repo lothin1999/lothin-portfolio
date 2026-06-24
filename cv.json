@@ -46,10 +46,9 @@
         "Developed a complete booking engine — availability calendar, pricing engine, and special deals module",
         "Implemented merchant review & rating system with verified badges and star ratings",
         "Added multi-language support (Khmer / English) with responsive mobile-first UI",
-        "Integrated backend APIs for inventory management, discount price overlays, and photo-rich listings",
         "Integrated Google Maps API for interactive location mapping and store filters",
         "Configured transactional email alert systems using Nodemailer for bookings and reviews",
-        "Streamlined collaborative team workflows using GitLab for version control and issue tracking"
+        "Streamlined team workflows using GitLab for version control and issue tracking"
       ],
       "tags": [
         "Nuxt 4 SSR",
@@ -76,7 +75,6 @@
         "Framework Migration: Managed the full upgrade path through three Nuxt major versions (Nuxt 2 → 3 → 4) and Options to Composition API migration",
         "API Migration: Migrated the legacy Laravel API to a modular NestJS API, optimizing databases with Prisma ORM and enforcing secure JWT authentication",
         "Designed and documented RESTful APIs with Swagger/OpenAPI for clear front-end contract integration",
-        "Conducted endpoint testing and API validation using Postman collection environments",
         "Integrated SMS gateway OTP verification for admin login security and cashier validation",
         "Managed version control, feature branches, and code reviews on GitHub"
       ],
@@ -96,17 +94,24 @@
     },
     {
       "id": "exp-3",
-      "title": "Full-Stack Web Developer — CRM, Hotel, KDMS & More",
+      "title": "Full-Stack Web Developer — CRM, Hotel, KDMS, Loan, E-Commerce & More",
       "company": "IDG Technology Solutions.",
       "location": "Phnom Penh, Cambodia",
       "period": "2023 – 2024",
       "bullets": [
-        "Delivered CRM, Hotel, KDMS, VIP, Pool/Billiard, and Loan Management systems end-to-end",
+        "Delivered CRM, Hotel, KDMS, VIP, Pool/Billiard, Loan, and E-Commerce systems end-to-end",
         "Built real-time pool hall table status tracking and session hourly billing with Pusher",
         "Built Loan System covering application, approval workflows, repayment schedules, and interest calculation",
+        "Built Employer Management System — employee records, attendance tracking, payroll calculation, and leave management",
+        "Built Project Management System — task boards, milestone tracking, team assignment, and progress reporting",
+        "Built E-Commerce Website — product catalogue, cart, checkout, order management, and payment integration",
+        "Built personal Portfolio Website showcasing projects, skills, and contact with responsive design",
         "Built full-stack applications with Vue.js, Laravel, and Spring Boot handling both front-end and back-end APIs",
         "Developed responsive UIs with Bootstrap and custom SCSS across all projects",
         "Integrated real-time features via Firebase and Pusher for notifications and event coordination",
+        "API Migration: Migrated the legacy Laravel API to a modular NestJS API, optimizing databases with Prisma ORM and enforcing secure JWT authentication",
+        "Designed and documented RESTful APIs with Swagger/OpenAPI for clear front-end contract integration",
+        "Conducted endpoint testing and API validation using Postman collection environments",
         "Managed cPanel hosting, database migrations, and Ubuntu Server configurations for production environments",
         "Gained hands-on experience with MySQL, Oracle, and MongoDB databases"
       ],
@@ -121,27 +126,6 @@
         "Pusher",
         "cPanel"
       ]
-    },
-    {
-      "id": "exp-volunteer-teacher",
-      "title": "Volunteer English & Soft Skills Teacher",
-      "company": "Glocal Youth Association",
-      "location": "GYA School, Don Pên, Phnom Penh",
-      "period": "2020 – 2022",
-      "bullets": [
-        "Facilitated interactive English lessons and soft skills workshops for underprivileged youth and community students.",
-        "Developed and customized educational materials, daily lesson plans, and learning activities to boost student engagement.",
-        "Organized community development projects and youth leadership seminars in collaboration with national and international volunteers.",
-        "Mentored students in public speaking, teamwork, and communication, helping them prepare for academic and community initiatives."
-      ],
-      "tags": [
-        "Volunteerism",
-        "Teaching",
-        "Leadership",
-        "Soft Skills",
-        "Community Development"
-      ],
-      "showInCv": false
     },
     {
       "id": "exp-receptionist",
@@ -161,8 +145,27 @@
         "English Communication",
         "Guest Relations",
         "Problem Solving"
+      ]
+    },
+    {
+      "id": "exp-volunteer-teacher",
+      "title": "Volunteer English & Soft Skills Teacher",
+      "company": "Glocal Youth Association, GYA School",
+      "location": "Don Peñ, Phnom Penh",
+      "period": "2017 – 2019",
+      "bullets": [
+        "Facilitated interactive English lessons and soft skills workshops for underprivileged youth and community students.",
+        "Developed and customized educational materials, daily lesson plans, and learning activities to boost student engagement.",
+        "Organized community development projects and youth leadership seminars in collaboration with national and international volunteers.",
+        "Mentored students in public speaking, teamwork, and communication, helping them prepare for academic and community initiatives."
       ],
-      "showInCv": false
+      "tags": [
+        "Volunteerism",
+        "Teaching",
+        "Leadership",
+        "Soft Skills",
+        "Community Development"
+      ]
     }
   ],
   "skillGroups": [
@@ -241,7 +244,26 @@
         "Linux System Administration",
         "UX/UI Design & Graphic Design",
         "Principles of Management & Accounting"
-      ]
+      ],
+      "link": "https://www.setecu.com/index.php/academic/bachelor-degree/2014-07-17-00-21-15"
+    },
+    {
+      "id": "edu-piset-java",
+      "degree": "Full-Stack Web Developer — Angular & Spring Boot",
+      "school": "Piset Java School",
+      "location": "Phnom Penh, Cambodia",
+      "period": "2022 – 2023",
+      "description": "Completed full course covering Angular (components, services, routing, RxJS) and Spring Boot (REST APIs, JPA/Hibernate, security, and microservices architecture).",
+      "courses": []
+    },
+    {
+      "id": "edu-master-it",
+      "degree": "Full-Stack Web Developer — Meteor.js & Vue.js",
+      "school": "Master IT",
+      "location": "Phnom Penh, Cambodia",
+      "period": "2021 – 2022",
+      "description": "Completed full course in full-stack development with Meteor.js (real-time data, DDP, publications & subscriptions) and Vue.js (Vuex, Vue Router, component architecture).",
+      "courses": []
     },
     {
       "id": "edu-2",

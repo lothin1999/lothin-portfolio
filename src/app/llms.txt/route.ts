@@ -30,6 +30,7 @@ ${exp.bullets.map(b => `  - ${b}`).join("\n")}
 - **Location**: ${edu.location}
 - **Period**: ${edu.period}
 ${edu.description ? `- **Details**: ${edu.description}` : ""}
+${edu.link ? `- **Link**: ${edu.link}` : ""}
 ${edu.courses && edu.courses.length > 0 ? `- **Key Courses**: ${edu.courses.join(", ")}` : ""}
 `).join("\n");
 

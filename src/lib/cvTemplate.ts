@@ -293,33 +293,46 @@ export const cvTemplate = `<!DOCTYPE html>
   }
   .skill-row {
     display: flex;
-    align-items: flex-end;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 4px;
+    gap: 4px;
+    width: 100%;
+    overflow: hidden;
   }
   .skill-name {
     font-size: 7.5pt;
     color: #333;
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.3;
+  }
+  .skill-track {
+    display: flex;
+    align-items: center;
+    gap: 2px;
     flex-shrink: 0;
-    max-width: 95px;
-    word-wrap: break-word;
+    align-self: center;
   }
   .skill-line {
-    flex-grow: 1;
+    width: 28px;
     height: 0.7px;
     background: #aaa;
-    margin: 0 6px 3px 6px;
+    flex-shrink: 0;
   }
   .dots {
     display: flex;
     gap: 2.5px;
     flex-shrink: 0;
-    margin-bottom: 1px;
   }
   .dot {
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #888;
+    background: #c0bcb8;
+    flex-shrink: 0;
   }
   .dot.full { background: #1a1a1a; }
 

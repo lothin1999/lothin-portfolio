@@ -190,6 +190,7 @@ export async function GET(req: NextRequest) {
             <div class="edu-degree">${edu.degree}</div>
             <div class="edu-school">${edu.school} · ${edu.location}</div>
             ${edu.description ? `<div class="edu-note">${edu.description}</div>` : ""}
+            ${edu.link ? `<div class="edu-note" style="margin-top:3px;"><a href="${edu.link}" style="color:#555;text-decoration:none;word-break:break-all;">${edu.link}</a></div>` : ""}
           </div>
         </div>
       </div>`).join("\n");
@@ -228,8 +229,10 @@ export async function GET(req: NextRequest) {
         return `
         <div class="skill-row">
           <span class="skill-name">${skill}</span>
-          <div class="skill-line"></div>
-          <div class="dots">${dotsHtml}</div>
+          <div class="skill-track">
+            <div class="skill-line"></div>
+            <div class="dots">${dotsHtml}</div>
+          </div>
         </div>`;
       }).join("\n        ");
       return `
