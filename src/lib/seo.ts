@@ -370,3 +370,38 @@ export function contactJsonLd(cv: any): object {
     }
   };
 }
+
+/** JSON-LD structured data for FAQ page */
+export function faqJsonLd(): object {
+  const faqs = [
+    {
+      q: "What is your primary technology stack?",
+      a: "Thoeun Lothin specializes in full-stack development, using NestJS, Laravel, and Spring Boot for backends, and Vue/Nuxt or React/Next.js for modern, responsive frontends, integrated with PostgreSQL, MySQL, Redis, Firebase, and Cloudflare edge networks."
+    },
+    {
+      q: "Do you offer freelance consulting or contract services?",
+      a: "Yes, Thoeun Lothin takes on select freelance consulting and development contracts, specializing in optimization, framework migrations (Vue/Nuxt), and Cambodia-native system integrations."
+    },
+    {
+      q: "What is your experience with payment gateways and local APIs in Cambodia?",
+      a: "He has extensive experience integrating Cambodia's national Bakong KHQR payment system, merchant onboarding, transaction webhooks, signature verification, and secure SMS OTP verification gateways."
+    },
+    {
+      q: "How do you approach performance debugging?",
+      a: "He tracks Google's Core Web Vitals (LCP, INP, FID), optimizes database query execution plans with indexing, implements server-side caching (Redis), and optimizes asset delivery on Cloudflare CDN to ensure fast load times."
+    }
+  ];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a
+      }
+    }))
+  };
+}

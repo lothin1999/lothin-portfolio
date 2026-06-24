@@ -14,7 +14,7 @@ import { SettingsModal } from "@/components/layout/SettingsModal";
 import { AIChatDrawer } from "@/components/layout/AIChatDrawer";
 import { AdminButton } from "@/components/admin/AdminButton";
 import { getCVData, sanitizeCVForVisitor } from "@/lib/cvStore";
-import { buildMetadata, personJsonLd, websiteJsonLd } from "@/lib/seo";
+import { buildMetadata, personJsonLd, websiteJsonLd, faqJsonLd } from "@/lib/seo";
 import { CVContentWrapper } from "@/components/layout/CVContentWrapper";
 import Script from "next/script";
 
@@ -53,7 +53,7 @@ export default async function RootLayout({
   const cv = await getCVData();
   const initialCvData = sanitizeCVForVisitor(cv);
 
-  const jsonLdList = [personJsonLd(initialCvData), websiteJsonLd()];
+  const jsonLdList = [personJsonLd(initialCvData), websiteJsonLd(), faqJsonLd()];
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
