@@ -50,7 +50,17 @@ export function CVProvider({ children, initialData }: { children: React.ReactNod
 
       if (cvRes.ok) {
         const data = await cvRes.json();
-        if (data && data.profile) {
+        if (data && data.encrypted && data.ciphertext) {
+          try {
+            const decrypted = await decryptData(data.ciphertext, "lothin-visitor-key");
+            if (decrypted && decrypted.profile) {
+              setCV(decrypted);
+              setIsLocked(false);
+            }
+          } catch (e) {
+            console.error("Failed to decrypt CV response:", e);
+          }
+        } else if (data && data.profile) {
           setCV(data);
           setIsLocked(false);
         }

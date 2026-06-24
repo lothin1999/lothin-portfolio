@@ -276,3 +276,15 @@ export async function saveCVData(data: CVData): Promise<void> {
   process.env.CV_JSON_DATA = JSON.stringify(updatedData);
   memCache = null;
 }
+
+export function sanitizeCVForVisitor(cvData: CVData): CVData {
+  if (!cvData) return cvData;
+  const clone = JSON.parse(JSON.stringify(cvData)) as CVData;
+  if (clone.references && Array.isArray(clone.references)) {
+    clone.references = clone.references.map((ref: any) => ({
+      ...ref,
+      contact: "Available upon request"
+    }));
+  }
+  return clone;
+}

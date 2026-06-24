@@ -13,7 +13,7 @@ import { ShortcutsModal } from "@/components/layout/ShortcutsModal";
 import { SettingsModal } from "@/components/layout/SettingsModal";
 import { AIChatDrawer } from "@/components/layout/AIChatDrawer";
 import { AdminButton } from "@/components/admin/AdminButton";
-import { getCVData } from "@/lib/cvStore";
+import { getCVData, sanitizeCVForVisitor } from "@/lib/cvStore";
 import { buildMetadata, personJsonLd, websiteJsonLd } from "@/lib/seo";
 import { CVContentWrapper } from "@/components/layout/CVContentWrapper";
 import Script from "next/script";
@@ -51,7 +51,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const cv = await getCVData();
-  const jsonLdList = [personJsonLd(cv), websiteJsonLd()];
+  const initialCvData = sanitizeCVForVisitor(cv);
+
+  const jsonLdList = [personJsonLd(initialCvData), websiteJsonLd()];
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
@@ -93,7 +95,7 @@ export default async function RootLayout({
           Skip to content
         </a>
         <ThemeProvider>
-          <CVProvider initialData={cv}>
+          <CVProvider initialData={initialCvData}>
             <SettingsProvider>
               <SmoothScrollProvider>
                 <CVContentWrapper>
