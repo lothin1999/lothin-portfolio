@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "cp README.md public/README.md && next dev",
+    "build": "cp README.md public/README.md && next build",
     "start": "next start",
     "lint": "next lint",
     "pages:build": "pnpm dlx @cloudflare/next-on-pages",

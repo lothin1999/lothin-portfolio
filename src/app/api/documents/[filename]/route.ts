@@ -83,15 +83,13 @@ export async function GET(
       });
     }
 
-    // --- Path 3: Local Filesystem Fallback (Node.js runtime in dev) ---
-    // Handles files like README.md that live in the project root but aren't in R2.
-    // Uses eval('require(...)') to prevent webpack from bundling 'fs' at compile time.
+    // --- Path 3: Static Asset Fallback (Edge runtime compatible) ---
+    // Handles files like README.md that live in the public folder.
     try {
-      const fs = eval('require("fs")');
-      const path = eval('require("path")');
-      const filePath = path.join(process.cwd(), filename);
-      if (fs.existsSync(filePath)) {
-        const fileContent = fs.readFileSync(filePath, "utf-8");
+      const publicUrl = new URL(`/${filename}`, req.url);
+      const res = await fetch(publicUrl);
+      if (res.ok) {
+        const fileContent = await res.text();
         return new NextResponse(fileContent, {
           status: 200,
           headers: {
@@ -100,8 +98,8 @@ export async function GET(
           },
         });
       }
-    } catch {
-      // fs module not available (edge runtime in production) — expected
+    } catch (err) {
+      console.error("Static asset fallback fetch failed:", err);
     }
 
     return new NextResponse("Document not found", { status: 404 });

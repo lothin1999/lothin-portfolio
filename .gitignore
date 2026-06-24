@@ -33,3 +33,7 @@ yarn-error.log*
 
 # cloudflare
 .wrangler/
+
+# generated public files
+/public/README.md
+
