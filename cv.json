@@ -14,6 +14,7 @@
     "facebook": "https://www.facebook.com/lothinny",
     "facebookHandle": "facebook.com/lothinny",
     "linkedin": "https://linkedin.com/in/lothin-dev",
+    "email": "lothindev@gmail.com",
     "phones": [
       "098 63 88 78",
       "066 69 55 37"
@@ -120,6 +121,48 @@
         "Pusher",
         "cPanel"
       ]
+    },
+    {
+      "id": "exp-volunteer-teacher",
+      "title": "Volunteer English & Soft Skills Teacher",
+      "company": "Glocal Youth Association",
+      "location": "GYA School, Don Pên, Phnom Penh",
+      "period": "2020 – 2022",
+      "bullets": [
+        "Facilitated interactive English lessons and soft skills workshops for underprivileged youth and community students.",
+        "Developed and customized educational materials, daily lesson plans, and learning activities to boost student engagement.",
+        "Organized community development projects and youth leadership seminars in collaboration with national and international volunteers.",
+        "Mentored students in public speaking, teamwork, and communication, helping them prepare for academic and community initiatives."
+      ],
+      "tags": [
+        "Volunteerism",
+        "Teaching",
+        "Leadership",
+        "Soft Skills",
+        "Community Development"
+      ],
+      "showInCv": false
+    },
+    {
+      "id": "exp-receptionist",
+      "title": "Receptionist & Customer Relations",
+      "company": "Infinity 18 Condominium",
+      "location": "Phnom Penh, Cambodia",
+      "period": "2021 – 2023",
+      "bullets": [
+        "Welcomed international guests, handled inquiries, and conducted comprehensive property tours showcasing room specifications and condominium amenities entirely in English.",
+        "Managed front-desk cash flow, processed rental payments, security deposits, and issued detailed financial receipts as a cashier.",
+        "Coordinated closely with maintenance and management teams to resolve tenant requests, complaints, and service issues efficiently.",
+        "Administered room bookings, customer check-ins/check-outs, and maintained clean digital guest logs to ensure high occupancy rates."
+      ],
+      "tags": [
+        "Customer Service",
+        "Cash Handling",
+        "English Communication",
+        "Guest Relations",
+        "Problem Solving"
+      ],
+      "showInCv": false
     }
   ],
   "skillGroups": [

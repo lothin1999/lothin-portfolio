@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
     // 1. Fetch latest CV data
     const cv = await getCVData();
     const { profile, experiences, skillGroups, educations, references } = cv;
+    const cvExperiences = experiences.filter(exp => exp.showInCv !== false);
 
     // 2. Load the self-contained static template
     let html = cvTemplate;
@@ -51,31 +52,52 @@ export async function GET(req: NextRequest) {
 
     // 4. Perform dynamic data replacement in the HTML template
 
-    // Cover Page: Name
+    // Unified Premium Letterhead
+    const letterheadHtml = `
+  <div class="letterhead">
+    <div class="lh-left">
+      <div class="lh-name">${profile.name.first.toUpperCase()} ${profile.name.last.toUpperCase()}</div>
+      <div class="lh-title">${profile.title.toUpperCase()}</div>
+      <div class="lh-tagline">${profile.tagline || "3+ Years · Production Systems"}</div>
+    </div>
+    <div class="lh-right">
+      <div class="lh-contact-item">
+        <svg class="lh-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z"/></svg>
+        <span>${profile.phones.join(" / ")}</span>
+      </div>
+      <div class="lh-contact-item">
+        <svg class="lh-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4M20,8L12,13L4,8V6L12,11L20,6V8Z"/></svg>
+        <span><a href="mailto:${profile.email}">${profile.email}</a></span>
+      </div>
+      <div class="lh-contact-item">
+        <svg class="lh-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5Z"/></svg>
+        <span>${profile.location}</span>
+      </div>
+      <div class="lh-contact-item">
+        <svg class="lh-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M17.9,17.39C17.64,16.59 16.89,16 16,16H15V13A1,1 0 0,0 14,12H8V10H10A1,1 0 0,0 11,9V7H13A2,2 0 0,0 15,5V4.59C17.93,5.77 20,8.64 20,12C20,14.08 19.2,15.97 17.9,17.39M11,19.93C7.07,19.43 4,16.07 4,12C4,9.53 5.15,7.3 6.94,5.89C6.97,6.24 7,6.61 7,7A4,4 0 0,0 11,11M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/></svg>
+        <span><a href="${profile.website}" target="_blank">${profile.website.replace(/^https?:\/\//, "")}</a></span>
+      </div>
+      <div class="lh-contact-item">
+        <svg class="lh-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+        <span><a href="${profile.linkedin}" target="_blank">${profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, "linkedin.com/in/")}</a></span>
+      </div>
+      <div class="lh-contact-item">
+        <svg class="lh-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M9.78 18.65l.28-4.28 7.68-6.92c.34-.31-.07-.47-.52-.18L7.74 13.3 3.64 12c-.89-.28-.9-.89.19-1.32l16.03-6.18c.74-.27 1.39.18 1.17 1.15l-2.72 12.81c-.19.92-.74 1.15-1.51.71l-4.13-3.05-2 1.93c-.22.22-.4.4-.83.4z"/></svg>
+        <span><a href="${profile.telegram}" target="_blank">${profile.telegramHandle || "t.me/lothindev"}</a></span>
+      </div>
+    </div>
+  </div>`;
+
+    // Cover Page Header
     html = html.replace(
-      /<!-- START_COVER_NAME -->[\s\S]*?<!-- END_COVER_NAME -->/g,
-      `<!-- START_COVER_NAME -->
-      <div class="cover-name">${profile.name.first.toUpperCase()} ${profile.name.last.toUpperCase()}</div>
-      <!-- END_COVER_NAME -->`
+      /<!-- START_COVER_LETTERHEAD -->[\s\S]*?<!-- END_COVER_LETTERHEAD -->/g,
+      `<!-- START_COVER_LETTERHEAD -->${letterheadHtml}<!-- END_COVER_LETTERHEAD -->`
     );
 
-    // Cover Page: Title
+    // CV Page Header
     html = html.replace(
-      /<!-- START_COVER_TITLE -->[\s\S]*?<!-- END_COVER_TITLE -->/g,
-      `<!-- START_COVER_TITLE -->
-      <div class="cover-title">${profile.title.toUpperCase()}</div>
-      <!-- END_COVER_TITLE -->`
-    );
-
-    // Cover Page: Contact
-    html = html.replace(
-      /<!-- START_CL_CONTACT -->[\s\S]*?<!-- END_CL_CONTACT -->/g,
-      `<!-- START_CL_CONTACT -->
-      <span>+ ${profile.phones.join(" / ")}</span>
-      <span>+ <a href="${profile.website}">${profile.website.replace(/^https?:\/\//, "")}</a></span>
-      <span>+ ${profile.location}</span>
-      <span>+ <a href="${profile.linkedin}">${profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, "linkedin.com/in/")}</a></span>
-      <!-- END_CL_CONTACT -->`
+      /<!-- START_CV_LETTERHEAD -->[\s\S]*?<!-- END_CV_LETTERHEAD -->/g,
+      `<!-- START_CV_LETTERHEAD -->${letterheadHtml}<!-- END_CV_LETTERHEAD -->`
     );
 
     // Cover Page: Date Sidebar
@@ -125,18 +147,7 @@ export async function GET(req: NextRequest) {
         <div class="sig-name">${profile.name.first} ${profile.name.last}</div>
         <div class="sig-title">${profile.title}</div>
       </div>
-      <!-- END_CL_SIGNATURE -->`
-    );
-
-    // CV Page: Header Name Block
-    html = html.replace(
-      /<!-- START_CV_NAME_BLOCK -->[\s\S]*?<!-- END_CV_NAME_BLOCK -->/g,
-      `<!-- START_CV_NAME_BLOCK -->
-      <div class="cv-name-block">
-        <div class="cv-name">${profile.name.first.toUpperCase()} ${profile.name.last.toUpperCase()}</div>
-        <div class="cv-title">${profile.title.toUpperCase()}</div>
-      </div>
-      <!-- END_CV_NAME_BLOCK -->`
+      <!-- END_COVER_SIGNATURE -->`
     );
 
     // CV Page: Summary
@@ -205,19 +216,7 @@ export async function GET(req: NextRequest) {
       <!-- END_P2_REFERENCES -->`
     );
 
-    // CV Page: Contact Sidebar
-    html = html.replace(
-      /<!-- START_P2_CONTACT -->[\s\S]*?<!-- END_P2_CONTACT -->/g,
-      `<!-- START_P2_CONTACT -->
-      <ul class="contact-list">
-        <li>${profile.phones.join(" / ")}</li>
-        <li><a href="${profile.website}">${profile.website.replace(/^https?:\/\//, "")}</a></li>
-        <li>${profile.location}</li>
-        <li><a href="${profile.telegram}">${profile.telegramHandle || "t.me/lothindev"}</a></li>
-        <li><a href="${profile.linkedin}">${profile.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, "linkedin.com/in/")}</a></li>
-      </ul>
-      <!-- END_P2_CONTACT -->`
-    );
+
 
     // CV Page: Professional Skills Sidebar
     const skillsHtml = skillGroups.map(group => {

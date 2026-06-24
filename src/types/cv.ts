@@ -9,6 +9,7 @@ export interface Profile {
   website: string;
   telegram: string;
   telegramHandle: string;
+  email?: string;
   facebook?: string;
   facebookHandle?: string;
   linkedin: string;
@@ -28,6 +29,7 @@ export interface Experience {
   bullets: string[];
   tags: string[];
   images?: string[];
+  showInCv?: boolean;
 }
 
 export interface SkillGroup {

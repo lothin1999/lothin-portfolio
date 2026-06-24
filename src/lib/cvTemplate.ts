@@ -27,16 +27,19 @@ export const cvTemplate = `<!DOCTYPE html>
     position: relative;
   }
 
-  /* ── COVER LETTER ── */
-  .cover-header {
+  /* ── DYNAMIC PREMIUM LETTERHEAD ── */
+  .letterhead {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
+    padding-bottom: 14px;
     margin-bottom: 18px;
-    padding-bottom: 12px;
     border-bottom: 3.5px double #6b4f2a;
   }
-  .cover-name-block .cover-name {
+  .lh-left {
+    flex: 1;
+  }
+  .lh-name {
     font-family: 'EB Garamond', serif;
     font-size: 32pt;
     font-weight: 700;
@@ -44,7 +47,7 @@ export const cvTemplate = `<!DOCTYPE html>
     line-height: 0.95;
     color: #1a1a1a;
   }
-  .cover-name-block .cover-title {
+  .lh-title {
     font-size: 7.5pt;
     letter-spacing: 3px;
     text-transform: uppercase;
@@ -52,17 +55,44 @@ export const cvTemplate = `<!DOCTYPE html>
     margin-top: 5px;
     font-weight: 600;
   }
-  .cover-header-right {
-    text-align: right;
-    font-size: 8pt;
+  .lh-tagline {
+    font-size: 6.5pt;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #666;
+    margin-top: 3px;
+    font-weight: 400;
+  }
+  .lh-right {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    column-gap: 20px;
+    row-gap: 6px;
+    justify-content: end;
+    font-size: 7.5pt;
     color: #444;
-    line-height: 1.7;
   }
-  .cover-header-right span {
-    display: block;
+  .lh-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .cover-header-right a { color: #6b4f2a; text-decoration: none; font-weight: 500; }
-  .cover-header-right a:hover { text-decoration: underline; }
+  .lh-icon {
+    width: 9.5pt;
+    height: 9.5pt;
+    color: #6b4f2a;
+    flex-shrink: 0;
+  }
+  .lh-contact-item a {
+    color: #444;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+  .lh-contact-item a:hover {
+    color: #6b4f2a;
+    text-decoration: underline;
+  }
 
   .cover-body {
     display: grid;
@@ -120,32 +150,7 @@ export const cvTemplate = `<!DOCTYPE html>
   }
 
   /* ── CV PAGE ── */
-  .cv-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 18px;
-    padding-bottom: 12px;
-    border-bottom: 3.5px double #6b4f2a;
-  }
-  .cv-name-block {}
-  .cv-name {
-    font-family: 'EB Garamond', serif;
-    font-size: 34pt;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.5px;
-    color: #1a1a1a;
-  }
-  .cv-title {
-    font-size: 7pt;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: #555;
-    margin-top: 5px;
-    font-weight: 500;
-  }
-  .cv-title::before { content: "+ "; color: #1a1a1a; font-weight: 700; }
+
 
   .cv-layout {
     display: grid;
@@ -350,24 +355,18 @@ export const cvTemplate = `<!DOCTYPE html>
 <!-- ══════════════════════════════════════════ -->
 <div class="page">
 
-  <div class="cover-header">
-    <div class="cover-name-block">
-      <!-- START_COVER_NAME -->
-      <div class="cover-name">THOEUN LOTHIN</div>
-      <!-- END_COVER_NAME -->
-      <!-- START_COVER_TITLE -->
-      <div class="cover-title">FULL-STACK WEB DEVELOPER</div>
-      <!-- END_COVER_TITLE -->
+  <!-- START_COVER_LETTERHEAD -->
+  <div class="letterhead">
+    <div class="lh-left">
+      <div class="lh-name">THOEUN LOTHIN</div>
+      <div class="lh-title">FULL-STACK WEB DEVELOPER</div>
+      <div class="lh-tagline">3+ Years · Production Systems</div>
     </div>
-    <div class="cover-header-right">
-      <!-- START_CL_CONTACT -->
-      <span>+ 098 63 88 78 / 066 69 55 37</span>
-      <span>+ <a href="#">lothin-portfolio.pages.dev</a></span>
-      <span>+ Phnom Penh, Cambodia</span>
-      <span>+ linkedin.com/in/lothin-dev</span>
-      <!-- END_CL_CONTACT -->
+    <div class="lh-right">
+      <!-- Contact details -->
     </div>
   </div>
+  <!-- END_COVER_LETTERHEAD -->
 
   <div class="cover-body">
     <div class="cover-sidebar">
@@ -450,15 +449,18 @@ export const cvTemplate = `<!DOCTYPE html>
 <!-- ══════════════════════════════════════════ -->
 <div class="page">
 
-  <!-- Name Block -->
-  <div class="cv-top">
-    <!-- START_CV_NAME_BLOCK -->
-    <div class="cv-name-block">
-      <div class="cv-name">THOEUN LOTHIN</div>
-      <div class="cv-title">FULL-STACK WEB DEVELOPER</div>
+  <!-- START_CV_LETTERHEAD -->
+  <div class="letterhead">
+    <div class="lh-left">
+      <div class="lh-name">THOEUN LOTHIN</div>
+      <div class="lh-title">FULL-STACK WEB DEVELOPER</div>
+      <div class="lh-tagline">3+ Years · Production Systems</div>
     </div>
-    <!-- END_CV_NAME_BLOCK -->
+    <div class="lh-right">
+      <!-- Contact details -->
+    </div>
   </div>
+  <!-- END_CV_LETTERHEAD -->
 
   <div class="cv-layout">
 
@@ -501,11 +503,7 @@ export const cvTemplate = `<!DOCTYPE html>
     <!-- ── RIGHT COLUMN ── -->
     <div class="right-col">
 
-      <!-- Contact -->
-      <div class="sec-label">Contact</div>
-      <hr class="sec-rule">
-      <!-- START_P2_CONTACT -->
-      <!-- END_P2_CONTACT -->
+
 
       <!-- Professional Skills -->
       <div class="sec-label" style="margin-top:12px;">Professional Skills</div>
