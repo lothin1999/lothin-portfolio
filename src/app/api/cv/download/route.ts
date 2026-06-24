@@ -229,10 +229,8 @@ export async function GET(req: NextRequest) {
         return `
         <div class="skill-row">
           <span class="skill-name">${skill}</span>
-          <div class="skill-track">
-            <div class="skill-line"></div>
-            <div class="dots">${dotsHtml}</div>
-          </div>
+          <div class="skill-line"></div>
+          <div class="dots">${dotsHtml}</div>
         </div>`;
       }).join("\n        ");
       return `

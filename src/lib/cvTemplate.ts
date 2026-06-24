@@ -31,37 +31,38 @@ export const cvTemplate = `<!DOCTYPE html>
   .cover-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: flex-end;
     margin-bottom: 18px;
-    padding-bottom: 14px;
-    border-bottom: 1.5px solid #1a1a1a;
+    padding-bottom: 12px;
+    border-bottom: 3.5px double #6b4f2a;
   }
   .cover-name-block .cover-name {
     font-family: 'EB Garamond', serif;
-    font-size: 28pt;
+    font-size: 32pt;
     font-weight: 700;
     letter-spacing: -0.5px;
-    line-height: 1;
+    line-height: 0.95;
     color: #1a1a1a;
   }
   .cover-name-block .cover-title {
-    font-size: 7pt;
+    font-size: 7.5pt;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: #555;
-    margin-top: 4px;
-    font-weight: 500;
+    color: #6b4f2a;
+    margin-top: 5px;
+    font-weight: 600;
   }
   .cover-header-right {
     text-align: right;
-    font-size: 7.5pt;
+    font-size: 8pt;
     color: #444;
-    line-height: 1.8;
+    line-height: 1.7;
   }
   .cover-header-right span {
     display: block;
   }
-  .cover-header-right a { color: #444; text-decoration: none; }
+  .cover-header-right a { color: #6b4f2a; text-decoration: none; font-weight: 500; }
+  .cover-header-right a:hover { text-decoration: underline; }
 
   .cover-body {
     display: grid;
@@ -122,8 +123,10 @@ export const cvTemplate = `<!DOCTYPE html>
   .cv-top {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 14px;
+    align-items: flex-end;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 3.5px double #6b4f2a;
   }
   .cv-name-block {}
   .cv-name {
@@ -285,25 +288,28 @@ export const cvTemplate = `<!DOCTYPE html>
   }
   .skill-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     margin-bottom: 4px;
   }
-  .skill-name { font-size: 7.5pt; color: #333; }
-  .skill-track {
-    display: flex;
-    align-items: center;
-    gap: 2px;
+  .skill-name {
+    font-size: 7.5pt;
+    color: #333;
     flex-shrink: 0;
-    margin-left: 6px;
+    max-width: 95px;
+    word-wrap: break-word;
   }
   .skill-line {
-    width: 40px;
+    flex-grow: 1;
     height: 0.7px;
     background: #aaa;
-    flex-shrink: 0;
+    margin: 0 6px 3px 6px;
   }
-  .dots { display: flex; gap: 2.5px; }
+  .dots {
+    display: flex;
+    gap: 2.5px;
+    flex-shrink: 0;
+    margin-bottom: 1px;
+  }
   .dot {
     width: 5px;
     height: 5px;
@@ -403,30 +409,29 @@ export const cvTemplate = `<!DOCTYPE html>
       <div class="cover-date"><!-- START_CL_MAIN_DATE -->June 2026 · Phnom Penh, Cambodia<!-- END_CL_MAIN_DATE --></div>
       <p>Dear Hiring Manager,</p>
       <p>
-        I am writing to express my interest in a Full-Stack Web Developer position.
-        With more than three years of professional experience, I have designed and
-        developed enterprise applications, nationwide rental marketplaces, POS systems,
-        banking platforms, CRM solutions, and document management systems.
+        I am writing to express my strong interest in the Full-Stack Web Developer position. With over three years of professional experience delivering enterprise-grade web applications, nationwide marketplace solutions, and real-time transaction platforms, I have built a robust technical foundation that enables me to design, build, and optimize scalable digital products from end to end.
       </p>
       <p>
-        My core technical expertise spans Vue.js / Nuxt, Next.js, Angular, NestJS,
-        Laravel, Spring Boot, Docker, Cloudflare, Firebase, Google AI Studio (Gemini),
-        and Bakong KHQR integration.
+        My primary technical stack covers modern front-end frameworks (Vue.js/Nuxt, React/Next.js, and Angular) integrated with powerful back-end frameworks (NestJS, Laravel, and Spring Boot). I specialize in designing and deploying systems on Cloudflare edge network infrastructure and Firebase real-time databases, while configuring robust deployment environments with Docker, Nginx, and Ubuntu servers.
       </p>
       <p>
-        I have led major system migrations — including full Nuxt 2 → 3 → 4 and
-        Laravel → NestJS upgrades — designed scalable monorepo architectures, optimised
-        database performance, and deployed production systems on Linux servers and cloud
-        infrastructure. I have also applied AI model training and data analysis using
-        Google AI Studio to drive intelligent feature development.
+        Throughout my career at IDG Technology Solutions, I have led complex architectural initiatives, including:
+      </p>
+      <p style="padding-left: 12px; margin-bottom: 8px;">
+        &bull; <strong>Framework &amp; Backend Migrations:</strong> Managed the end-to-end upgrade of a high-traffic POS and billing platform through three major Nuxt versions (Nuxt 2 &rarr; 3 &rarr; 4) adopting the Composition API, and migrated a legacy Laravel API to a modular, type-safe NestJS + Prisma monorepo with strict DTO validation.
+      </p>
+      <p style="padding-left: 12px; margin-bottom: 8px;">
+        &bull; <strong>Cambodia-Native Integrations:</strong> Successfully implemented the national Bakong KHQR payment system, merchant onboarding webhooks, and secure SMS OTP verification gateways across POS and Banking platforms.
+      </p>
+      <p style="padding-left: 12px; margin-bottom: 12px;">
+        &bull; <strong>AI-Powered Features:</strong> Fine-tuned LLMs and engineered prompt chains via Google AI Studio (Gemini) to build smart search, auto-classification, and data analysis modules.
       </p>
       <p>
-        I am passionate about building high-quality software, learning new technologies,
-        and collaborating with teams to deliver real business value through technology.
-        I welcome the opportunity to discuss how my experience can contribute to your
-        organisation.
+        I take pride in writing clean, self-documenting code, designing clear RESTful API contracts with Swagger, and validating endpoints with Postman. I am looking for a challenging role where I can apply my experience in performance optimization, responsive UI development, and payment integrations to help your team achieve its engineering goals.
       </p>
-      <p>Thank you for your time and consideration.</p>
+      <p>
+        Thank you for your time and consideration. I look forward to the opportunity to discuss my qualifications in more detail.
+      </p>
 
       <!-- START_CL_SIGNATURE -->
       <div class="cover-sign">
@@ -454,8 +459,6 @@ export const cvTemplate = `<!DOCTYPE html>
     </div>
     <!-- END_CV_NAME_BLOCK -->
   </div>
-
-  <hr class="sec-rule" style="margin-bottom:14px;">
 
   <div class="cv-layout">
 

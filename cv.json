@@ -126,20 +126,11 @@
     {
       "label": "Front-End",
       "skills": [
-        "HTML5",
-        "CSS3",
-        "JavaScript",
-        "TypeScript",
-        "Vue.js 3",
-        "Nuxt 2/3/4",
-        "React.js",
-        "Next.js",
-        "Angular",
-        "Tailwind CSS",
-        "Bootstrap",
-        "Pinia",
-        "Redux",
-        "RxJS"
+        "HTML5/CSS3/Bootstrap/Tailwind/Sass",
+        "JavaScript/TypeScript",
+        "Vue.js/Nuxt 2/3/4/Pinia",
+        "React.js/Next.js/Redux",
+        "Angular/Rxjs"
       ]
     },
     {
@@ -170,12 +161,10 @@
       "label": "DevOps & Cloud",
       "skills": [
         "Docker",
-        "Cloudflare Workers/Pages/R2",
-        "Firebase Auth/Functions/Storage",
+        "Cloudflare Workers/Pages/R2/AI",
+        "Firebase Auth/Storage",
         "Ubuntu Server",
-        "Nginx",
-        "GitHub",
-        "GitLab"
+        "GitHub/GitLab"
       ]
     },
     {
