@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Force Node.js runtime in local dev so the fs fallback can read local files.
-// In production (Cloudflare Pages), this route is served via the CF Worker binding (Path 1).
-export const runtime = "nodejs";
+// Force Edge runtime for Cloudflare Pages compatibility.
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 async function getCFContext() {
