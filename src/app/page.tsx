@@ -89,11 +89,11 @@ export default function HomePage() {
                   {profile.photoUrl ? (
                     <>
                       {/* Tech Dot-Grid Accent Background */}
-                      <div 
+                      <div
                         className="absolute inset-0 border border-rule rounded bg-[radial-gradient(var(--rule-solid)_1.5px,transparent_1.5px)] [background-size:12px_12px] translate-x-3 translate-y-3 transition-transform duration-300 ease-out group-hover:translate-x-1 group-hover:translate-y-1"
                         aria-hidden="true"
                       />
-                      
+
                       {/* Main Image Container */}
                       <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded border border-rule bg-surface transition-transform duration-300 ease-out group-hover:-translate-x-1 group-hover:-translate-y-1 shadow-sm">
                         <img
@@ -101,13 +101,26 @@ export default function HomePage() {
                           alt={`${profile.name.first} ${profile.name.last}`}
                           className="object-cover w-full h-full transition-all duration-300 scale-100 group-hover:scale-[1.02]"
                         />
-                        
+
+                        {/* Glassmorphism blur overlay — visible at rest, fades on hover */}
+                        <div
+                          className="absolute inset-0 transition-all duration-500 ease-out opacity-100 group-hover:opacity-0 pointer-events-none"
+                          style={{
+                            backdropFilter: "blur(6px)",
+                            WebkitBackdropFilter: "blur(6px)",
+                            background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(180,210,255,0.10) 100%)",
+                            borderRadius: "inherit",
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3)",
+                          }}
+                          aria-hidden="true"
+                        />
+
                         {/* Technological Bracket Corners */}
                         <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-accent/60 opacity-60 transition-all duration-300 group-hover:top-2 group-hover:left-2" />
                         <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-accent/60 opacity-60 transition-all duration-300 group-hover:top-2 group-hover:right-2" />
                         <div className="absolute bottom-3 left-3 w-3 h-3 border-b border-l border-accent/60 opacity-60 transition-all duration-300 group-hover:bottom-2 group-hover:left-2" />
                         <div className="absolute bottom-3 right-3 w-3 h-3 border-b border-r border-accent/60 opacity-60 transition-all duration-300 group-hover:bottom-2 group-hover:right-2" />
-                        
+
                         {/* Monospace Metadata Tag */}
                         <span className="absolute bottom-3 right-4 font-mono text-[9px] text-muted/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 select-none uppercase tracking-wider">
                           // sys.photo_loaded
