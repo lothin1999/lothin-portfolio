@@ -64,41 +64,10 @@
     },
     {
       "id": "exp-2",
-      "title": "Full-Stack Web Developer — POS System & Admin Dashboard",
-      "company": "IDG Technology Solutions.",
-      "location": "Phnom Penh, Cambodia",
-      "period": "2024 – Present",
-      "bullets": [
-        "Developed POS system in Nuxt 2 — sales tracking, order management, transaction history, revenue analytics",
-        "Built admin dashboard with 8 key metric cards: revenue, invoices, orders, refunds, discounts, payment summaries",
-        "Implemented interactive time-series line charts and sortable data tables for product and order reporting",
-        "Architected date-range filtering with live data refresh and optimised SQL aggregations",
-        "Framework Migration: Managed the full upgrade path through three Nuxt major versions (Nuxt 2 → 3 → 4) and Options to Composition API migration",
-        "API Migration: Migrated the legacy Laravel API to a modular NestJS API, optimizing databases with Prisma ORM and enforcing secure JWT authentication",
-        "Designed and documented RESTful APIs with Swagger/OpenAPI for clear front-end contract integration",
-        "Integrated SMS gateway OTP verification for admin login security and cashier validation",
-        "Managed version control, feature branches, and code reviews on GitHub"
-      ],
-      "tags": [
-        "Nuxt 2/3/4",
-        "Vue 3",
-        "Laravel",
-        "NestJS",
-        "Prisma",
-        "MySQL",
-        "Chart.js",
-        "GitHub",
-        "Swagger",
-        "Postman",
-        "OTP Verification"
-      ]
-    },
-    {
-      "id": "exp-3",
       "title": "Full-Stack Web Developer — CRM, Hotel, KDMS, Loan, E-Commerce & More",
       "company": "IDG Technology Solutions.",
       "location": "Phnom Penh, Cambodia",
-      "period": "2023 – 2024",
+      "period": "2024 – 2025",
       "bullets": [
         "Delivered CRM, Hotel, KDMS, VIP, Pool/Billiard, Loan, and E-Commerce systems end-to-end",
         "Built real-time pool hall table status tracking and session hourly billing with Pusher",
@@ -126,6 +95,37 @@
         "Firebase",
         "Pusher",
         "cPanel"
+      ]
+    },
+    {
+      "id": "exp-3",
+      "title": "Full-Stack Web Developer — POS System & Admin Dashboard",
+      "company": "IDG Technology Solutions.",
+      "location": "Phnom Penh, Cambodia",
+      "period": "2023 – 2024",
+      "bullets": [
+        "Developed POS system in Nuxt 2 — sales tracking, order management, transaction history, revenue analytics",
+        "Built admin dashboard with 8 key metric cards: revenue, invoices, orders, refunds, discounts, payment summaries",
+        "Implemented interactive time-series line charts and sortable data tables for product and order reporting",
+        "Architected date-range filtering with live data refresh and optimised SQL aggregations",
+        "Framework Migration: Managed the full upgrade path through three Nuxt major versions (Nuxt 2 → 3 → 4) and Options to Composition API migration",
+        "API Migration: Migrated the legacy Laravel API to a modular NestJS API, optimizing databases with Prisma ORM and enforcing secure JWT authentication",
+        "Designed and documented RESTful APIs with Swagger/OpenAPI for clear front-end contract integration",
+        "Integrated SMS gateway OTP verification for admin login security and cashier validation",
+        "Managed version control, feature branches, and code reviews on GitHub"
+      ],
+      "tags": [
+        "Nuxt 2/3/4",
+        "Vue 3",
+        "Laravel",
+        "NestJS",
+        "Prisma",
+        "MySQL",
+        "Chart.js",
+        "GitHub",
+        "Swagger",
+        "Postman",
+        "OTP Verification"
       ]
     },
     {
