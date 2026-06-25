@@ -792,6 +792,7 @@ export function AdminEditPage() {
               label=""
               accept="image/*"
               compressMaxWidth={512}
+              uploadType="cube"
               value={(draft.profile.cubeImages && draft.profile.cubeImages[i]) || ""}
               onChange={(url) => handleCubeImageChange(i, url)}
             />

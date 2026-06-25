@@ -109,6 +109,10 @@ export async function POST(req: NextRequest) {
     const extension = name.split(".").pop()?.toLowerCase() || "bin";
     const isPdf = file.type === "application/pdf" || extension === "pdf";
     const isDoc = uploadType === "document" || extension === "md";
+    const isCube = uploadType === "cube";
+
+    // Clean the R2 public URL (remove trailing slash)
+    const r2PublicUrl = (process.env.R2_PUBLIC_URL || "").replace(/['"]/g, "").replace(/\/+$/, "");
 
     let key = "";
     let relativeUrl = "";
@@ -117,6 +121,14 @@ export async function POST(req: NextRequest) {
       const sanitizedName = name.replace(/[^a-zA-Z0-9._-]/g, "_");
       key = `documents/${sanitizedName}`;
       relativeUrl = `/api/documents/${sanitizedName}`;
+    } else if (isCube) {
+      // Cube face images: store in cube/ folder, serve via R2 public URL for instant CDN delivery
+      const filename = `face-${Date.now()}.webp`;
+      key = `cube/${filename}`;
+      // Use direct Cloudflare R2 public URL if configured (no proxy, instant CDN)
+      relativeUrl = r2PublicUrl
+        ? `${r2PublicUrl}/cube/${filename}`
+        : `/api/images/cube/${filename}`;
     } else if (isPdf) {
       if (uploadType === "letter") {
         const filename = `letter-${Date.now()}.pdf`;
@@ -275,10 +287,17 @@ export async function DELETE(req: NextRequest) {
       }
 
       try {
+        const r2PublicUrl = (process.env.R2_PUBLIC_URL || "").replace(/['"]/g, "").replace(/\/+$/, "");
         const parsedUrl = new URL(url, "http://localhost");
         const pathname = parsedUrl.pathname;
-        
-        if (pathname.startsWith("/api/images/")) {
+
+        // Handle direct R2 public CDN URLs (e.g. https://pub-xxx.r2.dev/cube/face-123.webp)
+        if (r2PublicUrl && url.startsWith(r2PublicUrl)) {
+          const r2Path = url.substring(r2PublicUrl.length).replace(/^\//, "");
+          key = r2Path; // key is already relative (e.g. "cube/face-123.webp")
+        } else if (pathname.startsWith("/api/images/cube/")) {
+          key = `cube/${pathname.substring("/api/images/cube/".length)}`;
+        } else if (pathname.startsWith("/api/images/")) {
           key = `images/${pathname.substring("/api/images/".length)}`;
         } else if (pathname.startsWith("/api/documents/")) {
           key = `documents/${pathname.substring("/api/documents/".length)}`;
