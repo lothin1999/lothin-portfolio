@@ -8,6 +8,12 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
   ? cleanEnvVar(process.env.NEXT_PUBLIC_SITE_URL)
   : "https://lothin-portfolio.pages.dev";
 
+const getAbsoluteImageUrl = (photoUrl: string | undefined) => {
+  if (!photoUrl) return `${SITE_URL}/og-image.png`;
+  if (photoUrl.startsWith("http")) return photoUrl;
+  return `${SITE_URL}${photoUrl.startsWith("/") ? "" : "/"}${photoUrl}`;
+};
+
 interface PageSEO {
   title?: string;
   description?: string;
@@ -34,6 +40,7 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
   const title = page?.title ? `${page.title} — ${reverseName} (Lothin Dev)` : defaultTitle;
   const description = page?.description ?? defaultDesc;
   const url = `${SITE_URL}${page?.path ?? ""}`;
+  const ogImgUrl = getAbsoluteImageUrl(profile.photoUrl);
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -104,7 +111,7 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
       alternateLocale: ["km_KH"],
       images: [
         {
-          url: "/og-image.png",
+          url: ogImgUrl,
           width: 1200,
           height: 630,
           alt: defaultTitle,
@@ -124,7 +131,7 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
       description,
       site: "@lothindev",
       creator: "@lothindev",
-      images: ["/og-image.png"],
+      images: [ogImgUrl],
     },
 
     // Canonical
@@ -170,7 +177,7 @@ export function personJsonLd(cv: any): object {
     alternateName: [fullName, "Lothin Dev", "lothindev", "Lothin Thoeun", "Thoeun Lothin", "lothin-dev"],
     jobTitle: profile.title,
     url: profile.website,
-    image: `${SITE_URL}/og-image.png`,
+    image: getAbsoluteImageUrl(profile.photoUrl),
     description: profile.summary,
     knowsAbout: skills,
     gender: "http://schema.org/Male",
@@ -246,7 +253,7 @@ export function articleJsonLd(cv: any, article: any): object {
       "@type": "WebPage",
       "@id": `${SITE_URL}/articles/${article.slug}`
     },
-    "image": `${SITE_URL}/og-image.png`,
+    "image": getAbsoluteImageUrl(profile.photoUrl),
     "keywords": article.tags
   };
 }

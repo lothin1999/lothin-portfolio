@@ -50,7 +50,7 @@ ${edu.courses && edu.courses.length > 0 ? `- **Key Courses**: ${edu.courses.join
 - **Website**: ${profile.website}
 - **Telegram**: ${profile.telegramHandle || "@lothindev"} (${profile.telegram})
 - **LinkedIn**: ${profile.linkedin}
-- **Email**: ${profile.email || "lothindev@gmail.com"}
+- **Email**: ${profile.email || "lothininfo@gmail.com"}
 - **Phones**: ${profile.phones.join(" / ")}
 
 ## Key Technical Ecosystems

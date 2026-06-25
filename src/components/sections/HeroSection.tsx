@@ -7,7 +7,7 @@ import { Chip } from "@/components/ui/Chip";
 import { ScrambleText } from "@/components/ui/ScrambleText";
 import { Glyph } from "@/components/ui/Glyph";
 import { useCVData } from "@/hooks/useCVData";
-import Image from "next/image";
+import { ThreeCube } from "@/components/ui/ThreeCube";
 
 export function HeroSection() {
   const { cv, isLoading } = useCVData();
@@ -136,33 +136,40 @@ export function HeroSection() {
         </div>
 
         {/* Right side graphical representation */}
-        <div className="lg:col-span-4 flex justify-start lg:justify-end items-center h-full hero-glyph">
-          {profile.photoUrl ? (
-            <div className="relative group p-1 border border-rule bg-surface rounded">
-              <div className="w-48 h-48 overflow-hidden rounded relative">
-                <Image
-                  src={profile.photoUrl}
-                  alt={`${profile.name.first} ${profile.name.last}`}
-                  width={200}
-                  height={200}
-                  className="object-cover w-full h-full grayscale group-hover:grayscale-0 transition-all duration-300"
+        <div className="lg:col-span-4 flex justify-start lg:justify-end items-center h-full hero-glyph w-full">
+          <div className="relative w-full max-w-[420px] h-[320px] sm:h-[400px] group">
+            {profile.photoUrl ? (
+              <>
+                {/* Tech Dot-Grid Accent Background */}
+                <div 
+                  className="absolute inset-0 border border-rule rounded bg-[radial-gradient(var(--rule-solid)_1.5px,transparent_1.5px)] [background-size:12px_12px] translate-x-3 translate-y-3 transition-transform duration-300 ease-out group-hover:translate-x-1 group-hover:translate-y-1"
+                  aria-hidden="true"
                 />
-              </div>
-            </div>
-          ) : (
-            /* Cool default pixel glyph illustration if photo is empty */
-            <div className="flex flex-col gap-3 p-6 border border-rule bg-surface rounded relative">
-              <Glyph
-                pattern="111010111"
-                hoverPattern="111111111"
-                size={84}
-                gap={4}
-                color="var(--accent)"
-                className="mx-auto"
-              />
-              <span className="font-mono text-[9px] text-muted text-center uppercase tracking-[2px] mt-2">// SYS.ILLUSTRATOR</span>
-            </div>
-          )}
+                
+                {/* Main Image Container */}
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded border border-rule bg-surface transition-transform duration-300 ease-out group-hover:-translate-x-1 group-hover:-translate-y-1 shadow-sm">
+                  <img
+                    src={profile.photoUrl}
+                    alt={`${profile.name.first} ${profile.name.last}`}
+                    className="object-cover w-full h-full transition-all duration-300 scale-100 group-hover:scale-[1.02]"
+                  />
+                  
+                  {/* Technological Bracket Corners */}
+                  <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-accent/60 opacity-60 transition-all duration-300 group-hover:top-2 group-hover:left-2" />
+                  <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-accent/60 opacity-60 transition-all duration-300 group-hover:top-2 group-hover:right-2" />
+                  <div className="absolute bottom-3 left-3 w-3 h-3 border-b border-l border-accent/60 opacity-60 transition-all duration-300 group-hover:bottom-2 group-hover:left-2" />
+                  <div className="absolute bottom-3 right-3 w-3 h-3 border-b border-r border-accent/60 opacity-60 transition-all duration-300 group-hover:bottom-2 group-hover:right-2" />
+                  
+                  {/* Monospace Metadata Tag */}
+                  <span className="absolute bottom-3 right-4 font-mono text-[9px] text-muted/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 select-none uppercase tracking-wider">
+                    // sys.photo_loaded
+                  </span>
+                </div>
+              </>
+            ) : (
+              <ThreeCube images={profile.cubeImages || []} />
+            )}
+          </div>
         </div>
       </div>
     </section>

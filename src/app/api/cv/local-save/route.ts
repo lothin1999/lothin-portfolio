@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET() {
-  if (process.env.NEXT_RUNTIME !== "nodejs") {
-    return NextResponse.json({ error: "Not supported in Edge runtime" }, { status: 405 });
+  console.log("NEXT_RUNTIME IS:", process.env.NEXT_RUNTIME);
+  if (process.env.NEXT_RUNTIME && process.env.NEXT_RUNTIME !== "nodejs") {
+    return NextResponse.json({ error: `Not supported in Edge runtime: ${process.env.NEXT_RUNTIME}` }, { status: 405 });
   }
 
   try {
@@ -19,7 +21,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (process.env.NEXT_RUNTIME !== "nodejs") {
+  if (process.env.NEXT_RUNTIME && process.env.NEXT_RUNTIME !== "nodejs") {
     return NextResponse.json({ error: "Not supported in Edge runtime" }, { status: 405 });
   }
 

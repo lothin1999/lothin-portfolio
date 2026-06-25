@@ -70,7 +70,7 @@ export async function GET(
       }
 
       if (!object) {
-        return new NextResponse("Image not found", { status: 404 });
+        return NextResponse.redirect(new URL("/og-image.png", req.url));
       }
       const headers = new Headers();
       object.writeHttpMetadata(headers);
@@ -114,7 +114,7 @@ export async function GET(
       }
 
       if (r2Response && r2Response.status === 404) {
-        return new NextResponse("Image not found", { status: 404 });
+        return NextResponse.redirect(new URL("/og-image.png", req.url));
       }
       if (r2Response && r2Response.ok) {
         const contentType =
@@ -137,12 +137,9 @@ export async function GET(
     }
 
     // --- Path 3: No credentials configured ---
-    return new NextResponse(
-      "Image unavailable in local dev: set CLOUDFLARE_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY in .env",
-      { status: 500 }
-    );
+    return NextResponse.redirect(new URL("/og-image.png", req.url));
   } catch (err) {
-    console.error("Error serving image:", err);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    console.error("Error serving image, redirecting to default:", err);
+    return NextResponse.redirect(new URL("/og-image.png", req.url));
   }
 }

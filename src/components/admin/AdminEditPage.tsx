@@ -240,7 +240,7 @@ export function AdminEditPage() {
 
   // Deep clone for editing
   const [draft, setDraft] = useState<CVData>({
-    profile: { name: { first: "", last: "" }, title: "", tagline: "", summary: "", location: "", website: "", telegram: "", telegramHandle: "", linkedin: "", phones: [], cvPdfUrl: "", coverLetterPdfUrl: "", languages: [] },
+    profile: { name: { first: "", last: "" }, title: "", tagline: "", summary: "", location: "", website: "", telegram: "", telegramHandle: "", linkedin: "", phones: [], cvPdfUrl: "", coverLetterPdfUrl: "", cubeImages: [], languages: [] },
     experiences: [],
     skillGroups: [],
     educations: [],
@@ -257,6 +257,7 @@ export function AdminEditPage() {
       if (!cloned.articles) cloned.articles = [];
       if (!cloned.profile.cvPdfUrl) cloned.profile.cvPdfUrl = "";
       if (!cloned.profile.coverLetterPdfUrl) cloned.profile.coverLetterPdfUrl = "";
+      if (!cloned.profile.cubeImages) cloned.profile.cubeImages = [];
       if (cloned.experiences) {
         cloned.experiences = cloned.experiences.map((exp: any) => ({
           ...exp,
@@ -474,6 +475,23 @@ export function AdminEditPage() {
         }
       }
     );
+  };
+
+  const handleCubeImageChange = (index: number, url: string) => {
+    applyAndSave(d => {
+      const cubeImages = [...(d.profile.cubeImages || [])];
+      while (cubeImages.length <= index) {
+        cubeImages.push("");
+      }
+      cubeImages[index] = url;
+      return {
+        ...d,
+        profile: {
+          ...d.profile,
+          cubeImages
+        }
+      };
+    });
   };
 
   // Articles state
@@ -763,6 +781,22 @@ export function AdminEditPage() {
             onChange={(url) => applyAndSave(d => ({ ...d, profile: { ...d.profile, coverLetterPdfUrl: url } }))}
           />
         </div>
+      </div>
+
+      <SectionHeading>3D Cube Faces (6 Images)</SectionHeading>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 pt-2">
+        {["Right (Face 1)", "Left (Face 2)", "Top (Face 3)", "Bottom (Face 4)", "Front (Face 5)", "Back (Face 6)"].map((faceLabel, i) => (
+          <div key={i} className="border border-rule/60 p-3 rounded bg-bg/25 flex flex-col justify-between">
+            <span className="font-mono text-[10px] text-muted block mb-2">{faceLabel}</span>
+            <DragDropUploader
+              label=""
+              accept="image/*"
+              compressMaxWidth={512}
+              value={(draft.profile.cubeImages && draft.profile.cubeImages[i]) || ""}
+              onChange={(url) => handleCubeImageChange(i, url)}
+            />
+          </div>
+        ))}
       </div>
 
       <SectionHeading>Languages</SectionHeading>

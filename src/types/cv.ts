@@ -17,6 +17,7 @@ export interface Profile {
   photoUrl?: string;
   cvPdfUrl?: string;
   coverLetterPdfUrl?: string;
+  cubeImages?: string[];
   languages: { name: string; level: string }[];
 }
 
