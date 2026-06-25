@@ -273,7 +273,6 @@ export default function HomePage() {
   const latestArticles = (articles || []).slice(0, 2);
 
   const hasCubeImages = !!(profile.cubeImages && profile.cubeImages.some((img: string) => img && img.trim() !== ""));
-  const hasImage = !!(profile.photoUrl && profile.photoUrl.trim() !== "") || hasCubeImages;
 
   return (
     <div className="bg-bg w-full">
@@ -293,7 +292,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <div className={`${hasImage ? "lg:col-span-8" : "lg:col-span-12"} flex flex-col items-start`}>
+            <div className="lg:col-span-8 flex flex-col items-start">
               <h1
                 id="home-title"
                 className="font-serif text-[clamp(44px,7vw,70px)] font-normal leading-[1.05] tracking-[-0.02em] text-ink mb-6"
@@ -329,18 +328,21 @@ export default function HomePage() {
             </div>
 
             {/* Right side — profile photo or cube */}
-            {hasImage && (
-              <div className="lg:col-span-4 flex justify-start lg:justify-end items-center h-full w-full">
-                {profile.photoUrl ? (
-                  <ProfilePhoto
-                    src={profile.photoUrl}
-                    alt={`${profile.name.first} ${profile.name.last}`}
-                  />
-                ) : (
-                  <ThreeCube images={profile.cubeImages || []} />
-                )}
-              </div>
-            )}
+            <div className="lg:col-span-4 flex justify-start lg:justify-end items-center h-full w-full">
+              {profile.photoUrl && profile.photoUrl.trim() !== "" ? (
+                <ProfilePhoto
+                  src={profile.photoUrl}
+                  alt={`${profile.name.first} ${profile.name.last}`}
+                />
+              ) : hasCubeImages ? (
+                <ThreeCube images={profile.cubeImages || []} />
+              ) : (
+                <ProfilePhoto
+                  src="/og-image.png"
+                  alt={`${profile.name.first} ${profile.name.last}`}
+                />
+              )}
+            </div>
           </div>
         </div>
       </section>
