@@ -156,7 +156,7 @@ function ProfilePhoto({ src, alt }: { src: string; alt: string }) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-w-[420px] h-[320px] sm:h-[400px] cursor-pointer"
+      className="relative w-full max-w-[420px] aspect-[3/4] cursor-pointer"
       style={{ isolation: "isolate" }}
     >
       {/* ── Dot-grid shadow layer ─────────────────────────────────────────── */}
@@ -190,7 +190,6 @@ function ProfilePhoto({ src, alt }: { src: string; alt: string }) {
             borderRadius: "inherit",
           }}
         >
-          {/* Shimmer sweep */}
           <div
             ref={shimmerRef}
             aria-hidden="true"
@@ -202,7 +201,6 @@ function ProfilePhoto({ src, alt }: { src: string; alt: string }) {
             }}
           />
 
-          {/* Glass label */}
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 select-none">
             <span className="font-mono text-[9px] uppercase tracking-[3px] text-white/50">
               // hover to reveal
@@ -210,7 +208,6 @@ function ProfilePhoto({ src, alt }: { src: string; alt: string }) {
           </div>
         </div>
 
-        {/* ── Reveal text (shown on hover) ─────────────────────────────── */}
         <div
           ref={overlayTextRef}
           aria-hidden="true"
