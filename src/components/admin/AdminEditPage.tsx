@@ -90,6 +90,7 @@ type Tab =
   | "references"
   | "home"
   | "about"
+  | "portfolio"
   | "services"
   | "articles"
   | "documents"
@@ -107,6 +108,7 @@ const CV_TABS: { id: Tab; label: string }[] = [
 const ADMIN_TABS: { id: Tab; label: string }[] = [
   { id: "home", label: "Homepage" },
   { id: "about", label: "About Page" },
+  { id: "portfolio", label: "Work Page" },
   { id: "services", label: "Services Page" },
   { id: "articles", label: "Articles" },
   { id: "documents", label: "Documents" },
@@ -160,6 +162,28 @@ const defaultAboutDontDo = [
   "Quick feature patches: Writing code without understanding the system it lives in builds technical debt that we'll have to pay back later.",
   "Projects without clear objectives: I need a defined metric of success — loading speed, user conversions, or operational metrics — to optimize correctly.",
   "Teams not ready for change: If 'we've always done it this way' is the final answer, we won't be a good fit."
+];
+
+const defaultPortfolioStats = [
+  { val: "3+", label: "Years Experience" },
+  { val: "10+", label: "Projects Live" },
+  { val: "3", label: "Nuxt Migrations" },
+  { val: "Edge SSR", label: "Runtime Target" },
+];
+
+const defaultPortfolioEcosystems = [
+  {
+    title: "Vue & Nuxt Architecture",
+    desc: "Migrating enterprise-scale applications through Nuxt versions 2, 3, and 4. Specialized in composable structure, server-side caching policies, and performance validation.",
+  },
+  {
+    title: "Next.js & React Applications",
+    desc: "Wired for Next.js App Router, React Server Components (RSC), and edge runtimes. Integrating state-management layers and strict API type validation.",
+  },
+  {
+    title: "Backend Frameworks & databases",
+    desc: "Setting up NestJS, Laravel, and Spring Boot REST APIs with PostgreSQL, MySQL, and database abstractions (Prisma). Handling authentication payloads securely.",
+  },
 ];
 
 const defaultServicesOfferings = [
@@ -621,6 +645,49 @@ export function AdminEditPage() {
     setDraft((d) => ({
       ...d,
       adminSettings: { ...(d.adminSettings || {}), aboutDontDo: dontDo }
+    }));
+  };
+
+  const updatePortfolioSubtext = (v: string) => {
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), portfolioSubtext: v }
+    }));
+  };
+
+  const updatePortfolioStat = (idx: number, field: "val" | "label", v: string) => {
+    const stats = [...(draft.adminSettings?.portfolioStats || defaultPortfolioStats)];
+    stats[idx] = { ...stats[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), portfolioStats: stats }
+    }));
+  };
+
+  const updatePortfolioEcosystem = (idx: number, field: "title" | "desc", v: string) => {
+    const eco = [...(draft.adminSettings?.portfolioEcosystems || defaultPortfolioEcosystems)];
+    eco[idx] = { ...eco[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), portfolioEcosystems: eco }
+    }));
+  };
+
+  const updatePortfolioCta = (field: "title" | "desc" | "buttonText" | "buttonHref", v: string) => {
+    setDraft((d) => ({
+      ...d,
+      adminSettings: {
+        ...(d.adminSettings || {}),
+        portfolioCta: {
+          ...(d.adminSettings?.portfolioCta || {
+            title: "Interested in building together?",
+            desc: "I take on select project scopes at a time. If you have code architecture complexity or framework migration needs, let's talk.",
+            buttonText: "Schedule a conversation",
+            buttonHref: "/contact"
+          }),
+          [field]: v
+        }
+      }
     }));
   };
 
@@ -1168,6 +1235,83 @@ export function AdminEditPage() {
             </div>
           ))}
         </div>
+      </div>
+    );
+  };
+
+  // ── Work / Portfolio Page Admin Tab ──
+  const renderPortfolioTab = () => {
+    const portfolioStats = draft.adminSettings?.portfolioStats || defaultPortfolioStats;
+    const portfolioEcosystems = draft.adminSettings?.portfolioEcosystems || defaultPortfolioEcosystems;
+    const portfolioCta = draft.adminSettings?.portfolioCta || {
+      title: "Interested in building together?",
+      desc: "I take on select project scopes at a time. If you have code architecture complexity or framework migration needs, let's talk.",
+      buttonText: "Schedule a conversation",
+      buttonHref: "/contact"
+    };
+
+    return (
+      <div className="space-y-6">
+        <SectionHeading>Portfolio Header</SectionHeading>
+        <AdminField
+          label="Portfolio Subtext"
+          value={draft.adminSettings?.portfolioSubtext || ""}
+          onChange={updatePortfolioSubtext}
+          placeholder="// production.systems · performance.caching · edge.infrastructure"
+          explanation="Changes the subtext label displayed on the Work / Portfolio page header."
+        />
+
+        <SectionHeading>Quick Stats</SectionHeading>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {portfolioStats.map((stat, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Stat {i + 1}</p>
+              <Field label="Value" value={stat.val} onChange={(v) => updatePortfolioStat(i, "val", v)} />
+              <AdminField
+                label="Label"
+                value={stat.label}
+                onChange={(v) => updatePortfolioStat(i, "label", v)}
+                explanation={`Changes Stat #${i + 1} on the stats banner of the Portfolio / Work page.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>Ecosystems (Skills / Pillars)</SectionHeading>
+        <div className="space-y-4">
+          {portfolioEcosystems.map((eco, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Ecosystem {i + 1}</p>
+              <Field label="Title" value={eco.title} onChange={(v) => updatePortfolioEcosystem(i, "title", v)} />
+              <AdminField
+                label="Description"
+                value={eco.desc}
+                onChange={(v) => updatePortfolioEcosystem(i, "desc", v)}
+                multiline
+                explanation={`Changes Ecosystem #${i + 1} on the Portfolio / Work page.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>Call to Action (CTA)</SectionHeading>
+        <div className="border border-rule rounded p-4 bg-bg/25 space-y-3">
+          <Field label="CTA Title" value={portfolioCta.title} onChange={(v) => updatePortfolioCta("title", v)} />
+          <AdminField
+            label="CTA Description"
+            value={portfolioCta.desc}
+            onChange={(v) => updatePortfolioCta("desc", v)}
+            multiline
+          />
+          <Field label="CTA Button Text" value={portfolioCta.buttonText} onChange={(v) => updatePortfolioCta("buttonText", v)} />
+          <Field label="CTA Button Link" value={portfolioCta.buttonHref} onChange={(v) => updatePortfolioCta("buttonHref", v)} />
+        </div>
+
+        <SectionHeading>Projects / Experience Data</SectionHeading>
+        <p className="text-[11px] text-muted -mt-2">
+          Manage your work projects and case studies below. These are shared with the CV Experience list.
+        </p>
+        {renderExperienceTab()}
       </div>
     );
   };
@@ -2355,6 +2499,7 @@ export function AdminEditPage() {
     references: renderReferencesTab(),
     home: renderHomeTab(),
     about: renderAboutTab(),
+    portfolio: renderPortfolioTab(),
     services: renderServicesTab(),
     articles: renderArticlesTab(),
     documents: renderDocumentsTab(),

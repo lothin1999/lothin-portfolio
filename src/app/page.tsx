@@ -10,6 +10,7 @@ import { Glyph } from "@/components/ui/Glyph";
 import { Chip } from "@/components/ui/Chip";
 import { FAQSection } from "@/components/sections/FAQSection";
 import { ThreeCube } from "@/components/ui/ThreeCube";
+import { Carousel } from "@/components/ui/Carousel";
 import gsap from "gsap";
 
 // ---------------------------------------------------------------------------
@@ -480,6 +481,11 @@ export default function HomePage() {
                 <p className="text-[13px] text-ink2 leading-relaxed font-sans font-light mb-6">
                   {exp.bullets[0]} And: {exp.bullets[1]?.toLowerCase()}
                 </p>
+                {exp.images && exp.images.length > 0 && (
+                  <div className="mb-6">
+                    <Carousel images={exp.images} />
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1.5 mt-auto mb-5">
                   {exp.tags.slice(0, 4).map((tag: string) => (
                     <Chip key={tag} className="text-[10px] py-0.5 px-2 bg-tag-bg border border-rule text-tag-text">
