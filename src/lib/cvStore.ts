@@ -122,6 +122,7 @@ async function loadFromR2API(): Promise<any | null> {
     const response = await fetch(url, {
       method: "GET",
       headers: { Authorization: `Bearer ${apiToken}` },
+      cache: "no-store",
     });
 
     if (response.ok) {
@@ -308,7 +309,7 @@ async function saveToR2API(jsonData: any): Promise<boolean> {
     console.error("Failed to save cv.json to R2 via API:", err);
     return false;
   }
-}
+} // hot-reload-trigger
 
 export async function saveCVData(data: CVData): Promise<void> {
   const updatedData = { ...data, updatedAt: new Date().toISOString() };
