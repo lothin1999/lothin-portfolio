@@ -108,6 +108,31 @@ async function listR2Files(): Promise<R2Object[]> {
   return [];
 }
 
+async function loadFromR2API(): Promise<any | null> {
+  const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
+  const accountId = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+  const apiToken = clean(process.env.CLOUDFLARE_AI_API_TOKEN);
+  const bucketName = clean(process.env.R2_BUCKET_NAME) || "portfolio-data";
+
+  if (!accountId || !apiToken) return null;
+
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects/${R2_FILE_KEY}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${apiToken}` },
+    });
+
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (err) {
+    console.error("Failed to load cv.json from R2 via API:", err);
+  }
+  return null;
+}
+
 export async function getCVData(): Promise<CVData> {
   if (memCache) return memCache;
 
@@ -126,6 +151,17 @@ export async function getCVData(): Promise<CVData> {
     }
   } catch (err) {
     console.error("Failed to load CV from R2 bucket:", err);
+  }
+
+  if (!decrypted) {
+    try {
+      const parsed = await loadFromR2API();
+      if (parsed) {
+        decrypted = await ensureDecrypted(parsed);
+      }
+    } catch (err) {
+      console.error("Failed to load CV from R2 API:", err);
+    }
   }
 
   if (!decrypted && process.env.NODE_ENV === "development") {
