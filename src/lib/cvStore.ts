@@ -199,9 +199,48 @@ export async function getCVData(): Promise<CVData> {
     decrypted.articles = defaultCV.articles;
   }
 
-  // Query Cloudflare R2 files dynamically to set cvPdfUrl and coverLetterPdfUrl
+  // Query Cloudflare R2 files dynamically to set cvPdfUrl, coverLetterPdfUrl, and profile.photoUrl
   try {
     const files = await listR2Files();
+
+    // Profile Photo: key starts with "images/profile-" and ends with a valid image extension
+    const profilePhotoFiles = files.filter(
+      f =>
+        f.key.startsWith("images/profile-") &&
+        /\.(jpeg|jpg|png|webp|gif|svg)$/i.test(f.key)
+    );
+
+    if (profilePhotoFiles.length > 0) {
+      profilePhotoFiles.sort((a, b) => {
+        const timeA = a.uploaded ? new Date(a.uploaded).getTime() : 0;
+        const timeB = b.uploaded ? new Date(b.uploaded).getTime() : 0;
+        if (timeA && timeB) return timeB - timeA;
+
+        const matchA = a.key.match(/profile-(\d+)\./);
+        const matchB = b.key.match(/profile-(\d+)\./);
+        if (matchA && matchB) {
+          return parseInt(matchB[1], 10) - parseInt(matchA[1], 10);
+        }
+        return b.key.localeCompare(a.key);
+      });
+
+      const latestPhoto = profilePhotoFiles[0];
+      const filename = latestPhoto.key.substring(7); // Remove "images/" (which is 7 chars)
+      decrypted.profile.photoUrl = `/api/images/${filename}`;
+    } else {
+      // If no custom profile photo is uploaded:
+      // If cube images exist, set photoUrl to empty to force fallback/cube rendering
+      // Otherwise, keep /og-image.png as fallback
+      const hasCubeImages = !!(
+        decrypted.profile.cubeImages &&
+        decrypted.profile.cubeImages.some((img: string) => img && img.trim() !== "")
+      );
+      if (hasCubeImages) {
+        decrypted.profile.photoUrl = "";
+      } else {
+        decrypted.profile.photoUrl = "/og-image.png";
+      }
+    }
 
     // CV: key starts with "cv/" and ends with ".pdf"
     const cvFiles = files.filter(f => f.key.startsWith("cv/") && f.key.endsWith(".pdf"));

@@ -435,7 +435,7 @@ export function AdminEditPage() {
 
     if ((isBucketAsset && !exists) || !currentUrl) {
       const firstImage = cfFiles.find(f => 
-        f.key.startsWith("images/") && 
+        f.key.startsWith("images/profile-") && 
         /\.(jpeg|jpg|png|webp|gif|svg)$/i.test(f.key)
       );
       if (firstImage) {
@@ -826,7 +826,7 @@ export function AdminEditPage() {
             label="Profile Photo"
             accept="image/*"
             compressMaxWidth={400}
-            value={draft.profile.photoUrl || ""}
+            value={draft.profile.photoUrl && draft.profile.photoUrl !== "/og-image.png" ? draft.profile.photoUrl : ""}
             onChange={(url) => applyAndSave(d => ({ ...d, profile: { ...d.profile, photoUrl: url } }))}
           />
         </div>
@@ -1895,7 +1895,7 @@ export function AdminEditPage() {
             {/* 1. Profile Photo */}
             <div className="flex flex-col justify-between p-3.5 rounded border border-rule/60 bg-bg/40">
               <div className="flex items-start gap-3">
-                {draft.profile.photoUrl ? (
+                {draft.profile.photoUrl && draft.profile.photoUrl !== "/og-image.png" ? (
                   <div className="w-12 h-12 rounded border border-rule overflow-hidden bg-bg shrink-0">
                     <img src={draft.profile.photoUrl} alt="Profile" className="w-full h-full object-cover" />
                   </div>
@@ -1907,12 +1907,12 @@ export function AdminEditPage() {
                 <div className="min-w-0 flex-1">
                   <span className="font-sans text-[12px] font-semibold text-ink block">Profile Image</span>
                   <span className="text-[10px] text-muted font-mono truncate block mt-0.5">
-                    {draft.profile.photoUrl ? draft.profile.photoUrl.split("/").pop() : "Not Uploaded"}
+                    {draft.profile.photoUrl && draft.profile.photoUrl !== "/og-image.png" ? draft.profile.photoUrl.split("/").pop() : "Not Uploaded"}
                   </span>
                 </div>
               </div>
               <div className="mt-4 flex items-center justify-end">
-                {draft.profile.photoUrl ? (
+                {draft.profile.photoUrl && draft.profile.photoUrl !== "/og-image.png" ? (
                   <button
                     onClick={() => deleteProfileAsset("photoUrl", "Profile Photo")}
                     className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-600 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/30 rounded px-2.5 py-1.5 transition-all cursor-pointer font-mono uppercase tracking-wide border-none bg-transparent"
