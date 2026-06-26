@@ -1,6 +1,12 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
+import {
+  VISITOR_PALETTES,
+  VISITOR_PALETTE_STORAGE_KEY,
+  getPaletteById,
+  type VisitorPalette,
+} from "@/lib/visitorPalettes";
 
 interface SettingsContextType {
   customCursor: boolean;
@@ -17,6 +23,9 @@ interface SettingsContextType {
   setAiOpen: (val: boolean) => void;
   activePathSegment: string;
   setActivePathSegment: (val: string) => void;
+  /** Currently active visitor palette (null = use admin/default colors) */
+  visitorPalette: VisitorPalette | null;
+  setVisitorPalette: (palette: VisitorPalette | null) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
@@ -29,6 +38,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [activePathSegment, setActivePathSegment] = useState("home");
+  const [visitorPalette, setVisitorPaletteState] = useState<VisitorPalette | null>(null);
 
   // Load from localStorage
   useEffect(() => {
@@ -41,6 +51,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
       const storedSmooth = localStorage.getItem("setting_smooth_scroll");
       if (storedSmooth !== null) setSmoothScroll(storedSmooth === "true");
+
+      const storedPaletteId = localStorage.getItem(VISITOR_PALETTE_STORAGE_KEY);
+      if (storedPaletteId && storedPaletteId !== "default") {
+        const found = getPaletteById(storedPaletteId);
+        if (found) setVisitorPaletteState(found);
+      }
     } catch (e) {
       console.error("Local storage error:", e);
     }
@@ -72,6 +88,19 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("setting_smooth_scroll", String(val));
   };
 
+  const setVisitorPalette = (palette: VisitorPalette | null) => {
+    setVisitorPaletteState(palette);
+    try {
+      if (!palette || palette.id === "default") {
+        localStorage.setItem(VISITOR_PALETTE_STORAGE_KEY, "default");
+      } else {
+        localStorage.setItem(VISITOR_PALETTE_STORAGE_KEY, palette.id);
+      }
+    } catch (e) {
+      console.error("Failed to save palette to localStorage:", e);
+    }
+  };
+
   return (
     <SettingsContext.Provider
       value={{
@@ -89,6 +118,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setAiOpen,
         activePathSegment,
         setActivePathSegment,
+        visitorPalette,
+        setVisitorPalette,
       }}
     >
       {children}

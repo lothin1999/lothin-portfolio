@@ -22,51 +22,89 @@ Tailwind CSS, GSAP animations, full SEO, and a password-protected in-browser CV 
 ```
 src/
 ├── app/
-│   ├── layout.tsx               # Root: fonts, CVProvider, AdminButton, JSON-LD
-│   ├── globals.css              # Design tokens (:root CSS vars)
-│   ├── page.tsx                 # Home — Hero + Experience + Skills
-│   ├── experience/page.tsx
-│   ├── skills/page.tsx
-│   ├── education/page.tsx
-│   ├── about/page.tsx
+│   ├── layout.tsx               # Root: fonts, CVProvider, custom elements, wrappers
+│   ├── page.tsx                 # Home — Hero + Experience + Skills + Education + FAQ
+│   ├── globals.css              # Design tokens and custom tailwind overrides
+│   ├── about/page.tsx           # About Page
+│   ├── services/page.tsx        # Services Page
+│   ├── portfolio/page.tsx       # Portfolio/Work Page
+│   ├── documents/page.tsx       # Documents/Hub Page
+│   ├── articles/page.tsx        # Articles List Page
+│   │   └── [slug]/page.tsx      # Dynamic Article View Page
+│   ├── contact/page.tsx         # Contact Page
+│   ├── edit/page.tsx            # Editor route
+│   ├── dashboard/page.tsx       # Dashboard route
 │   ├── sitemap.ts               # Auto-generated sitemap.xml for Google
 │   ├── robots.ts                # robots.txt
+│   ├── manifest.ts              # Web App manifest configuration
 │   └── api/
 │       ├── auth/
-│       │   ├── login/route.ts          # POST — verify password, set JWT cookie
+│       │   ├── login/route.ts          # POST — verify passcode, set JWT cookie
 │       │   ├── logout/route.ts         # POST — clear session cookie
-│       │   └── change-password/route.ts # POST — returns new bcrypt hash
-│       └── cv/
-│           ├── route.ts                # GET (public) / PUT (protected) CV data
-│           └── upload-photo/route.ts   # POST — upload photo to imgbb
+│       │   └── check/route.ts          # GET — check auth status
+│       ├── cv/
+│       │   ├── route.ts                # GET (public/visitor) / PUT (admin) CV data
+│       │   ├── download/route.ts       # GET — download latest CV PDF
+│       │   ├── local-save/route.ts     # GET/POST — filesystem backup in local dev
+│       │   ├── vectorize/route.ts      # POST — vectorize CV sections
+│       │   ├── upload/route.ts         # POST — upload arbitrary files to R2
+│       │   ├── upload-photo/route.ts   # POST — upload photo file to R2
+│       │   └── pdf/[filename]/route.ts # GET — stream CV PDFs from R2
+│       ├── documents/[filename]/route.ts # GET — stream documents/guide files from R2
+│       ├── images/[filename]/route.ts   # GET — serve images from R2
+│       ├── transcribe/route.ts         # POST — voice transcription route
+│       ├── chat/route.ts               # POST — AI Assistant route
+│       └── cloudflare/route.ts         # GET/POST — Cloudflare status checks
 ├── components/
 │   ├── layout/
-│   │   ├── Navbar.tsx           # Sticky nav, mobile drawer, active link
-│   │   └── Footer.tsx           # Dynamic footer from CV context
+│   │   ├── Navbar.tsx           # Sticky nav, mobile drawer, links
+│   │   ├── Footer.tsx           # Dynamic footer from CV context
+│   │   ├── SmoothScrollProvider.tsx # Lenis smooth scroll configuration
+│   │   ├── AIChatDrawer.tsx     # Floating Gemini Assistant drawer
+│   │   ├── CVContentWrapper.tsx # Framer Motion page wrapper
+│   │   ├── StatusBar.tsx        # System status bar at bottom of pages
+│   │   ├── SettingsModal.tsx    # User preference control panel
+│   │   ├── ShortcutsModal.tsx   # Hotkey navigation overview
+│   │   └── CustomCursor.tsx     # Dynamic follower cursor
 │   ├── sections/
 │   │   ├── HeroSection.tsx      # GSAP timeline entrance + profile photo
-│   │   ├── ExperienceSection.tsx
-│   │   ├── SkillsSection.tsx
-│   │   ├── EducationSection.tsx
-│   │   └── AboutSection.tsx     # Sticky contact card, languages, references
+│   │   ├── ExperienceSection.tsx # Chronological work experience timeline
+│   │   ├── SkillsSection.tsx    # Interactive skill group grids
+│   │   ├── EducationSection.tsx # College curriculum breakdowns
+│   │   ├── AboutSection.tsx     # Sticky profile, credentials, reference badges
+│   │   ├── AboutCTA.tsx         # Floating quick-contact callout
+│   │   └── FAQSection.tsx       # Expandable Accordion FAQ
 │   ├── admin/
-│   │   ├── AdminButton.tsx      # 🔒 floating button — login or edit
-│   │   ├── AdminLoginModal.tsx  # Password entry modal
-│   │   └── AdminEditModal.tsx   # 6-tab full CV editor
+│   │   ├── AdminButton.tsx      # 🔒 Lock indicator floating button
+│   │   ├── AdminLoginModal.tsx  # Admin passcode verification modal
+│   │   ├── AdminEditPage.tsx    # Multi-tab full CV dashboard editor component
+│   │   └── DragDropUploader.tsx # File drag-and-drop handler
 │   └── ui/
-│       ├── Chip.tsx
-│       └── SectionLabel.tsx
+│       ├── Chip.tsx             # Interactive badges
+│       ├── DarkModeToggle.tsx   # Light/dark mode toggle button
+│       ├── SectionLabel.tsx     # Numeric layout indicator
+│       ├── ScrollProgressBar.tsx # Reading progress line
+│       ├── ScrambleText.tsx     # Glitch/scramble text animation
+│       ├── ImageCube.tsx        # Dynamic photo display cube
+│       ├── LockScreen.tsx       # Visitor lock screen overlay
+│       ├── Glyph.tsx            # Decorative matrix grid blocks
+│       ├── CVButtons.tsx        # Download and PDF action buttons
+│       └── Carousel.tsx         # Horizontal media card slider
 ├── hooks/
-│   ├── useCVData.tsx            # React context: CV state + admin flag
-│   └── useScrollReveal.ts       # GSAP ScrollTrigger hook
+│   ├── useCVData.tsx            # Context provider for CV database
+│   ├── useScrollReveal.ts       # GSAP dynamic scroll triggers
+│   └── useTheme.tsx             # Theme mode management
 ├── lib/
-│   ├── data.ts                  # Default CV seed data
-│   ├── cvStore.ts               # CV persistence abstraction
-│   ├── auth.ts                  # bcrypt + JWT helpers
-│   ├── seo.ts                   # Metadata + JSON-LD builder
-│   └── utils.ts                 # cn() utility
+│   ├── data.ts                  # Default fallback CV seed data
+│   ├── cvTemplate.ts            # PDF template structure mapping
+│   ├── cvStore.ts               # Cloudflare R2 bucket integration engine
+│   ├── auth.ts                  # Passcode hashing and JWT token utility
+│   ├── seo.ts                   # Page title/meta/JSON-LD generators
+│   ├── encryption.ts            # Symmetrical AES client-side encryption
+│   ├── rateLimit.ts             # In-memory IP requests tracker
+│   └── utils.ts                 # Classname merge (clsx + tailwind-merge)
 └── types/
-    └── cv.ts                    # CVData, Experience, Education, etc.
+    └── cv.ts                    # Strongly typed types for portfolio schema
 ```
 
 ---
@@ -78,7 +116,7 @@ src/
 cd lothin-portfolio
 
 # 2. Install dependencies
-npm install
+pnpm install
 
 # 3. Set up env vars
 cp .env.local.example .env.local
@@ -92,7 +130,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 # Copy into JWT_SECRET in .env.local
 
 # 6. Run dev server
-npm run dev
+pnpm dev
 # → http://localhost:3000
 ```
 
@@ -116,7 +154,7 @@ git push -u origin main
 2. Connect your GitHub repository
 3. Set build settings:
    - **Framework preset**: Next.js
-   - **Build command**: `npx @cloudflare/next-on-pages`
+   - **Build command**: `pnpm run pages:build`
    - **Build output directory**: `.vercel/output/static`
    - **Node.js version**: `20`
 
@@ -144,8 +182,7 @@ Cloudflare auto-deploys on every push to `main`. Your site will be at:
 ## Deploy to Vercel (Alternative)
 
 ```bash
-npm install -g vercel
-vercel
+pnpm dlx vercel
 ```
 
 Add the same env vars in the Vercel dashboard under **Settings → Environment Variables**.
@@ -198,19 +235,28 @@ Add the same env vars in the Vercel dashboard under **Settings → Environment V
 
 ---
 
-## Persistent CV Edits Across Deploys
+## Persistent CV Edits & Document Storage Across Deploys
 
-By default, CV edits are stored in **server memory** (lost on redeploy).
-For persistence, use one of these approaches:
+For persistence of the CV data and media files, the project is configured to use **Cloudflare R2** buckets.
 
-### Option A — Cloudflare KV (Recommended for Cloudflare Pages)
-1. Create a KV namespace in Cloudflare dashboard
-2. Bind it as `CV_STORE` in `wrangler.toml`
-3. Update `src/lib/cvStore.ts` to use `env.CV_STORE.get/put`
+### Cloudflare R2 Setup (Recommended for Cloudflare Pages)
 
-### Option B — Environment Variable (Simple)
-After editing, export your CV as JSON from the admin panel and paste it
-as the `CV_JSON_DATA` environment variable (base64 or JSON string).
+1. Create an R2 bucket named `portfolio-data` in your Cloudflare dashboard.
+2. Bind the bucket in `wrangler.toml` (uncomment the bucket binding lines):
+   ```toml
+   [[r2_buckets]]
+   binding = "R2_BUCKET_NAME"
+   bucket_name = "portfolio-data"
+   ```
+3. Set the following environment variables in your Cloudflare Pages dashboard (under **Settings** -> **Environment variables**) to enable local R2 REST API access in dev/preview environments:
+   - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare account ID.
+   - `CLOUDFLARE_AI_API_TOKEN`: A Cloudflare API token with R2 read/write permissions.
+   - `R2_BUCKET_NAME`: `portfolio-data` (or your custom bucket name).
+   - `CV_ENCRYPTION_KEY`: A secure key used to encrypt the CV data dynamically.
 
-### Option C — Vercel + Edge Config / Redis
-Use `@vercel/kv` or `@upstash/redis` in `cvStore.ts`.
+### Document & PDF Syncing
+
+The application automatically syncs files from the R2 bucket:
+- **CV Downloads**: Any PDF placed under the `cv/` R2 path (e.g. `cv/cv-name.pdf`) is dynamically detected and offered as the main CV PDF download.
+- **Cover Letter**: Any PDF placed under `letter/` (e.g. `letter/letter.pdf`) is linked as the cover letter.
+- **Documents Hub**: Any files uploaded under the `documents/` path (e.g., `documents/NestJS-Guide.md`, `documents/C-Guide.pdf`, `documents/core-banking-erd.html`) are automatically registered and renderable in the **Documents Hub** (`/documents` page).

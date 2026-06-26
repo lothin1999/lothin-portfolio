@@ -1,5 +1,20 @@
 // src/types/cv.ts
 
+export interface ThemeColorSet {
+  accent: string;
+  accentOrange: string;
+  bg: string;
+  surface: string;
+  ink: string;
+  ink2: string;
+  muted: string;
+}
+
+export interface ThemeColors {
+  light: ThemeColorSet;
+  dark: ThemeColorSet;
+}
+
 export interface Profile {
   name: { first: string; last: string };
   title: string;
@@ -9,6 +24,7 @@ export interface Profile {
   website: string;
   telegram: string;
   telegramHandle: string;
+  email?: string;
   facebook?: string;
   facebookHandle?: string;
   linkedin: string;
@@ -16,6 +32,7 @@ export interface Profile {
   photoUrl?: string;
   cvPdfUrl?: string;
   coverLetterPdfUrl?: string;
+  cubeImages?: string[];
   languages: { name: string; level: string }[];
 }
 
@@ -28,6 +45,7 @@ export interface Experience {
   bullets: string[];
   tags: string[];
   images?: string[];
+  showInCv?: boolean;
 }
 
 export interface SkillGroup {
@@ -43,6 +61,7 @@ export interface Education {
   period: string;
   description: string;
   courses: string[];
+  link?: string;
 }
 
 export interface Reference {
@@ -98,6 +117,17 @@ export interface AdminSettings {
   contactSubtext?: string;
   contactIntro?: string;
   contactSteps?: { step: string; title: string; desc: string }[];
+  /** Admin-controlled color palette stored in Cloudflare R2 */
+  themeColors?: ThemeColors;
+}
+
+export interface DocumentItem {
+  id: string;
+  name: string;
+  filename: string;
+  key: string;
+  url: string;
+  uploadedAt: string;
 }
 
 export interface CVData {
@@ -107,6 +137,7 @@ export interface CVData {
   educations: Education[];
   references: Reference[];
   articles?: Article[];
+  documents?: DocumentItem[];
   adminSettings?: AdminSettings;
   updatedAt?: string;
 }

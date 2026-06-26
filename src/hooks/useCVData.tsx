@@ -50,7 +50,17 @@ export function CVProvider({ children, initialData }: { children: React.ReactNod
 
       if (cvRes.ok) {
         const data = await cvRes.json();
-        if (data && data.profile) {
+        if (data && data.encrypted && data.ciphertext) {
+          try {
+            const decrypted = await decryptData(data.ciphertext, "lothin-visitor-key");
+            if (decrypted && decrypted.profile) {
+              setCV(decrypted);
+              setIsLocked(false);
+            }
+          } catch (e) {
+            console.error("Failed to decrypt CV response:", e);
+          }
+        } else if (data && data.profile) {
           setCV(data);
           setIsLocked(false);
         }
@@ -99,7 +109,18 @@ export function CVProvider({ children, initialData }: { children: React.ReactNod
 
 export function useCVData() {
   const ctx = useContext(CVContext);
-  if (!ctx) throw new Error("useCVData must be used inside CVProvider");
+  if (!ctx) {
+    return {
+      cv: defaultCV,
+      isAdmin: false,
+      isLoading: false,
+      isLocked: false,
+      setAdmin: () => {},
+      updateCV: async () => {},
+      refreshCV: async () => {},
+      unlock: async () => false,
+    };
+  }
   return ctx;
 }
 

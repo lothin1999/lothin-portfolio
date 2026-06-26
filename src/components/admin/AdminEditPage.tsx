@@ -4,11 +4,13 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus, Trash2, Save, Upload, RefreshCw, Check, ArrowLeft,
-  ChevronDown, ChevronRight, FileText, Globe, CheckCircle, Edit, List, Info, Folder
+  ChevronDown, ChevronRight, FileText, Globe, CheckCircle, Edit, List, Info, Folder,
+  AlertTriangle
 } from "lucide-react";
-import type { CVData, Article } from "@/types/cv";
+import type { CVData, Article, DocumentItem, ThemeColorSet } from "@/types/cv";
 import { useCVData } from "@/hooks/useCVData";
 import { DragDropUploader } from "./DragDropUploader";
+import { DEFAULT_LIGHT_COLORS, DEFAULT_DARK_COLORS } from "@/hooks/useThemeColors";
 
 // ── Tiny helpers ──────────────────────────────────────────────────────────────
 function Field({
@@ -89,10 +91,13 @@ type Tab =
   | "references"
   | "home"
   | "about"
+  | "portfolio"
   | "services"
   | "articles"
+  | "documents"
   | "storage"
-  | "vectorize";
+  | "vectorize"
+  | "colors";
 
 const CV_TABS: { id: Tab; label: string }[] = [
   { id: "profile", label: "Profile" },
@@ -105,10 +110,13 @@ const CV_TABS: { id: Tab; label: string }[] = [
 const ADMIN_TABS: { id: Tab; label: string }[] = [
   { id: "home", label: "Homepage" },
   { id: "about", label: "About Page" },
+  { id: "portfolio", label: "Work Page" },
   { id: "services", label: "Services Page" },
   { id: "articles", label: "Articles" },
+  { id: "documents", label: "Documents" },
   { id: "storage", label: "Storage" },
   { id: "vectorize", label: "Vectorize" },
+  { id: "colors", label: "🎨 Colors" },
 ];
 
 // ── Default Fallbacks ────────────────────────────────────────────────────────
@@ -157,6 +165,28 @@ const defaultAboutDontDo = [
   "Quick feature patches: Writing code without understanding the system it lives in builds technical debt that we'll have to pay back later.",
   "Projects without clear objectives: I need a defined metric of success — loading speed, user conversions, or operational metrics — to optimize correctly.",
   "Teams not ready for change: If 'we've always done it this way' is the final answer, we won't be a good fit."
+];
+
+const defaultPortfolioStats = [
+  { val: "3+", label: "Years Experience" },
+  { val: "10+", label: "Projects Live" },
+  { val: "3", label: "Nuxt Migrations" },
+  { val: "Edge SSR", label: "Runtime Target" },
+];
+
+const defaultPortfolioEcosystems = [
+  {
+    title: "Vue & Nuxt Architecture",
+    desc: "Migrating enterprise-scale applications through Nuxt versions 2, 3, and 4. Specialized in composable structure, server-side caching policies, and performance validation.",
+  },
+  {
+    title: "Next.js & React Applications",
+    desc: "Wired for Next.js App Router, React Server Components (RSC), and edge runtimes. Integrating state-management layers and strict API type validation.",
+  },
+  {
+    title: "Backend Frameworks & databases",
+    desc: "Setting up NestJS, Laravel, and Spring Boot REST APIs with PostgreSQL, MySQL, and database abstractions (Prisma). Handling authentication payloads securely.",
+  },
 ];
 
 const defaultServicesOfferings = [
@@ -237,7 +267,7 @@ export function AdminEditPage() {
 
   // Deep clone for editing
   const [draft, setDraft] = useState<CVData>({
-    profile: { name: { first: "", last: "" }, title: "", tagline: "", summary: "", location: "", website: "", telegram: "", telegramHandle: "", linkedin: "", phones: [], cvPdfUrl: "", coverLetterPdfUrl: "", languages: [] },
+    profile: { name: { first: "", last: "" }, title: "", tagline: "", summary: "", location: "", website: "", telegram: "", telegramHandle: "", linkedin: "", phones: [], cvPdfUrl: "", coverLetterPdfUrl: "", cubeImages: [], languages: [] },
     experiences: [],
     skillGroups: [],
     educations: [],
@@ -254,6 +284,7 @@ export function AdminEditPage() {
       if (!cloned.articles) cloned.articles = [];
       if (!cloned.profile.cvPdfUrl) cloned.profile.cvPdfUrl = "";
       if (!cloned.profile.coverLetterPdfUrl) cloned.profile.coverLetterPdfUrl = "";
+      if (!cloned.profile.cubeImages) cloned.profile.cubeImages = [];
       if (cloned.experiences) {
         cloned.experiences = cloned.experiences.map((exp: any) => ({
           ...exp,
@@ -275,6 +306,7 @@ export function AdminEditPage() {
   const [saveMsg, setSaveMsg] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const docFileInputRef = useRef<HTMLInputElement>(null);
 
   const [cfFiles, setCfFiles] = useState<{ key: string; size: number; uploaded: string }[] | null>(null);
   const [cfLoading, setCfLoading] = useState(false);
@@ -330,6 +362,41 @@ export function AdminEditPage() {
   const [newIndexMetric, setNewIndexMetric] = useState("cosine");
   const [creatingIndexStatus, setCreatingIndexStatus] = useState("");
 
+  // Documents uploader states
+  const [docInputName, setDocInputName] = useState("");
+  const [docUploading, setDocUploading] = useState(false);
+  const [docDragActive, setDocDragActive] = useState(false);
+
+  // Custom confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmLabel?: string;
+    onConfirm: (() => void) | (() => Promise<void>) | null;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    confirmLabel: "Delete",
+    onConfirm: null,
+  });
+
+  const openConfirmModal = (
+    title: string,
+    message: string,
+    onConfirm: (() => void) | (() => Promise<void>),
+    confirmLabel = "Delete"
+  ) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      confirmLabel,
+      onConfirm,
+    });
+  };
+
   const fetchVectorizeData = useCallback(async () => {
     setVectorizeLoading(true);
     try {
@@ -371,7 +438,7 @@ export function AdminEditPage() {
 
     if ((isBucketAsset && !exists) || !currentUrl) {
       const firstImage = cfFiles.find(f => 
-        f.key.startsWith("images/") && 
+        f.key.startsWith("images/profile-") && 
         /\.(jpeg|jpg|png|webp|gif|svg)$/i.test(f.key)
       );
       if (firstImage) {
@@ -406,30 +473,52 @@ export function AdminEditPage() {
   const deleteProfileAsset = async (field: "photoUrl" | "cvPdfUrl" | "coverLetterPdfUrl", label: string) => {
     const url = draftRef.current.profile[field];
     if (!url) return;
-    if (!confirm(`Are you sure you want to delete this ${label} from Cloudflare R2 bucket and profile?`)) return;
 
-    try {
-      const res = await fetch("/api/cv/upload", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      });
-      if (res.ok) {
-        await applyAndSave(d => ({
-          ...d,
-          profile: {
-            ...d.profile,
-            [field]: ""
+    openConfirmModal(
+      "Delete Asset",
+      `Are you sure you want to delete this ${label} from Cloudflare R2 bucket and profile?`,
+      async () => {
+        try {
+          const res = await fetch("/api/cv/upload", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url })
+          });
+          if (res.ok) {
+            await applyAndSave(d => ({
+              ...d,
+              profile: {
+                ...d.profile,
+                [field]: ""
+              }
+            }));
+            fetchCfFiles();
+          } else {
+            alert(`Failed to delete ${label} from Cloudflare R2.`);
           }
-        }));
-        fetchCfFiles();
-      } else {
-        alert(`Failed to delete ${label} from Cloudflare R2.`);
+        } catch (err) {
+          console.error(`Error deleting ${label}:`, err);
+          alert(`An error occurred while deleting ${label}`);
+        }
       }
-    } catch (err) {
-      console.error(`Error deleting ${label}:`, err);
-      alert(`An error occurred while deleting ${label}`);
-    }
+    );
+  };
+
+  const handleCubeImageChange = (index: number, url: string) => {
+    applyAndSave(d => {
+      const cubeImages = [...(d.profile.cubeImages || [])];
+      while (cubeImages.length <= index) {
+        cubeImages.push("");
+      }
+      cubeImages[index] = url;
+      return {
+        ...d,
+        profile: {
+          ...d.profile,
+          cubeImages
+        }
+      };
+    });
   };
 
   // Articles state
@@ -562,6 +651,49 @@ export function AdminEditPage() {
     }));
   };
 
+  const updatePortfolioSubtext = (v: string) => {
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), portfolioSubtext: v }
+    }));
+  };
+
+  const updatePortfolioStat = (idx: number, field: "val" | "label", v: string) => {
+    const stats = [...(draft.adminSettings?.portfolioStats || defaultPortfolioStats)];
+    stats[idx] = { ...stats[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), portfolioStats: stats }
+    }));
+  };
+
+  const updatePortfolioEcosystem = (idx: number, field: "title" | "desc", v: string) => {
+    const eco = [...(draft.adminSettings?.portfolioEcosystems || defaultPortfolioEcosystems)];
+    eco[idx] = { ...eco[idx], [field]: v };
+    setDraft((d) => ({
+      ...d,
+      adminSettings: { ...(d.adminSettings || {}), portfolioEcosystems: eco }
+    }));
+  };
+
+  const updatePortfolioCta = (field: "title" | "desc" | "buttonText" | "buttonHref", v: string) => {
+    setDraft((d) => ({
+      ...d,
+      adminSettings: {
+        ...(d.adminSettings || {}),
+        portfolioCta: {
+          ...(d.adminSettings?.portfolioCta || {
+            title: "Interested in building together?",
+            desc: "I take on select project scopes at a time. If you have code architecture complexity or framework migration needs, let's talk.",
+            buttonText: "Schedule a conversation",
+            buttonHref: "/contact"
+          }),
+          [field]: v
+        }
+      }
+    }));
+  };
+
   const updateServicesIntro = (v: string) => {
     setDraft((d) => ({
       ...d,
@@ -646,9 +778,14 @@ export function AdminEditPage() {
   }
 
   function handleDeleteArticle(index: number) {
-    if (!confirm("Are you sure you want to delete this article?")) return;
-    const articles = (draft.articles || []).filter((_, i) => i !== index);
-    setDraft(d => ({ ...d, articles }));
+    openConfirmModal(
+      "Delete Article",
+      "Are you sure you want to delete this article?",
+      () => {
+        const articles = (draft.articles || []).filter((_, i) => i !== index);
+        setDraft(d => ({ ...d, articles }));
+      }
+    );
   }
 
   // ── Profile Tab ──
@@ -692,7 +829,7 @@ export function AdminEditPage() {
             label="Profile Photo"
             accept="image/*"
             compressMaxWidth={400}
-            value={draft.profile.photoUrl || ""}
+            value={draft.profile.photoUrl && draft.profile.photoUrl !== "/og-image.png" ? draft.profile.photoUrl : ""}
             onChange={(url) => applyAndSave(d => ({ ...d, profile: { ...d.profile, photoUrl: url } }))}
           />
         </div>
@@ -714,6 +851,23 @@ export function AdminEditPage() {
             onChange={(url) => applyAndSave(d => ({ ...d, profile: { ...d.profile, coverLetterPdfUrl: url } }))}
           />
         </div>
+      </div>
+
+      <SectionHeading>3D Cube Faces (6 Images)</SectionHeading>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 pt-2">
+        {["Right (Face 1)", "Left (Face 2)", "Top (Face 3)", "Bottom (Face 4)", "Front (Face 5)", "Back (Face 6)"].map((faceLabel, i) => (
+          <div key={i} className="border border-rule/60 p-3 rounded bg-bg/25 flex flex-col justify-between">
+            <span className="font-mono text-[10px] text-muted block mb-2">{faceLabel}</span>
+            <DragDropUploader
+              label=""
+              accept="image/*"
+              compressMaxWidth={512}
+              uploadType="cube"
+              value={(draft.profile.cubeImages && draft.profile.cubeImages[i]) || ""}
+              onChange={(url) => handleCubeImageChange(i, url)}
+            />
+          </div>
+        ))}
       </div>
 
       <SectionHeading>Languages</SectionHeading>
@@ -1088,6 +1242,83 @@ export function AdminEditPage() {
     );
   };
 
+  // ── Work / Portfolio Page Admin Tab ──
+  const renderPortfolioTab = () => {
+    const portfolioStats = draft.adminSettings?.portfolioStats || defaultPortfolioStats;
+    const portfolioEcosystems = draft.adminSettings?.portfolioEcosystems || defaultPortfolioEcosystems;
+    const portfolioCta = draft.adminSettings?.portfolioCta || {
+      title: "Interested in building together?",
+      desc: "I take on select project scopes at a time. If you have code architecture complexity or framework migration needs, let's talk.",
+      buttonText: "Schedule a conversation",
+      buttonHref: "/contact"
+    };
+
+    return (
+      <div className="space-y-6">
+        <SectionHeading>Portfolio Header</SectionHeading>
+        <AdminField
+          label="Portfolio Subtext"
+          value={draft.adminSettings?.portfolioSubtext || ""}
+          onChange={updatePortfolioSubtext}
+          placeholder="// production.systems · performance.caching · edge.infrastructure"
+          explanation="Changes the subtext label displayed on the Work / Portfolio page header."
+        />
+
+        <SectionHeading>Quick Stats</SectionHeading>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {portfolioStats.map((stat, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Stat {i + 1}</p>
+              <Field label="Value" value={stat.val} onChange={(v) => updatePortfolioStat(i, "val", v)} />
+              <AdminField
+                label="Label"
+                value={stat.label}
+                onChange={(v) => updatePortfolioStat(i, "label", v)}
+                explanation={`Changes Stat #${i + 1} on the stats banner of the Portfolio / Work page.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>Ecosystems (Skills / Pillars)</SectionHeading>
+        <div className="space-y-4">
+          {portfolioEcosystems.map((eco, i) => (
+            <div key={i} className="border border-rule rounded p-3 bg-bg space-y-2">
+              <p className="font-mono text-[9px] text-accent uppercase font-bold">Ecosystem {i + 1}</p>
+              <Field label="Title" value={eco.title} onChange={(v) => updatePortfolioEcosystem(i, "title", v)} />
+              <AdminField
+                label="Description"
+                value={eco.desc}
+                onChange={(v) => updatePortfolioEcosystem(i, "desc", v)}
+                multiline
+                explanation={`Changes Ecosystem #${i + 1} on the Portfolio / Work page.`}
+              />
+            </div>
+          ))}
+        </div>
+
+        <SectionHeading>Call to Action (CTA)</SectionHeading>
+        <div className="border border-rule rounded p-4 bg-bg/25 space-y-3">
+          <Field label="CTA Title" value={portfolioCta.title} onChange={(v) => updatePortfolioCta("title", v)} />
+          <AdminField
+            label="CTA Description"
+            value={portfolioCta.desc}
+            onChange={(v) => updatePortfolioCta("desc", v)}
+            multiline
+          />
+          <Field label="CTA Button Text" value={portfolioCta.buttonText} onChange={(v) => updatePortfolioCta("buttonText", v)} />
+          <Field label="CTA Button Link" value={portfolioCta.buttonHref} onChange={(v) => updatePortfolioCta("buttonHref", v)} />
+        </div>
+
+        <SectionHeading>Projects / Experience Data</SectionHeading>
+        <p className="text-[11px] text-muted -mt-2">
+          Manage your work projects and case studies below. These are shared with the CV Experience list.
+        </p>
+        {renderExperienceTab()}
+      </div>
+    );
+  };
+
   // ── Services Page Admin Tab ──
   const renderServicesTab = () => {
     const offerings = draft.adminSettings?.servicesOfferings || defaultServicesOfferings;
@@ -1301,6 +1532,256 @@ export function AdminEditPage() {
     );
   };
 
+  // ── Documents Manager Tab ──
+  const renderDocumentsTab = () => {
+    const list = draft.documents || [];
+
+    const handleDocDrag = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.type === "dragenter" || e.type === "dragover") {
+        setDocDragActive(true);
+      } else if (e.type === "dragleave") {
+        setDocDragActive(false);
+      }
+    };
+
+    const handleDocDrop = async (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDocDragActive(false);
+
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        await handleFilesUpload(e.dataTransfer.files);
+      }
+    };
+
+    const handleFilesUpload = async (files: FileList) => {
+      setDocUploading(true);
+      let nameUsed = false;
+      const uploadedDocs: DocumentItem[] = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split(".").pop()?.toLowerCase();
+        const allowedExts = ["md", "txt", "pdf", "html", "htm"];
+        if (!allowedExts.includes(ext || "")) {
+          alert(`File "${file.name}" is not supported. Supported extensions: .md, .txt, .pdf, .html, .htm`);
+          continue;
+        }
+
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("type", "document");
+
+        try {
+          const res = await fetch("/api/cv/upload", {
+            method: "POST",
+            body: fd,
+          });
+
+          if (!res.ok) {
+            const json = await res.json() as any;
+            alert(`Failed to upload ${file.name}: ${json.error || res.statusText}`);
+            continue;
+          }
+
+          const json = await res.json() as { url: string };
+          
+          const displayName = !nameUsed && docInputName
+            ? docInputName
+            : file.name.replace(/\.[^/.]+$/, "").split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+          
+          if (!nameUsed && docInputName) nameUsed = true;
+
+          const newDoc = {
+            id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: displayName,
+            filename: file.name,
+            key: `documents/${file.name}`,
+            url: json.url,
+            uploadedAt: new Date().toISOString(),
+          };
+
+          uploadedDocs.push(newDoc);
+        } catch (err) {
+          console.error(err);
+          alert(`Upload failed for ${file.name}`);
+        }
+      }
+
+      if (uploadedDocs.length > 0) {
+        if (nameUsed) setDocInputName("");
+        await applyAndSave((d) => {
+          const current = d.documents || [];
+          const filenamesToReplace = new Set(uploadedDocs.map(ud => ud.filename));
+          const filtered = current.filter(item => !filenamesToReplace.has(item.filename));
+          return {
+            ...d,
+            documents: [...filtered, ...uploadedDocs],
+          };
+        });
+        fetchCfFiles();
+      }
+      setDocUploading(false);
+    };
+
+    const handleFileSelectChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+        await handleFilesUpload(e.target.files);
+      }
+    };
+
+    const handleDeleteDoc = async (doc: any) => {
+      openConfirmModal(
+        "Delete Document",
+        `Are you sure you want to delete the document "${doc.name}"?`,
+        async () => {
+          try {
+            const res = await fetch("/api/cv/upload", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: doc.url }),
+            });
+            if (res.ok) {
+              await applyAndSave((d) => ({
+                ...d,
+                documents: (d.documents || []).filter((item) => item.id !== doc.id),
+              }));
+              fetchCfFiles();
+            } else {
+              alert("Failed to delete the document from Cloudflare R2.");
+            }
+          } catch (e) {
+            console.error(e);
+            alert("An error occurred while deleting the document.");
+          }
+        }
+      );
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between pb-3 border-b border-rule">
+          <div>
+            <h4 className="font-mono text-[11px] uppercase tracking-wider text-accent font-bold">Documents Manager</h4>
+            <p className="text-[10px] text-muted mt-0.5">Upload Markdown files like Hackers.md and set premium display names.</p>
+          </div>
+        </div>
+
+        <div className="max-w-md">
+          <Field
+            label="Document Display Name (Optional)"
+            value={docInputName}
+            onChange={setDocInputName}
+            placeholder="e.g. Hackers Guide, Project Proposal..."
+          />
+          <p className="text-[9.5px] text-muted font-mono mt-1">
+            If left blank, the filename will be auto-formatted as the display name.
+          </p>
+        </div>
+
+        <div
+          onDragEnter={handleDocDrag}
+          onDragOver={handleDocDrag}
+          onDragLeave={handleDocDrag}
+          onDrop={handleDocDrop}
+          onClick={() => docFileInputRef.current?.click()}
+          className={`relative border-2 border-dashed rounded p-6 text-center cursor-pointer transition-all duration-200 ${
+            docDragActive
+              ? "border-accent bg-accent/[0.02] scale-[0.99]"
+              : "border-rule hover:border-ink hover:bg-tag-bg/20"
+          }`}
+        >
+          <input
+            ref={docFileInputRef}
+            type="file"
+            accept=".md,text/markdown,.txt,text/plain,.pdf,application/pdf,.html,text/html"
+            multiple
+            onChange={handleFileSelectChange}
+            className="hidden"
+          />
+
+          <div className="flex flex-col items-center justify-center gap-2">
+            {docUploading ? (
+              <>
+                <RefreshCw size={18} className="text-accent animate-spin" />
+                <p className="font-mono text-[11px] text-ink animate-pulse uppercase tracking-wider">
+                  uploading.documents...
+                </p>
+              </>
+            ) : (
+              <>
+                <Upload size={18} className="text-muted" />
+                <p className="font-mono text-[11px] text-ink uppercase tracking-wider font-semibold">
+                  Drag & drop multiple files (.md, .txt, .pdf, .html)
+                </p>
+                <p className="font-mono text-[9px] text-muted">
+                  [ or click to select ]
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <h5 className="font-mono text-[10px] tracking-[1.5px] uppercase text-muted mb-3 font-semibold">
+            Uploaded Documents ({list.length})
+          </h5>
+
+          {list.length === 0 ? (
+            <div className="py-10 text-center border border-dashed border-rule rounded">
+              <p className="font-mono text-[11px] text-muted">No documents uploaded yet.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-rule border border-rule rounded overflow-hidden bg-bg">
+              {list.map((doc: any, idx: number) => (
+                <div
+                  key={doc.id || idx}
+                  className="p-4 flex items-center justify-between gap-4 hover:bg-tag-bg/20 transition-colors"
+                >
+                  <div className="min-w-0 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded bg-accent/5 border border-accent/10 flex items-center justify-center text-accent shrink-0">
+                      <FileText size={15} />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="font-sans text-[13px] text-ink font-semibold truncate block">
+                        {doc.name}
+                      </span>
+                      <span className="font-mono text-[9px] text-muted tracking-wide mt-0.5 block truncate">
+                        filename: {doc.filename} · uploaded: {new Date(doc.uploadedAt).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] font-mono text-accent hover:text-accent-orange border border-rule hover:border-accent rounded px-2 py-0.5 transition-all no-underline"
+                    >
+                      View
+                    </a>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteDoc(doc);
+                      }}
+                      className="p-1 text-muted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors cursor-pointer border-none bg-transparent"
+                      title="Delete document"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderStorageTab = () => {
     const totalStorageBytes = cfFiles
       ? cfFiles.reduce((acc, f) => acc + (f.size || 0), 0)
@@ -1417,7 +1898,7 @@ export function AdminEditPage() {
             {/* 1. Profile Photo */}
             <div className="flex flex-col justify-between p-3.5 rounded border border-rule/60 bg-bg/40">
               <div className="flex items-start gap-3">
-                {draft.profile.photoUrl ? (
+                {draft.profile.photoUrl && draft.profile.photoUrl !== "/og-image.png" ? (
                   <div className="w-12 h-12 rounded border border-rule overflow-hidden bg-bg shrink-0">
                     <img src={draft.profile.photoUrl} alt="Profile" className="w-full h-full object-cover" />
                   </div>
@@ -1429,12 +1910,12 @@ export function AdminEditPage() {
                 <div className="min-w-0 flex-1">
                   <span className="font-sans text-[12px] font-semibold text-ink block">Profile Image</span>
                   <span className="text-[10px] text-muted font-mono truncate block mt-0.5">
-                    {draft.profile.photoUrl ? draft.profile.photoUrl.split("/").pop() : "Not Uploaded"}
+                    {draft.profile.photoUrl && draft.profile.photoUrl !== "/og-image.png" ? draft.profile.photoUrl.split("/").pop() : "Not Uploaded"}
                   </span>
                 </div>
               </div>
               <div className="mt-4 flex items-center justify-end">
-                {draft.profile.photoUrl ? (
+                {draft.profile.photoUrl && draft.profile.photoUrl !== "/og-image.png" ? (
                   <button
                     onClick={() => deleteProfileAsset("photoUrl", "Profile Photo")}
                     className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-600 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/30 rounded px-2.5 py-1.5 transition-all cursor-pointer font-mono uppercase tracking-wide border-none bg-transparent"
@@ -1596,23 +2077,28 @@ export function AdminEditPage() {
                                     </a>
                                   )}
                                   <button
-                                    onClick={async () => {
-                                      if (!confirm(`Delete "${filename}" from Cloudflare R2 bucket?`)) return;
-                                      try {
-                                        const res = await fetch("/api/cv/upload", {
-                                          method: "DELETE",
-                                          headers: { "Content-Type": "application/json" },
-                                          body: JSON.stringify({ key: file.key })
-                                        });
-                                        if (res.ok) {
-                                          fetchCfFiles(); // Refresh list after delete
-                                        } else {
-                                          alert("Failed to delete file.");
+                                    onClick={() => {
+                                      openConfirmModal(
+                                        "Delete File",
+                                        `Delete "${filename}" from Cloudflare R2 bucket?`,
+                                        async () => {
+                                          try {
+                                            const res = await fetch("/api/cv/upload", {
+                                              method: "DELETE",
+                                              headers: { "Content-Type": "application/json" },
+                                              body: JSON.stringify({ key: file.key })
+                                            });
+                                            if (res.ok) {
+                                              fetchCfFiles(); // Refresh list after delete
+                                            } else {
+                                              alert("Failed to delete file.");
+                                            }
+                                          } catch (err) {
+                                            console.error(err);
+                                            alert("Error deleting file.");
+                                          }
                                         }
-                                      } catch (err) {
-                                        console.error(err);
-                                        alert("Error deleting file.");
-                                      }
+                                      );
                                     }}
                                     className="p-1.5 text-muted hover:text-red-500 hover:bg-red-500/10 border border-rule hover:border-red-500/20 rounded transition-colors cursor-pointer bg-transparent"
                                     title="Delete file"
@@ -1694,33 +2180,38 @@ export function AdminEditPage() {
     };
 
     const handleDeleteIndex = async (indexName: string) => {
-      if (!confirm(`Are you sure you want to delete Vectorize index "${indexName}"?`)) return;
-      try {
-        const res = await fetch(`/api/cv/vectorize?name=${indexName}`, {
-          method: "DELETE",
-        });
-        const json = await res.json();
-        if (res.ok && json.success) {
-          if (!json.live) {
-            // Mock mode client fallback: remove from state
-            setVectorizeIndexes((prev: any[] | null) => (prev || []).filter(idx => idx.name !== indexName));
-            // Update total vectors
-            const deletedIdx = (vectorizeIndexes || []).find(idx => idx.name === indexName);
-            const deletedCount = deletedIdx?.stats?.count || 0;
-            setVectorizeUsage((prev: any) => ({
-              ...prev,
-              total_vectors: Math.max(0, prev.total_vectors - deletedCount)
-            }));
-          } else {
-            fetchVectorizeData();
+      openConfirmModal(
+        "Delete Vectorize Index",
+        `Are you sure you want to delete Vectorize index "${indexName}"?`,
+        async () => {
+          try {
+            const res = await fetch(`/api/cv/vectorize?name=${indexName}`, {
+              method: "DELETE",
+            });
+            const json = await res.json();
+            if (res.ok && json.success) {
+              if (!json.live) {
+                // Mock mode client fallback: remove from state
+                setVectorizeIndexes((prev: any[] | null) => (prev || []).filter(idx => idx.name !== indexName));
+                // Update total vectors
+                const deletedIdx = (vectorizeIndexes || []).find(idx => idx.name === indexName);
+                const deletedCount = deletedIdx?.stats?.count || 0;
+                setVectorizeUsage((prev: any) => ({
+                  ...prev,
+                  total_vectors: Math.max(0, prev.total_vectors - deletedCount)
+                }));
+              } else {
+                fetchVectorizeData();
+              }
+            } else {
+              alert(json.error || "Failed to delete Vectorize index");
+            }
+          } catch (err) {
+            console.error(err);
+            alert("Error deleting index");
           }
-        } else {
-          alert(json.error || "Failed to delete Vectorize index");
         }
-      } catch (err) {
-        console.error(err);
-        alert("Error deleting index");
-      }
+      );
     };
 
     return (
@@ -2003,6 +2494,197 @@ export function AdminEditPage() {
     );
   };
 
+  // ── Colors Tab ───────────────────────────────────────────────────────────────
+  const renderColorsTab = () => {
+    const saved = draft.adminSettings?.themeColors;
+    const lightColors: ThemeColorSet = { ...DEFAULT_LIGHT_COLORS, ...(saved?.light ?? {}) };
+    const darkColors: ThemeColorSet = { ...DEFAULT_DARK_COLORS, ...(saved?.dark ?? {}) };
+
+    const colorFields: { key: keyof ThemeColorSet; label: string; desc: string }[] = [
+      { key: "accent",       label: "Accent",        desc: "Primary brand color — buttons, links, highlights" },
+      { key: "accentOrange", label: "Accent Orange",  desc: "Secondary accent — tags, hover effects" },
+      { key: "bg",           label: "Background",     desc: "Page background color" },
+      { key: "surface",      label: "Surface",        desc: "Cards, modals, elevated surfaces" },
+      { key: "ink",          label: "Ink",            desc: "Primary text color" },
+      { key: "ink2",         label: "Ink 2",          desc: "Secondary text color" },
+      { key: "muted",        label: "Muted",          desc: "Placeholder and subdued text" },
+    ];
+
+    const updateColor = (theme: "light" | "dark", key: keyof ThemeColorSet, value: string) => {
+      const current = draft.adminSettings?.themeColors ?? {
+        light: { ...DEFAULT_LIGHT_COLORS },
+        dark: { ...DEFAULT_DARK_COLORS },
+      };
+      setDraft((prev) => ({
+        ...prev,
+        adminSettings: {
+          ...prev.adminSettings,
+          themeColors: {
+            ...current,
+            [theme]: {
+              ...current[theme],
+              [key]: value,
+            },
+          },
+        },
+      }));
+    };
+
+    const resetTheme = (theme: "light" | "dark") => {
+      const defaults = theme === "light" ? DEFAULT_LIGHT_COLORS : DEFAULT_DARK_COLORS;
+      const current = draft.adminSettings?.themeColors ?? {
+        light: { ...DEFAULT_LIGHT_COLORS },
+        dark: { ...DEFAULT_DARK_COLORS },
+      };
+      setDraft((prev) => ({
+        ...prev,
+        adminSettings: {
+          ...prev.adminSettings,
+          themeColors: {
+            ...current,
+            [theme]: { ...defaults },
+          },
+        },
+      }));
+    };
+
+    const ColorSection = ({ theme, colors }: { theme: "light" | "dark"; colors: ThemeColorSet }) => (
+      <div className="p-5 rounded-lg border border-rule bg-surface/50">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-mono text-[11px] tracking-[2px] uppercase text-accent">
+            {theme === "light" ? "☀️ Light Theme" : "🌙 Dark Theme"}
+          </h3>
+          <button
+            type="button"
+            onClick={() => resetTheme(theme)}
+            className="font-mono text-[9px] uppercase tracking-wide text-muted hover:text-accent transition-colors border border-rule rounded px-2.5 py-1 cursor-pointer bg-transparent"
+          >
+            Reset defaults
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          {colorFields.map(({ key, label, desc }) => {
+            const value = colors[key];
+            return (
+              <div key={key} className="flex items-center gap-3">
+                {/* Swatch + native color picker */}
+                <div className="relative flex-shrink-0">
+                  <div
+                    className="w-9 h-9 rounded border border-rule cursor-pointer"
+                    style={{ backgroundColor: value }}
+                  />
+                  <input
+                    type="color"
+                    value={value}
+                    onChange={(e) => updateColor(theme, key, e.target.value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    title={label}
+                  />
+                </div>
+
+                {/* Text input for hex */}
+                <div className="flex-1 space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <label className="font-mono text-[10px] tracking-[1px] uppercase text-muted w-24 shrink-0">
+                      {label}
+                    </label>
+                    <input
+                      type="text"
+                      value={value}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (/^#([0-9a-fA-F]{0,6})$/.test(v)) updateColor(theme, key, v);
+                      }}
+                      onBlur={(e) => {
+                        // Pad to full hex on blur
+                        const v = e.target.value;
+                        if (/^#[0-9a-fA-F]{3}$/.test(v)) {
+                          const r = v[1]+v[1], g = v[2]+v[2], b = v[3]+v[3];
+                          updateColor(theme, key, `#${r}${g}${b}`);
+                        }
+                      }}
+                      maxLength={7}
+                      className="w-24 px-2 py-1 border border-rule rounded text-[12px] font-mono bg-bg text-ink focus:outline-none focus:border-accent transition-colors"
+                      placeholder="#000000"
+                    />
+                  </div>
+                  <p className="font-mono text-[9px] text-muted/70 pl-26">{desc}</p>
+                </div>
+
+                {/* Live preview dot */}
+                <div
+                  className="w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-rule"
+                  style={{ backgroundColor: value }}
+                  title="Current value preview"
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Preview card */}
+        <div
+          className="mt-6 rounded-lg p-5 border"
+          style={{
+            backgroundColor: colors.bg,
+            borderColor: "rgba(128,128,128,0.15)",
+          }}
+        >
+          <p className="font-mono text-[8px] uppercase tracking-[2px] mb-3" style={{ color: colors.muted }}>// Preview</p>
+          <h4 className="text-[18px] font-light mb-1" style={{ color: colors.ink }}>
+            Thoeun <span style={{ color: colors.accent }}>Lothin</span>
+          </h4>
+          <p className="text-[11px] mb-3" style={{ color: colors.ink2 }}>Senior Full-Stack Developer</p>
+          <div className="flex gap-2 flex-wrap">
+            <span
+              className="text-[10px] px-2.5 py-1 rounded"
+              style={{ backgroundColor: colors.accent, color: "#fff" }}
+            >
+              See my work
+            </span>
+            <span
+              className="text-[10px] px-2.5 py-1 rounded border"
+              style={{ borderColor: colors.muted, color: colors.ink2 }}
+            >
+              Contact me
+            </span>
+            <span
+              className="text-[10px] px-2.5 py-1 rounded"
+              style={{ backgroundColor: colors.surface, color: colors.ink2, border: "1px solid rgba(128,128,128,0.12)" }}
+            >
+              Tag
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-[16px] font-medium text-ink mb-1">Theme Colors</h2>
+          <p className="font-mono text-[10px] text-muted tracking-wide">
+            Customize site colors for each theme. Changes are saved to Cloudflare R2 and applied globally on next page load.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <ColorSection theme="light" colors={lightColors} />
+          <ColorSection theme="dark" colors={darkColors} />
+        </div>
+
+        <div className="p-4 rounded-lg border border-rule bg-surface/30">
+          <p className="font-mono text-[10px] text-muted tracking-wide flex items-start gap-2">
+            <span className="text-accent shrink-0">ℹ</span>
+            Colors are stored in <code className="text-accent text-[10px]">adminSettings.themeColors</code> inside <code className="text-accent text-[10px]">cv.json</code> on Cloudflare R2.
+            Hit <strong className="text-ink">Save Changes</strong> at the top to persist. Visitors see updates on their next page load (server-rendered, zero flash).
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const tabContent: Record<Tab, React.ReactNode> = {
     profile: renderProfileTab(),
     experience: renderExperienceTab(),
@@ -2011,10 +2693,13 @@ export function AdminEditPage() {
     references: renderReferencesTab(),
     home: renderHomeTab(),
     about: renderAboutTab(),
+    portfolio: renderPortfolioTab(),
     services: renderServicesTab(),
     articles: renderArticlesTab(),
+    documents: renderDocumentsTab(),
     storage: renderStorageTab(),
     vectorize: renderVectorizeTab(),
+    colors: renderColorsTab(),
   };
 
   return (
@@ -2037,11 +2722,18 @@ export function AdminEditPage() {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <a
-              href="/api/cv/download"
-              download
+              href="/dashboard"
+              className="text-[12px] text-muted hover:text-ink border border-rule rounded px-3 py-1.5 transition-colors no-underline inline-flex items-center gap-1.5"
+            >
+              <Globe size={12} /> Cloudflare
+            </a>
+            <a
+              href="/cv"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[12px] text-muted hover:text-ink border border-rule rounded px-3 py-1.5 transition-colors no-underline inline-flex items-center"
             >
-              Download HTML
+              View HTML
             </a>
             <button onClick={handleLogout}
               className="text-[12px] text-muted hover:text-ink border border-rule rounded px-3 py-1.5 transition-colors cursor-pointer bg-transparent">
@@ -2129,6 +2821,46 @@ export function AdminEditPage() {
           </div>
         </div>
       </div>
+
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-bg/65 backdrop-blur-md animate-alert-fade-in">
+          <div className="bg-surface border border-rule/80 max-w-sm w-full rounded-xl p-6 shadow-2xl relative overflow-hidden animate-alert-zoom-in">
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500" />
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 animate-pulse">
+                <AlertTriangle size={22} />
+              </div>
+              <div className="space-y-1.5 w-full">
+                <h3 className="font-mono text-xs uppercase tracking-[2px] text-ink font-semibold">
+                  {confirmModal.title}
+                </h3>
+                <p className="text-[12.5px] text-ink2 leading-relaxed font-sans font-light">
+                  {confirmModal.message}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 w-full mt-2">
+                <button
+                  onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                  className="py-2 px-4 border border-rule hover:border-ink/30 rounded text-xs font-mono tracking-wide transition-all duration-200 cursor-pointer bg-transparent text-muted hover:text-ink hover:bg-tag-bg/20 uppercase"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (confirmModal.onConfirm) {
+                      await confirmModal.onConfirm();
+                    }
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                  }}
+                  className="py-2 px-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white hover:text-white text-xs font-mono rounded tracking-wide transition-all duration-200 cursor-pointer border-none shadow-[0_2px_8px_rgba(239,68,68,0.2)] hover:shadow-[0_4px_12px_rgba(239,68,68,0.3)] uppercase"
+                >
+                  {confirmModal.confirmLabel || "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

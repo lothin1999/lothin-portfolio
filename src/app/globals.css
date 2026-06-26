@@ -740,3 +740,20 @@ details p {
     transparent
   );
 }
+
+/* 3D Image Cube */
+@keyframes cubeRotate {
+  0%   { transform: rotateX(-15deg) rotateY(0deg); }
+  25%  { transform: rotateX(15deg)  rotateY(90deg); }
+  50%  { transform: rotateX(-10deg) rotateY(180deg); }
+  75%  { transform: rotateX(20deg)  rotateY(270deg); }
+  100% { transform: rotateX(-15deg) rotateY(360deg); }
+}
+
+.image-cube-wrapper:hover .image-cube {
+  filter: drop-shadow(0 0 24px rgba(27, 93, 239, 0.18));
+}
+
+[data-theme="dark"] .image-cube-wrapper:hover .image-cube {
+  filter: drop-shadow(0 0 24px rgba(74, 127, 247, 0.25));
+}

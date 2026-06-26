@@ -14,6 +14,7 @@
     "facebook": "https://www.facebook.com/lothinny",
     "facebookHandle": "facebook.com/lothinny",
     "linkedin": "https://linkedin.com/in/lothin-dev",
+    "email": "lothininfo@gmail.com",
     "phones": [
       "098 63 88 78",
       "066 69 55 37"
@@ -21,6 +22,7 @@
     "photoUrl": "/og-image.png",
     "cvPdfUrl": "/api/cv/pdf/cv-1781616091417.pdf",
     "coverLetterPdfUrl": "",
+    "cubeImages": [],
     "languages": [
       {
         "name": "Khmer",
@@ -45,53 +47,41 @@
         "Developed a complete booking engine — availability calendar, pricing engine, and special deals module",
         "Implemented merchant review & rating system with verified badges and star ratings",
         "Added multi-language support (Khmer / English) with responsive mobile-first UI",
-        "Integrated backend APIs for inventory management, discount price overlays, and photo-rich listings"
+        "Integrated Google Maps API for interactive location mapping and store filters",
+        "Configured transactional email alert systems using Nodemailer for bookings and reviews",
+        "Streamlined team workflows using GitLab for version control and issue tracking"
       ],
       "tags": [
         "Nuxt 4 SSR",
         "Vue 3",
         "NestJS",
         "PostgreSQL",
-        "Docker"
+        "Docker",
+        "GitLab",
+        "Google Maps API",
+        "Nodemailer"
       ]
     },
     {
       "id": "exp-2",
-      "title": "Full-Stack Web Developer — POS System & Admin Dashboard",
+      "title": "Full-Stack Web Developer — CRM, Hotel, KDMS, Loan, E-Commerce & More",
       "company": "IDG Technology Solutions.",
       "location": "Phnom Penh, Cambodia",
-      "period": "2024 – Present",
+      "period": "2024 – 2025",
       "bullets": [
-        "Developed POS system in Nuxt 2 — sales tracking, order management, transaction history, revenue analytics",
-        "Built admin dashboard with 8 key metric cards: revenue, invoices, orders, refunds, discounts, payment summaries",
-        "Implemented interactive time-series line charts and sortable data tables for product and order reporting",
-        "Architected date-range filtering with live data refresh and optimised SQL aggregations",
-        "Framework Migration: Managed the full upgrade path through three Nuxt major versions (Nuxt 2 → 3 → 4) and Options to Composition API migration",
-        "Backend Migration: Led the full replacement of Laravel MVC backend with modular NestJS + Prisma ORM backend with JWT auth"
-      ],
-      "tags": [
-        "Nuxt 2/3/4",
-        "Vue 3",
-        "Laravel",
-        "NestJS",
-        "Prisma",
-        "MySQL",
-        "Chart.js"
-      ]
-    },
-    {
-      "id": "exp-3",
-      "title": "Full-Stack Web Developer — CRM, Hotel, KDMS & More",
-      "company": "IDG Technology Solutions.",
-      "location": "Phnom Penh, Cambodia",
-      "period": "2023 – 2024",
-      "bullets": [
-        "Delivered CRM, Hotel, KDMS, VIP, Pool/Billiard, and Loan Management systems end-to-end",
+        "Delivered CRM, Hotel, KDMS, VIP, Pool/Billiard, Loan, and E-Commerce systems end-to-end",
         "Built real-time pool hall table status tracking and session hourly billing with Pusher",
         "Built Loan System covering application, approval workflows, repayment schedules, and interest calculation",
+        "Built Employer Management System — employee records, attendance tracking, payroll calculation, and leave management",
+        "Built Project Management System — task boards, milestone tracking, team assignment, and progress reporting",
+        "Built E-Commerce Website — product catalogue, cart, checkout, order management, and payment integration",
+        "Built personal Portfolio Website showcasing projects, skills, and contact with responsive design",
         "Built full-stack applications with Vue.js, Laravel, and Spring Boot handling both front-end and back-end APIs",
         "Developed responsive UIs with Bootstrap and custom SCSS across all projects",
         "Integrated real-time features via Firebase and Pusher for notifications and event coordination",
+        "API Migration: Migrated the legacy Laravel API to a modular NestJS API, optimizing databases with Prisma ORM and enforcing secure JWT authentication",
+        "Designed and documented RESTful APIs with Swagger/OpenAPI for clear front-end contract integration",
+        "Conducted endpoint testing and API validation using Postman collection environments",
         "Managed cPanel hosting, database migrations, and Ubuntu Server configurations for production environments",
         "Gained hands-on experience with MySQL, Oracle, and MongoDB databases"
       ],
@@ -106,26 +96,88 @@
         "Pusher",
         "cPanel"
       ]
+    },
+    {
+      "id": "exp-3",
+      "title": "Full-Stack Web Developer — POS System & Admin Dashboard",
+      "company": "IDG Technology Solutions.",
+      "location": "Phnom Penh, Cambodia",
+      "period": "2023 – 2024",
+      "bullets": [
+        "Developed POS system in Nuxt 2 — sales tracking, order management, transaction history, revenue analytics",
+        "Built admin dashboard with 8 key metric cards: revenue, invoices, orders, refunds, discounts, payment summaries",
+        "Implemented interactive time-series line charts and sortable data tables for product and order reporting",
+        "Architected date-range filtering with live data refresh and optimised SQL aggregations",
+        "Framework Migration: Managed the full upgrade path through three Nuxt major versions (Nuxt 2 → 3 → 4) and Options to Composition API migration",
+        "API Migration: Migrated the legacy Laravel API to a modular NestJS API, optimizing databases with Prisma ORM and enforcing secure JWT authentication",
+        "Designed and documented RESTful APIs with Swagger/OpenAPI for clear front-end contract integration",
+        "Integrated SMS gateway OTP verification for admin login security and cashier validation",
+        "Managed version control, feature branches, and code reviews on GitHub"
+      ],
+      "tags": [
+        "Nuxt 2/3/4",
+        "Vue 3",
+        "Laravel",
+        "NestJS",
+        "Prisma",
+        "MySQL",
+        "Chart.js",
+        "GitHub",
+        "Swagger",
+        "Postman",
+        "OTP Verification"
+      ]
+    },
+    {
+      "id": "exp-receptionist",
+      "title": "Receptionist & Customer Relations",
+      "company": "Infinity 18 Condominium",
+      "location": "Phnom Penh, Cambodia",
+      "period": "2021 – 2023",
+      "bullets": [
+        "Welcomed international guests, handled inquiries, and conducted comprehensive property tours showcasing room specifications and condominium amenities entirely in English.",
+        "Managed front-desk cash flow, processed rental payments, security deposits, and issued detailed financial receipts as a cashier.",
+        "Coordinated closely with maintenance and management teams to resolve tenant requests, complaints, and service issues efficiently.",
+        "Administered room bookings, customer check-ins/check-outs, and maintained clean digital guest logs to ensure high occupancy rates."
+      ],
+      "tags": [
+        "Customer Service",
+        "Cash Handling",
+        "English Communication",
+        "Guest Relations",
+        "Problem Solving"
+      ]
+    },
+    {
+      "id": "exp-volunteer-teacher",
+      "title": "Volunteer English & Soft Skills Teacher",
+      "company": "Glocal Youth Association, GYA School",
+      "location": "Don Peñ, Phnom Penh",
+      "period": "2017 – 2019",
+      "bullets": [
+        "Facilitated interactive English lessons and soft skills workshops for underprivileged youth and community students.",
+        "Developed and customized educational materials, daily lesson plans, and learning activities to boost student engagement.",
+        "Organized community development projects and youth leadership seminars in collaboration with national and international volunteers.",
+        "Mentored students in public speaking, teamwork, and communication, helping them prepare for academic and community initiatives."
+      ],
+      "tags": [
+        "Volunteerism",
+        "Teaching",
+        "Leadership",
+        "Soft Skills",
+        "Community Development"
+      ]
     }
   ],
   "skillGroups": [
     {
       "label": "Front-End",
       "skills": [
-        "HTML5",
-        "CSS3",
-        "JavaScript",
-        "TypeScript",
-        "Vue.js 3",
-        "Nuxt 2/3/4",
-        "React.js",
-        "Next.js",
-        "Angular",
-        "Tailwind CSS",
-        "Bootstrap",
-        "Pinia",
-        "Redux",
-        "RxJS"
+        "HTML5/CSS3/Bootstrap/Tailwind/Sass",
+        "JavaScript/TypeScript",
+        "Vue.js/Nuxt 2/3/4/Pinia",
+        "React.js/Next.js/Redux",
+        "Angular/Rxjs"
       ]
     },
     {
@@ -156,12 +208,10 @@
       "label": "DevOps & Cloud",
       "skills": [
         "Docker",
-        "Cloudflare Workers/Pages/R2",
-        "Firebase Auth/Functions/Storage",
+        "Cloudflare Workers/Pages/R2/AI",
+        "Firebase Auth/Storage",
         "Ubuntu Server",
-        "Nginx",
-        "GitHub",
-        "GitLab"
+        "GitHub/GitLab"
       ]
     },
     {
@@ -195,7 +245,26 @@
         "Linux System Administration",
         "UX/UI Design & Graphic Design",
         "Principles of Management & Accounting"
-      ]
+      ],
+      "link": "https://www.setecu.com/index.php/academic/bachelor-degree/2014-07-17-00-21-15"
+    },
+    {
+      "id": "edu-piset-java",
+      "degree": "Full-Stack Web Developer — Angular & Spring Boot",
+      "school": "Piset Java School",
+      "location": "Phnom Penh, Cambodia",
+      "period": "2022 – 2023",
+      "description": "Completed full course covering Angular (components, services, routing, RxJS) and Spring Boot (REST APIs, JPA/Hibernate, security, and microservices architecture).",
+      "courses": []
+    },
+    {
+      "id": "edu-master-it",
+      "degree": "Full-Stack Web Developer — Meteor.js & Vue.js",
+      "school": "Master IT",
+      "location": "Phnom Penh, Cambodia",
+      "period": "2021 – 2022",
+      "description": "Completed full course in full-stack development with Meteor.js (real-time data, DDP, publications & subscriptions) and Vue.js (Vuex, Vue Router, component architecture).",
+      "courses": []
     },
     {
       "id": "edu-2",
@@ -293,6 +362,16 @@
         "SETEC"
       ],
       "content": "## Overview of SETEC Institute's MIS Program\n\nThe Bachelor of Science in Management Information System (MIS) at SETEC Institute is a comprehensive 4-year degree bridging business management and advanced software engineering. Below is the complete semester-by-semester breakdown. **Click on each course below to see details about what I learnt.**\n\n---\n\n### Year 1: Foundational Sciences & Programming\n\n#### Semester 1\n<details>\n  <summary><b>A+ (Computer Maintenance & Repair) I</b></summary>\n  <p><b>What I learnt:</b> Core hardware components, diagnosis, assembly, and operating systems. Understand motherboard architectures, RAM types, CPU socket configurations, power supplies, troubleshooting hardware post-errors, and installing Windows/Linux OS.</p>\n</details>\n\n<details>\n  <summary><b>C++ Programming</b></summary>\n  <p><b>What I learnt:</b> Procedural programming paradigm, variables, pointers, reference variables, control flow, functions, structures, arrays, and standard libraries (<code>iostream</code>, <code>vector</code>).</p>\n</details>\n\n<details>\n  <summary><b>Office Applications</b></summary>\n  <p><b>What I learnt:</b> Advanced spreadsheet functions (VLOOKUP, INDEX-MATCH, Pivot Tables), formatting technical reports, and building slide decks.</p>\n</details>\n\n<details>\n  <summary><b>Data Structure I</b></summary>\n  <p><b>What I learnt:</b> Static and dynamic linear data structures. Implemented stacks, queues, and singly/doubly linked lists in C++.</p>\n</details>\n\n<details>\n  <summary><b>History</b></summary>\n  <p><b>What I learnt:</b> Global and local socio-economic history, formatting historical context analyses.</p>\n</details>\n\n<details>\n  <summary><b>Principles of Management</b></summary>\n  <p><b>What I learnt:</b> Organizational planning, directing, decision-making frameworks, SWOT analysis, and management roles.</p>\n</details>\n\n<details>\n  <summary><b>Computer Mathematics</b></summary>\n  <p><b>What I learnt:</b> Discrete mathematics, set theory, boolean algebra, logic gates, and graph theory.</p>\n</details>\n\n<details>\n  <summary><b>Graphic Design I</b></summary>\n  <p><b>What I learnt:</b> Color theory, grid alignments, raster image editing with Adobe Photoshop, and page layout guidelines.</p>\n</details>\n\n<details>\n  <summary><b>English 1</b></summary>\n  <p><b>What I learnt:</b> Grammar rules, business letter formats, and oral presentations.</p>\n</details>\n\n#### Semester 2\n<details>\n  <summary><b>A+ (Computer Maintenance & Repair) II</b></summary>\n  <p><b>What I learnt:</b> Diagnostic software, hardware benchmarking, assembling network cards, and electrical safety standards for workstations.</p>\n</details>\n\n<details>\n  <summary><b>C# Programming I</b></summary>\n  <p><b>What I learnt:</b> Basic C# syntax, variables, class declarations, encapsulation, access modifiers, constructors, and properties on .NET framework.</p>\n</details>\n\n<details>\n  <summary><b>Web Development I</b></summary>\n  <p><b>What I learnt:</b> HTML5 layout tags, CSS3 selectors, responsive layouts using media queries, and basic DOM manipulation with vanilla JavaScript.</p>\n</details>\n\n<details>\n  <summary><b>Data Structure II</b></summary>\n  <p><b>What I learnt:</b> Non-linear structures, binary search trees (BST), graph traversal algorithms (DFS, BFS), sorting algorithms (Quicksort, Mergesort).</p>\n</details>\n\n<details>\n  <summary><b>Culture & Civilisation</b></summary>\n  <p><b>What I learnt:</b> Evolution of human cultures, ethics in society, and philosophical frameworks.</p>\n</details>\n\n<details>\n  <summary><b>Public Relations</b></summary>\n  <p><b>What I learnt:</b> Creating press releases, crisis management communications, public campaigns, and brand reputation methods.</p>\n</details>\n\n<details>\n  <summary><b>Accounting</b></summary>\n  <p><b>What I learnt:</b> Double-entry bookkeeping system, journaling transactions, ledger balancing, and creating balance sheets.</p>\n</details>\n\n<details>\n  <summary><b>Graphic Design II</b></summary>\n  <p><b>What I learnt:</b> Vector graphics editing with Adobe Illustrator, anchor points, pen tool techniques, and logo design layouts.</p>\n</details>\n\n<details>\n  <summary><b>English 2</b></summary>\n  <p><b>What I learnt:</b> Academic essay writing, documentation standards, and argumentative speeches.</p>\n</details>\n\n---\n\n### Year 2: Systems, Networks & Web Tech\n\n#### Semester 3\n<details>\n  <summary><b>Networking I</b></summary>\n  <p><b>What I learnt:</b> OSI Reference Model, TCP/IP protocol suite, subnetting IPv4 addresses, and configuring basic switches/routers.</p>\n</details>\n\n<details>\n  <summary><b>C# Programming II</b></summary>\n  <p><b>What I learnt:</b> OOP in C#: inheritance, interface implementation, custom exceptions, delegates, events, and garbage collection mechanisms.</p>\n</details>\n\n<details>\n  <summary><b>Web Development II</b></summary>\n  <p><b>What I learnt:</b> Server-side rendering (PHP/Node.js), connecting forms to database backends, sessions, and cookies.</p>\n</details>\n\n<details>\n  <summary><b>Data Modeling & Relational DBase Design</b></summary>\n  <p><b>What I learnt:</b> Entity-Relationship Diagrams (ERD), normalization rules (1NF, 2NF, 3NF), mapping relationships, and referential integrity constraints.</p>\n</details>\n\n<details>\n  <summary><b>Database Server Applications I</b></summary>\n  <p><b>What I learnt:</b> Microsoft SQL Server administration, creating tables, primary/foreign keys, joins, subqueries, and writing complex select queries.</p>\n</details>\n\n<details>\n  <summary><b>Studio Photography I</b></summary>\n  <p><b>What I learnt:</b> Camera settings (aperture, shutter speed, ISO), exposure triangle, composition rules, and basic editing.</p>\n</details>\n\n<details>\n  <summary><b>Computer Accounting</b></summary>\n  <p><b>What I learnt:</b> Running ledger sheets, inventory lists, client invoices, and financial audits inside software packages like QuickBooks.</p>\n</details>\n\n<details>\n  <summary><b>Graphic Design III</b></summary>\n  <p><b>What I learnt:</b> Multi-page layouts (Adobe InDesign), brand guidelines, print preflight operations, and PDF publishing.</p>\n</details>\n\n<details>\n  <summary><b>UX/UI (User Experience/User Interface)</b></summary>\n  <p><b>What I learnt:</b> User personas, user journey mapping, high-fidelity wireframing with Figma, component variants, and interactive prototyping.</p>\n</details>\n\n#### Semester 4\n<details>\n  <summary><b>Networking II</b></summary>\n  <p><b>What I learnt:</b> Switch port security, VLAN routing, Spanning Tree Protocol (STP), and EtherChannel configurations.</p>\n</details>\n\n<details>\n  <summary><b>C# Programming III</b></summary>\n  <p><b>What I learnt:</b> Desktop UI layouts with WPF/WinForms, asynchronous programming (async/await), and data access using ADO.NET / Entity Framework Core.</p>\n</details>\n\n<details>\n  <summary><b>Web Development III</b></summary>\n  <p><b>What I learnt:</b> Dynamic Web applications, authentication systems (session tokens), basic security (XSS, CSRF defense), and server deployment.</p>\n</details>\n\n<details>\n  <summary><b>Drawing Skills for Multimedia</b></summary>\n  <p><b>What I learnt:</b> Linear perspective, basic anatomy drawing, storyboard layouts, and shading dynamics.</p>\n</details>\n\n<details>\n  <summary><b>Database Server Application II</b></summary>\n  <p><b>What I learnt:</b> Stored procedures, user-defined functions, transaction controls, triggers, and query execution plans.</p>\n</details>\n\n<details>\n  <summary><b>Studio Photography II</b></summary>\n  <p><b>What I learnt:</b> Product mockups, studio strobe configurations, flash ratios, and advanced photo retouching in Adobe Lightroom.</p>\n</details>\n\n<details>\n  <summary><b>Studio Multimedia I</b></summary>\n  <p><b>What I learnt:</b> Audio capture/editing, video timelines, transitions, keyframes, and exports in Adobe Premiere.</p>\n</details>\n\n<details>\n  <summary><b>3D Graphic Design</b></summary>\n  <p><b>What I learnt:</b> Polygonal modeling, mesh subdivisions, material textures, lighting configurations, and rendering in Blender/3ds Max.</p>\n</details>\n\n<details>\n  <summary><b>Applied Computer Design</b></summary>\n  <p><b>What I learnt:</b> Combining text, vector art, 3D renders, and animation layouts into interactive web/desktop client presentations.</p>\n</details>\n\n---\n\n### Year 3: Advanced Software Engineering & Specialized Fields\n\n#### Semester 5\n<details>\n  <summary><b>Networking III</b></summary>\n  <p><b>What I learnt:</b> Configuring routing protocols (OSPF, EIGRP), WAN connections, and network management tools (SNMP).</p>\n</details>\n\n<details>\n  <summary><b>Java Programming I</b></summary>\n  <p><b>What I learnt:</b> Java language structures, JVM, byte code execution, object instantiation, basic collections (ArrayList, HashMap).</p>\n</details>\n\n<details>\n  <summary><b>Web Based Development I</b></summary>\n  <p><b>What I learnt:</b> MVC architecture, front-controllers, template engines, and building database-driven web platforms.</p>\n</details>\n\n<details>\n  <summary><b>Introduction to Oracle I</b></summary>\n  <p><b>What I learnt:</b> Oracle Database architecture, tablespaces, user privilege controls, and SQL*Plus scripts.</p>\n</details>\n\n<details>\n  <summary><b>Management Information System</b></summary>\n  <p><b>What I learnt:</b> IT systems in business operations, enterprise resource planning (ERP) configurations, decision support systems (DSS), and data warehouses.</p>\n</details>\n\n<details>\n  <summary><b>Animation 2D</b></summary>\n  <p><b>What I learnt:</b> Traditional animation rules (squash/stretch, staging), timeline framing, and motion tweening in Adobe Animate.</p>\n</details>\n\n<details>\n  <summary><b>Studio Multimedia II</b></summary>\n  <p><b>What I learnt:</b> Interactive web multimedia scripts, video rendering formats, and high-fidelity video production workflows.</p>\n</details>\n\n<details>\n  <summary><b>System Analysis I</b></summary>\n  <p><b>What I learnt:</b> Software development processes (Waterfall, Agile), gathering functional/non-functional requirements, use-case diagrams, and class diagrams.</p>\n</details>\n\n<details>\n  <summary><b>Interviewing Skills</b></summary>\n  <p><b>What I learnt:</b> Writing professional cover letters, standard resume formatting, body language, and behavioral interview methods.</p>\n</details>\n\n#### Semester 6\n<details>\n  <summary><b>Configuring Network Devices I</b></summary>\n  <p><b>What I learnt:</b> Advanced routing configurations, Access Control Lists (ACLs) for security, and Network Address Translation (NAT) deployment.</p>\n</details>\n\n<details>\n  <summary><b>Java Programming II</b></summary>\n  <p><b>What I learnt:</b> Advanced OOP in Java, abstract classes, multi-threaded programming, socket connections, and database integration (JDBC).</p>\n</details>\n\n<details>\n  <summary><b>Web Based Development II</b></summary>\n  <p><b>What I learnt:</b> Modern web frameworks (Vue.js, Laravel), RESTful API endpoint designs, middleware interceptors, and CORS settings.</p>\n</details>\n\n<details>\n  <summary><b>Introduction to Oracle II</b></summary>\n  <p><b>What I learnt:</b> Writing PL/SQL blocks, local variables, cursors, custom functions, procedures, database packages, and system triggers.</p>\n</details>\n\n<details>\n  <summary><b>Python Programming</b></summary>\n  <p><b>What I learnt:</b> Python script syntax, list comprehensions, script-based file automation, API fetching, and introduction to pip.</p>\n</details>\n\n<details>\n  <summary><b>Computer Animation I</b></summary>\n  <p><b>What I learnt:</b> Vector character design, skeletal joints, inverse kinematics, and animating short stories.</p>\n</details>\n\n<details>\n  <summary><b>Mobile Application I</b></summary>\n  <p><b>What I learnt:</b> Android SDK basics, XML UI layouts, activity lifecycles, and intent actions.</p>\n</details>\n\n<details>\n  <summary><b>System Analysis II</b></summary>\n  <p><b>What I learnt:</b> Designing data flow diagrams (DFD), system interfaces, system testing methods (Unit, Integration, UAT), and software architectural patterns.</p>\n</details>\n\n<details>\n  <summary><b>Linux System Administration I</b></summary>\n  <p><b>What I learnt:</b> Linux terminal navigation, shell file permissions, user group administration, package management (APT/YUM), and bash scripting.</p>\n</details>\n\n---\n\n### Year 4: Advanced Systems, Integration & Career\n\n#### Semester 7\n<details>\n  <summary><b>Configuring Network Devices II</b></summary>\n  <p><b>What I learnt:</b> VPN architectures (IPsec/GRE), network redundancy protocols (HSRP), and edge firewall policies.</p>\n</details>\n\n<details>\n  <summary><b>Java Programming III</b></summary>\n  <p><b>What I learnt:</b> Enterprise Java (Jakarta EE), Spring Framework (Spring Boot, Spring Data JPA, Spring Security), and deploying APIs to Docker container environments.</p>\n</details>\n\n<details>\n  <summary><b>Web Projects</b></summary>\n  <p><b>What I learnt:</b> Agile project lifecycle, building full-stack web applications in teams, task scheduling, git branches, and live deployments.</p>\n</details>\n\n<details>\n  <summary><b>Ethics & Law of IT</b></summary>\n  <p><b>What I learnt:</b> Intellectual property laws, copyright agreements, cybersecurity acts, privacy rules (GDPR), and professional ACM ethics code.</p>\n</details>\n\n<details>\n  <summary><b>Advanced Python Programming</b></summary>\n  <p><b>What I learnt:</b> Data analysis pipelines (Pandas, NumPy), data visualizations (Matplotlib), and basics of predictive machine learning models.</p>\n</details>\n\n<details>\n  <summary><b>Computer Animation II</b></summary>\n  <p><b>What I learnt:</b> Special effects layers, green-screen compositing, and rendering advanced sequences.</p>\n</details>\n\n<details>\n  <summary><b>Mobile Application II</b></summary>\n  <p><b>What I learnt:</b> Native iOS development (SwiftUI) and cross-platform UI frameworks (Flutter/React Native).</p>\n</details>\n\n<details>\n  <summary><b>E-Commerce</b></summary>\n  <p><b>What I learnt:</b> Payment checkout logic (KHQR/Bakong, Stripe), shopping cart sessions, SSL certificates, and transactional database safety.</p>\n</details>\n\n<details>\n  <summary><b>Linux System Administration II</b></summary>\n  <p><b>What I learnt:</b> Hardening Linux servers, configuring firewalls (iptables/ufw), DNS services, Nginx reverse proxies, and system logging.</p>\n</details>\n\n#### Semester 8\n<details>\n  <summary><b>Student Internship Program or Research (Thesis)</b></summary>\n  <p><b>What I learnt:</b> Practical on-site software engineering, integrating code into large codebases, resolving merchant bugs, and writing structured research project logs.</p>\n</details>\n\n<details>\n  <summary><b>Career Placement Program</b></summary>\n  <p><b>What I learnt:</b> Building digital portfolios, professional networking on LinkedIn, and mock interview preparations.</p>\n</details>"
+    }
+  ],
+  "documents": [
+    {
+      "id": "doc-readme",
+      "name": "Project README",
+      "filename": "README.md",
+      "key": "documents/README.md",
+      "url": "/api/documents/README.md",
+      "uploadedAt": "2026-06-24T13:22:00Z"
     }
   ],
   "adminSettings": {

@@ -8,6 +8,12 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
   ? cleanEnvVar(process.env.NEXT_PUBLIC_SITE_URL)
   : "https://lothin-portfolio.pages.dev";
 
+const getAbsoluteImageUrl = (photoUrl: string | undefined) => {
+  if (!photoUrl) return `${SITE_URL}/og-image.png`;
+  if (photoUrl.startsWith("http")) return photoUrl;
+  return `${SITE_URL}${photoUrl.startsWith("/") ? "" : "/"}${photoUrl}`;
+};
+
 interface PageSEO {
   title?: string;
   description?: string;
@@ -28,12 +34,13 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
   const { profile } = cvData;
   const fullName = `${profile.name.first} ${profile.name.last}`;
   const reverseName = `${profile.name.last} ${profile.name.first}`; // Common name order in Cambodia
-  const defaultTitle = `${reverseName} | Full-Stack Developer (Laravel, NestJS, Spring Boot, Nuxt)`;
+  const defaultTitle = `${reverseName} (Lothin Dev) | Senior Full-Stack Web Developer (Laravel, NestJS, Spring Boot, Nuxt)`;
   const defaultDesc = `${profile.summary.slice(0, 155)}…`;
 
-  const title = page?.title ? `${page.title} — ${reverseName}` : defaultTitle;
+  const title = page?.title ? `${page.title} — ${reverseName} (Lothin Dev)` : defaultTitle;
   const description = page?.description ?? defaultDesc;
   const url = `${SITE_URL}${page?.path ?? ""}`;
+  const ogImgUrl = getAbsoluteImageUrl(profile.photoUrl);
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -46,8 +53,16 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
       profile.title,
       "Full-Stack Web Developer",
       "Full-Stack Developer",
-      "Chushin Dev",
-      "Chushin Technology",
+      "Senior Full-Stack Developer",
+      "Lothin Dev",
+      "Lothin Thoeun",
+      "Thoeun Lothin",
+      "lothindev",
+      "lothin-dev",
+      "lothin-portfolio",
+      "thoeun-lothin",
+      "Lothin Dev",
+      "Lothin Technology",
       "Cambodia",
       "Phnom Penh",
       "Vue",
@@ -91,12 +106,12 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
       url,
       title,
       description,
-      siteName: defaultTitle,
+      siteName: defaultTitle || "LOTHIN",
       locale: "en_US",
       alternateLocale: ["km_KH"],
       images: [
         {
-          url: "/og-image.png",
+          url: ogImgUrl,
           width: 1200,
           height: 630,
           alt: defaultTitle,
@@ -116,7 +131,7 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
       description,
       site: "@lothindev",
       creator: "@lothindev",
-      images: ["/og-image.png"],
+      images: [ogImgUrl],
     },
 
     // Canonical
@@ -159,10 +174,10 @@ export function personJsonLd(cv: any): object {
     "@type": "Person",
     "@id": `${SITE_URL}/#person`,
     name: reverseName,
-    alternateName: fullName,
+    alternateName: [fullName, "Lothin Dev", "lothindev", "Lothin Thoeun", "Thoeun Lothin", "lothin-dev"],
     jobTitle: profile.title,
     url: profile.website,
-    image: `${SITE_URL}/og-image.png`,
+    image: getAbsoluteImageUrl(profile.photoUrl),
     description: profile.summary,
     knowsAbout: skills,
     gender: "http://schema.org/Male",
@@ -192,16 +207,24 @@ export function websiteJsonLd(): object {
     "@type": "WebSite",
     "@id": `${SITE_URL}/#website`,
     url: SITE_URL,
-    name: "Lothin Thoeun | Full-Stack Developer",
-    description: "Professional portfolio of Lothin Thoeun, Full-Stack Developer specialized in Vue/Nuxt, React/Next.js, NestJS, Laravel, and Spring Boot.",
+    name: "LOTHIN",
+    alternateName: [
+      "Lothin Dev",
+      "Lothin Portfolio",
+      "Thoeun Lothin"
+    ],
+
+    description:
+      "Portfolio of Lothin Dev, Senior Full Stack Developer.",
+
     publisher: {
       "@id": `${SITE_URL}/#person`
     },
+
     inLanguage: "en-US"
   };
 }
 
-/** JSON-LD structured data for a blog post/article */
 export function articleJsonLd(cv: any, article: any): object {
   const cvData = (cv && cv.profile) ? cv : defaultCV;
   const { profile } = cvData;
@@ -238,7 +261,7 @@ export function articleJsonLd(cv: any, article: any): object {
       "@type": "WebPage",
       "@id": `${SITE_URL}/articles/${article.slug}`
     },
-    "image": `${SITE_URL}/og-image.png`,
+    "image": getAbsoluteImageUrl(profile.photoUrl),
     "keywords": article.tags
   };
 }
@@ -360,5 +383,40 @@ export function contactJsonLd(cv: any): object {
     "mainEntity": {
       "@id": `${SITE_URL}/#person`
     }
+  };
+}
+
+/** JSON-LD structured data for FAQ page */
+export function faqJsonLd(): object {
+  const faqs = [
+    {
+      q: "What is your primary technology stack?",
+      a: "Thoeun Lothin specializes in full-stack development, using NestJS, Laravel, and Spring Boot for backends, and Vue/Nuxt or React/Next.js for modern, responsive frontends, integrated with PostgreSQL, MySQL, Redis, Firebase, and Cloudflare edge networks."
+    },
+    {
+      q: "Do you offer freelance consulting or contract services?",
+      a: "Yes, Thoeun Lothin takes on select freelance consulting and development contracts, specializing in optimization, framework migrations (Vue/Nuxt), and Cambodia-native system integrations."
+    },
+    {
+      q: "What is your experience with payment gateways and local APIs in Cambodia?",
+      a: "He has extensive experience integrating Cambodia's national Bakong KHQR payment system, merchant onboarding, transaction webhooks, signature verification, and secure SMS OTP verification gateways."
+    },
+    {
+      q: "How do you approach performance debugging?",
+      a: "He tracks Google's Core Web Vitals (LCP, INP, FID), optimizes database query execution plans with indexing, implements server-side caching (Redis), and optimizes asset delivery on Cloudflare CDN to ensure fast load times."
+    }
+  ];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a
+      }
+    }))
   };
 }

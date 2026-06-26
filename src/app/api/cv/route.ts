@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCVData, saveCVData } from "@/lib/cvStore";
+import { getCVData, saveCVData, sanitizeCVForVisitor } from "@/lib/cvStore";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
 import { encryptData, decryptData } from "@/lib/encryption";
 import { isRateLimited } from "@/lib/rateLimit";
@@ -30,27 +30,45 @@ export async function GET(req: NextRequest) {
       }
     );
   }
-  const data = await getCVData();
-  
-  if (data && (data as any).encrypted && (data as any).ciphertext) {
-    try {
-      const decrypted = await decryptData((data as any).ciphertext, getEncryptionKey());
-      return NextResponse.json(decrypted, {
-        headers: {
-          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-        },
-      });
-    } catch (err) {
-      console.error("Failed to decrypt CV data on server:", err);
-      return NextResponse.json({ error: "Decryption failed" }, { status: 500 });
-    }
-  }
 
-  return NextResponse.json(data, {
-    headers: {
-      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-    },
-  });
+  try {
+    const data = await getCVData();
+    let cvJson = data;
+
+    // 1. Decrypt database ciphertext using server-side master key if encrypted
+    if (data && (data as any).encrypted && (data as any).ciphertext) {
+      try {
+        cvJson = await decryptData((data as any).ciphertext, getEncryptionKey());
+      } catch (err) {
+        console.error("Failed to decrypt database CV data on server:", err);
+        return NextResponse.json({ error: "Decryption failed" }, { status: 500 });
+      }
+    }
+
+    // 2. Check if the requester is an admin
+    const token = req.cookies.get(SESSION_COOKIE)?.value;
+    const isAdmin = token ? await verifySessionToken(token) : false;
+
+    // 3. Sanitize data if the user is a visitor
+    if (!isAdmin) {
+      cvJson = sanitizeCVForVisitor(cvJson);
+    }
+
+    // 4. Symmetrically encrypt the response for the client using visitor passcode
+    const responseCiphertext = await encryptData(cvJson, "lothin-visitor-key");
+
+    return NextResponse.json({
+      encrypted: true,
+      ciphertext: responseCiphertext
+    }, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      },
+    });
+  } catch (err: any) {
+    console.error("Failed to load CV data in GET API:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function PUT(req: NextRequest) {

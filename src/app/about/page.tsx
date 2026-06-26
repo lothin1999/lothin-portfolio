@@ -4,9 +4,10 @@ import { getCVData } from "@/lib/cvStore";
 import { buildMetadata, breadcrumbsJsonLd } from "@/lib/seo";
 import { ActivePathBridge } from "@/components/ui/ActivePathBridge";
 import { ScrambleText } from "@/components/ui/ScrambleText";
-import { Glyph } from "@/components/ui/Glyph";
+import { AboutCTA } from "@/components/sections/AboutCTA";
 import { Chip } from "@/components/ui/Chip";
 import { ArrowUpRight } from "lucide-react";
+import { CVButtons } from "@/components/ui/CVButtons";
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
@@ -138,35 +139,7 @@ export default async function AboutPage() {
                     )}
                   </div>
                 ))}
-                <div className="pt-4 border-t border-rule mt-4 space-y-2">
-                  <a
-                    href="/api/cv/download"
-                    download
-                    className="w-full py-2.5 px-4 bg-ink hover:bg-accent text-white hover:text-white dark:bg-ink dark:hover:bg-accent text-xs font-mono rounded tracking-wide transition-all duration-200 inline-flex items-center justify-center gap-1.5"
-                  >
-                    Download CV (HTML)
-                  </a>
-                  {profile.cvPdfUrl && (
-                    <a
-                      href={profile.cvPdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full py-2.5 px-4 bg-surface border border-rule hover:border-ink text-ink hover:text-accent text-xs font-mono rounded tracking-wide transition-all duration-200 inline-flex items-center justify-center gap-1.5"
-                    >
-                      Download CV (PDF)
-                    </a>
-                  )}
-                  {profile.coverLetterPdfUrl && (
-                    <a
-                      href={profile.coverLetterPdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full py-2.5 px-4 bg-surface border border-rule hover:border-ink text-ink hover:text-accent text-xs font-mono rounded tracking-wide transition-all duration-200 inline-flex items-center justify-center gap-1.5"
-                    >
-                      Download Letter (PDF)
-                    </a>
-                  )}
-                </div>
+                <CVButtons />
               </div>
             </div>
           </div>
@@ -377,23 +350,13 @@ export default async function AboutPage() {
       )}
 
       {/* Call to Action */}
-      <section className="py-20 text-center">
-        <div className="max-w-md mx-auto px-6 flex flex-col items-center gap-4">
-          <Glyph pattern="010111010" hoverPattern="111111111" size={42} gap={3} color="var(--accent)" />
-          <h2 className="font-serif text-[28px] text-ink leading-tight mt-2">
-            {cv.adminSettings?.aboutCta?.title || "Want to see how we can build together?"}
-          </h2>
-          <p className="text-[13.5px] text-ink2 leading-relaxed font-sans font-light max-w-sm">
-            {cv.adminSettings?.aboutCta?.desc || "I take on select clients at a time. If your team has core system debt or framework integration issues, reach out."}
-          </p>
-          <Link
-            href={cv.adminSettings?.aboutCta?.buttonHref || "/contact"}
-            className="mt-4 px-6 py-2.5 font-mono text-[11.5px] uppercase tracking-wider text-ink border border-rule hover:border-ink rounded bg-surface hover:bg-[var(--color-surface-subtle)] transition-all inline-block"
-          >
-            {cv.adminSettings?.aboutCta?.buttonText || "Get in touch"}
-          </Link>
-        </div>
-      </section>
+      <AboutCTA
+        title={cv.adminSettings?.aboutCta?.title}
+        desc={cv.adminSettings?.aboutCta?.desc}
+        buttonText={cv.adminSettings?.aboutCta?.buttonText}
+        buttonHref={cv.adminSettings?.aboutCta?.buttonHref}
+        photoUrl={profile.photoUrl}
+      />
     </div>
   );
 }

@@ -48,6 +48,7 @@ async function ensureDecrypted(data: any): Promise<CVData> {
   if (!result.skillGroups) result.skillGroups = [];
   if (!result.references) result.references = [];
   if (!result.articles) result.articles = [];
+  if (!result.documents) result.documents = (localCV as any).documents || [];
   if (!result.adminSettings) result.adminSettings = (localCV as any).adminSettings || {};
 
   return result;
@@ -66,7 +67,11 @@ async function listR2Files(): Promise<R2Object[]> {
     const bucket = env?.R2_BUCKET_NAME;
     if (bucket && typeof bucket.list === "function") {
       const listed = await bucket.list();
-      return listed.objects || [];
+      return (listed.objects || []).map((o: any) => ({
+        key: o.key,
+        size: o.size,
+        uploaded: o.uploaded || o.last_modified,
+      }));
     }
   } catch (err) {
     console.error("Worker R2 list failed:", err);
@@ -87,7 +92,12 @@ async function listR2Files(): Promise<R2Object[]> {
       if (response.ok) {
         const json = await response.json() as any;
         if (json.success) {
-          return json.result || [];
+          // Cloudflare REST API returns `last_modified`, normalize to `uploaded`
+          return (json.result || []).map((o: any) => ({
+            key: o.key,
+            size: o.size,
+            uploaded: o.uploaded || o.last_modified,
+          }));
         }
       }
     }
@@ -96,6 +106,32 @@ async function listR2Files(): Promise<R2Object[]> {
   }
 
   return [];
+}
+
+async function loadFromR2API(): Promise<any | null> {
+  const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
+  const accountId = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
+  const apiToken = clean(process.env.CLOUDFLARE_AI_API_TOKEN);
+  const bucketName = clean(process.env.R2_BUCKET_NAME) || "portfolio-data";
+
+  if (!accountId || !apiToken) return null;
+
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects/${R2_FILE_KEY}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${apiToken}` },
+      cache: "no-store",
+    });
+
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (err) {
+    console.error("Failed to load cv.json from R2 via API:", err);
+  }
+  return null;
 }
 
 export async function getCVData(): Promise<CVData> {
@@ -116,6 +152,17 @@ export async function getCVData(): Promise<CVData> {
     }
   } catch (err) {
     console.error("Failed to load CV from R2 bucket:", err);
+  }
+
+  if (!decrypted) {
+    try {
+      const parsed = await loadFromR2API();
+      if (parsed) {
+        decrypted = await ensureDecrypted(parsed);
+      }
+    } catch (err) {
+      console.error("Failed to load CV from R2 API:", err);
+    }
   }
 
   if (!decrypted && process.env.NODE_ENV === "development") {
@@ -152,9 +199,48 @@ export async function getCVData(): Promise<CVData> {
     decrypted.articles = defaultCV.articles;
   }
 
-  // Query Cloudflare R2 files dynamically to set cvPdfUrl and coverLetterPdfUrl
+  // Query Cloudflare R2 files dynamically to set cvPdfUrl, coverLetterPdfUrl, and profile.photoUrl
   try {
     const files = await listR2Files();
+
+    // Profile Photo: key starts with "images/profile-" and ends with a valid image extension
+    const profilePhotoFiles = files.filter(
+      f =>
+        f.key.startsWith("images/profile-") &&
+        /\.(jpeg|jpg|png|webp|gif|svg)$/i.test(f.key)
+    );
+
+    if (profilePhotoFiles.length > 0) {
+      profilePhotoFiles.sort((a, b) => {
+        const timeA = a.uploaded ? new Date(a.uploaded).getTime() : 0;
+        const timeB = b.uploaded ? new Date(b.uploaded).getTime() : 0;
+        if (timeA && timeB) return timeB - timeA;
+
+        const matchA = a.key.match(/profile-(\d+)\./);
+        const matchB = b.key.match(/profile-(\d+)\./);
+        if (matchA && matchB) {
+          return parseInt(matchB[1], 10) - parseInt(matchA[1], 10);
+        }
+        return b.key.localeCompare(a.key);
+      });
+
+      const latestPhoto = profilePhotoFiles[0];
+      const filename = latestPhoto.key.substring(7); // Remove "images/" (which is 7 chars)
+      decrypted.profile.photoUrl = `/api/images/${filename}`;
+    } else {
+      // If no custom profile photo is uploaded:
+      // If cube images exist, set photoUrl to empty to force fallback/cube rendering
+      // Otherwise, keep /og-image.png as fallback
+      const hasCubeImages = !!(
+        decrypted.profile.cubeImages &&
+        decrypted.profile.cubeImages.some((img: string) => img && img.trim() !== "")
+      );
+      if (hasCubeImages) {
+        decrypted.profile.photoUrl = "";
+      } else {
+        decrypted.profile.photoUrl = "/og-image.png";
+      }
+    }
 
     // CV: key starts with "cv/" and ends with ".pdf"
     const cvFiles = files.filter(f => f.key.startsWith("cv/") && f.key.endsWith(".pdf"));
@@ -201,8 +287,37 @@ export async function getCVData(): Promise<CVData> {
     } else {
       decrypted.profile.coverLetterPdfUrl = "";
     }
+
+    // Documents: auto-sync all files in the "documents/" R2 prefix
+    // Any file in R2 that isn't already registered in cv.documents gets added automatically.
+    const docFiles = files.filter(f => f.key.startsWith("documents/") && f.key !== "documents/");
+    if (docFiles.length > 0) {
+      const existingKeys = new Set((decrypted.documents || []).map((d: any) => d.key));
+      const newDocs = docFiles
+        .filter(f => !existingKeys.has(f.key))
+        .map(f => {
+          const filename = f.key.substring("documents/".length);
+          // Auto-generate a readable display name from the filename
+          const name = filename
+            .replace(/\.[^/.]+$/, "")       // strip extension
+            .replace(/[-_]/g, " ")           // dashes/underscores → spaces
+            .replace(/\b\w/g, c => c.toUpperCase()); // Title Case
+          return {
+            id: `doc-r2-${filename.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`,
+            name,
+            filename,
+            key: f.key,
+            url: `/api/documents/${filename}`,
+            uploadedAt: f.uploaded || new Date().toISOString(),
+          };
+        });
+
+      if (newDocs.length > 0) {
+        decrypted.documents = [...(decrypted.documents || []), ...newDocs];
+      }
+    }
   } catch (err) {
-    console.error("Error setting dynamic CV/Letter URLs from R2:", err);
+    console.error("Error syncing R2 files into CV data:", err);
   }
 
   memCache = decrypted;
@@ -233,7 +348,7 @@ async function saveToR2API(jsonData: any): Promise<boolean> {
     console.error("Failed to save cv.json to R2 via API:", err);
     return false;
   }
-}
+} // hot-reload-trigger
 
 export async function saveCVData(data: CVData): Promise<void> {
   const updatedData = { ...data, updatedAt: new Date().toISOString() };
@@ -275,4 +390,16 @@ export async function saveCVData(data: CVData): Promise<void> {
 
   process.env.CV_JSON_DATA = JSON.stringify(updatedData);
   memCache = null;
+}
+
+export function sanitizeCVForVisitor(cvData: CVData): CVData {
+  if (!cvData) return cvData;
+  const clone = JSON.parse(JSON.stringify(cvData)) as CVData;
+  if (clone.references && Array.isArray(clone.references)) {
+    clone.references = clone.references.map((ref: any) => ({
+      ...ref,
+      contact: "Available upon request"
+    }));
+  }
+  return clone;
 }

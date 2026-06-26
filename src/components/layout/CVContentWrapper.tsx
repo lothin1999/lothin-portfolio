@@ -1,8 +1,11 @@
 "use client";
 
 import { useCVData } from "@/hooks/useCVData";
+import { useThemeColors } from "@/hooks/useThemeColors";
+import { useSettings } from "@/components/layout/SettingsContext";
 import { LockScreen } from "../ui/LockScreen";
 import { useEffect, useState } from "react";
+
 
 function LoadingScreen() {
   const [dot, setDot] = useState(0);
@@ -334,10 +337,22 @@ function LoadingScreen() {
   );
 }
 
+function ThemeColorsApplier() {
+  const { cv } = useCVData();
+  const { visitorPalette } = useSettings();
+  useThemeColors(cv.adminSettings?.themeColors ?? null, visitorPalette);
+  return null;
+}
+
 export function CVContentWrapper({ children }: { children: React.ReactNode }) {
   const { isLocked, isLoading } = useCVData();
 
   if (isLoading) return <LoadingScreen />;
   if (isLocked) return <LockScreen />;
-  return <>{children}</>;
+  return (
+    <>
+      <ThemeColorsApplier />
+      {children}
+    </>
+  );
 }

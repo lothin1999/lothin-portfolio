@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, Trash2, FileText, RefreshCw, Plus } from "lucide-react";
+import { Upload, Trash2, FileText, RefreshCw, Plus, Eye } from "lucide-react";
 
 interface DragDropUploaderProps {
   label: string;
@@ -273,43 +273,71 @@ export function DragDropUploader({
         </div>
       )}
 
-      {/* Main Upload Box */}
       {(!multiple && urls.length > 0) ? (
         // Single File Preview
-        <div className="relative border border-rule bg-surface p-4 rounded flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 overflow-hidden">
-            {accept.includes("image") ? (
-              <div className="w-12 h-12 rounded border border-rule overflow-hidden shrink-0 bg-bg">
-                <img src={urls[0]} alt="upload preview" className="w-full h-full object-cover" />
+        accept.includes("image") ? (
+          <div className="relative group aspect-square w-full max-w-[140px] rounded border border-rule overflow-hidden bg-bg/50 flex items-center justify-center transition-all duration-300 hover:border-accent/40 shadow-sm">
+            <img 
+              src={urls[0]} 
+              alt="upload preview" 
+              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105" 
+            />
+            {/* Dark glassmorphic hover overlay */}
+            <div className="absolute inset-0 bg-ink/75 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2.5 transition-opacity duration-300">
+              <span className="text-[10px] font-mono text-white/95 truncate max-w-[85%] px-2">
+                {urls[0].split("/").pop() || "Uploaded Image"}
+              </span>
+              <div className="flex gap-2">
+                <a
+                  href={urls[0]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded border border-white/20 hover:border-white/50 text-white bg-white/10 hover:bg-white/25 transition-all"
+                  title="View Image"
+                >
+                  <Eye size={14} />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => removeFile()}
+                  className="p-2 rounded border border-red-500/30 hover:border-red-500 text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500/30 transition-all"
+                  title="Delete Image"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
-            ) : (
+            </div>
+          </div>
+        ) : (
+          <div className="relative border border-rule bg-surface p-4 rounded flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 overflow-hidden">
               <div className="w-12 h-12 rounded border border-rule flex items-center justify-center shrink-0 bg-bg text-accent">
                 <FileText size={20} />
               </div>
-            )}
-            <div className="overflow-hidden">
-              <p className="text-xs text-ink truncate font-medium">
-                {urls[0].split("/").pop() || "Uploaded File"}
-              </p>
-              <a
-                href={urls[0]}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] font-mono text-accent hover:underline"
-              >
-                View File
-              </a>
+              <div className="overflow-hidden">
+                <p className="text-xs text-ink truncate font-medium">
+                  {urls[0].split("/").pop() || "Uploaded File"}
+                </p>
+                <a
+                  href={urls[0]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-mono text-accent hover:underline"
+                >
+                  View File
+                </a>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => removeFile()}
+              className="p-2 border border-rule hover:border-red-500 rounded text-muted hover:text-red-500 transition-colors shrink-0"
+              title="Delete File"
+            >
+              <Trash2 size={14} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => removeFile()}
-            className="p-2 border border-rule hover:border-red-500 rounded text-muted hover:text-red-500 transition-colors shrink-0"
-            title="Delete File"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
+        )
       ) : (
         // Dropzone area
         <div
