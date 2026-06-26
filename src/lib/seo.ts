@@ -106,7 +106,7 @@ export function buildMetadata(cv: any, page?: PageSEO): Metadata {
       url,
       title,
       description,
-      siteName: defaultTitle,
+      siteName: defaultTitle || "LOTHIN",
       locale: "en_US",
       alternateLocale: ["km_KH"],
       images: [
@@ -207,16 +207,24 @@ export function websiteJsonLd(): object {
     "@type": "WebSite",
     "@id": `${SITE_URL}/#website`,
     url: SITE_URL,
-    name: "Lothin Thoeun (Lothin Dev) | Senior Full-Stack Web Developer",
-    description: "Professional portfolio of Lothin Thoeun (Lothin Dev), Senior Full-Stack Web Developer specialized in Vue/Nuxt, React/Next.js, NestJS, Laravel, and Spring Boot.",
+    name: "LOTHIN",
+    alternateName: [
+      "Lothin Dev",
+      "Lothin Portfolio",
+      "Thoeun Lothin"
+    ],
+
+    description:
+      "Portfolio of Lothin Dev, Senior Full Stack Developer.",
+
     publisher: {
       "@id": `${SITE_URL}/#person`
     },
+
     inLanguage: "en-US"
   };
 }
 
-/** JSON-LD structured data for a blog post/article */
 export function articleJsonLd(cv: any, article: any): object {
   const cvData = (cv && cv.profile) ? cv : defaultCV;
   const { profile } = cvData;

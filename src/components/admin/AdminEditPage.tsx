@@ -7,9 +7,10 @@ import {
   ChevronDown, ChevronRight, FileText, Globe, CheckCircle, Edit, List, Info, Folder,
   AlertTriangle
 } from "lucide-react";
-import type { CVData, Article, DocumentItem } from "@/types/cv";
+import type { CVData, Article, DocumentItem, ThemeColorSet } from "@/types/cv";
 import { useCVData } from "@/hooks/useCVData";
 import { DragDropUploader } from "./DragDropUploader";
+import { DEFAULT_LIGHT_COLORS, DEFAULT_DARK_COLORS } from "@/hooks/useThemeColors";
 
 // ── Tiny helpers ──────────────────────────────────────────────────────────────
 function Field({
@@ -95,7 +96,8 @@ type Tab =
   | "articles"
   | "documents"
   | "storage"
-  | "vectorize";
+  | "vectorize"
+  | "colors";
 
 const CV_TABS: { id: Tab; label: string }[] = [
   { id: "profile", label: "Profile" },
@@ -114,6 +116,7 @@ const ADMIN_TABS: { id: Tab; label: string }[] = [
   { id: "documents", label: "Documents" },
   { id: "storage", label: "Storage" },
   { id: "vectorize", label: "Vectorize" },
+  { id: "colors", label: "🎨 Colors" },
 ];
 
 // ── Default Fallbacks ────────────────────────────────────────────────────────
@@ -2491,6 +2494,197 @@ export function AdminEditPage() {
     );
   };
 
+  // ── Colors Tab ───────────────────────────────────────────────────────────────
+  const renderColorsTab = () => {
+    const saved = draft.adminSettings?.themeColors;
+    const lightColors: ThemeColorSet = { ...DEFAULT_LIGHT_COLORS, ...(saved?.light ?? {}) };
+    const darkColors: ThemeColorSet = { ...DEFAULT_DARK_COLORS, ...(saved?.dark ?? {}) };
+
+    const colorFields: { key: keyof ThemeColorSet; label: string; desc: string }[] = [
+      { key: "accent",       label: "Accent",        desc: "Primary brand color — buttons, links, highlights" },
+      { key: "accentOrange", label: "Accent Orange",  desc: "Secondary accent — tags, hover effects" },
+      { key: "bg",           label: "Background",     desc: "Page background color" },
+      { key: "surface",      label: "Surface",        desc: "Cards, modals, elevated surfaces" },
+      { key: "ink",          label: "Ink",            desc: "Primary text color" },
+      { key: "ink2",         label: "Ink 2",          desc: "Secondary text color" },
+      { key: "muted",        label: "Muted",          desc: "Placeholder and subdued text" },
+    ];
+
+    const updateColor = (theme: "light" | "dark", key: keyof ThemeColorSet, value: string) => {
+      const current = draft.adminSettings?.themeColors ?? {
+        light: { ...DEFAULT_LIGHT_COLORS },
+        dark: { ...DEFAULT_DARK_COLORS },
+      };
+      setDraft((prev) => ({
+        ...prev,
+        adminSettings: {
+          ...prev.adminSettings,
+          themeColors: {
+            ...current,
+            [theme]: {
+              ...current[theme],
+              [key]: value,
+            },
+          },
+        },
+      }));
+    };
+
+    const resetTheme = (theme: "light" | "dark") => {
+      const defaults = theme === "light" ? DEFAULT_LIGHT_COLORS : DEFAULT_DARK_COLORS;
+      const current = draft.adminSettings?.themeColors ?? {
+        light: { ...DEFAULT_LIGHT_COLORS },
+        dark: { ...DEFAULT_DARK_COLORS },
+      };
+      setDraft((prev) => ({
+        ...prev,
+        adminSettings: {
+          ...prev.adminSettings,
+          themeColors: {
+            ...current,
+            [theme]: { ...defaults },
+          },
+        },
+      }));
+    };
+
+    const ColorSection = ({ theme, colors }: { theme: "light" | "dark"; colors: ThemeColorSet }) => (
+      <div className="p-5 rounded-lg border border-rule bg-surface/50">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-mono text-[11px] tracking-[2px] uppercase text-accent">
+            {theme === "light" ? "☀️ Light Theme" : "🌙 Dark Theme"}
+          </h3>
+          <button
+            type="button"
+            onClick={() => resetTheme(theme)}
+            className="font-mono text-[9px] uppercase tracking-wide text-muted hover:text-accent transition-colors border border-rule rounded px-2.5 py-1 cursor-pointer bg-transparent"
+          >
+            Reset defaults
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          {colorFields.map(({ key, label, desc }) => {
+            const value = colors[key];
+            return (
+              <div key={key} className="flex items-center gap-3">
+                {/* Swatch + native color picker */}
+                <div className="relative flex-shrink-0">
+                  <div
+                    className="w-9 h-9 rounded border border-rule cursor-pointer"
+                    style={{ backgroundColor: value }}
+                  />
+                  <input
+                    type="color"
+                    value={value}
+                    onChange={(e) => updateColor(theme, key, e.target.value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    title={label}
+                  />
+                </div>
+
+                {/* Text input for hex */}
+                <div className="flex-1 space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <label className="font-mono text-[10px] tracking-[1px] uppercase text-muted w-24 shrink-0">
+                      {label}
+                    </label>
+                    <input
+                      type="text"
+                      value={value}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (/^#([0-9a-fA-F]{0,6})$/.test(v)) updateColor(theme, key, v);
+                      }}
+                      onBlur={(e) => {
+                        // Pad to full hex on blur
+                        const v = e.target.value;
+                        if (/^#[0-9a-fA-F]{3}$/.test(v)) {
+                          const r = v[1]+v[1], g = v[2]+v[2], b = v[3]+v[3];
+                          updateColor(theme, key, `#${r}${g}${b}`);
+                        }
+                      }}
+                      maxLength={7}
+                      className="w-24 px-2 py-1 border border-rule rounded text-[12px] font-mono bg-bg text-ink focus:outline-none focus:border-accent transition-colors"
+                      placeholder="#000000"
+                    />
+                  </div>
+                  <p className="font-mono text-[9px] text-muted/70 pl-26">{desc}</p>
+                </div>
+
+                {/* Live preview dot */}
+                <div
+                  className="w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-rule"
+                  style={{ backgroundColor: value }}
+                  title="Current value preview"
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Preview card */}
+        <div
+          className="mt-6 rounded-lg p-5 border"
+          style={{
+            backgroundColor: colors.bg,
+            borderColor: "rgba(128,128,128,0.15)",
+          }}
+        >
+          <p className="font-mono text-[8px] uppercase tracking-[2px] mb-3" style={{ color: colors.muted }}>// Preview</p>
+          <h4 className="text-[18px] font-light mb-1" style={{ color: colors.ink }}>
+            Thoeun <span style={{ color: colors.accent }}>Lothin</span>
+          </h4>
+          <p className="text-[11px] mb-3" style={{ color: colors.ink2 }}>Senior Full-Stack Developer</p>
+          <div className="flex gap-2 flex-wrap">
+            <span
+              className="text-[10px] px-2.5 py-1 rounded"
+              style={{ backgroundColor: colors.accent, color: "#fff" }}
+            >
+              See my work
+            </span>
+            <span
+              className="text-[10px] px-2.5 py-1 rounded border"
+              style={{ borderColor: colors.muted, color: colors.ink2 }}
+            >
+              Contact me
+            </span>
+            <span
+              className="text-[10px] px-2.5 py-1 rounded"
+              style={{ backgroundColor: colors.surface, color: colors.ink2, border: "1px solid rgba(128,128,128,0.12)" }}
+            >
+              Tag
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-[16px] font-medium text-ink mb-1">Theme Colors</h2>
+          <p className="font-mono text-[10px] text-muted tracking-wide">
+            Customize site colors for each theme. Changes are saved to Cloudflare R2 and applied globally on next page load.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <ColorSection theme="light" colors={lightColors} />
+          <ColorSection theme="dark" colors={darkColors} />
+        </div>
+
+        <div className="p-4 rounded-lg border border-rule bg-surface/30">
+          <p className="font-mono text-[10px] text-muted tracking-wide flex items-start gap-2">
+            <span className="text-accent shrink-0">ℹ</span>
+            Colors are stored in <code className="text-accent text-[10px]">adminSettings.themeColors</code> inside <code className="text-accent text-[10px]">cv.json</code> on Cloudflare R2.
+            Hit <strong className="text-ink">Save Changes</strong> at the top to persist. Visitors see updates on their next page load (server-rendered, zero flash).
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const tabContent: Record<Tab, React.ReactNode> = {
     profile: renderProfileTab(),
     experience: renderExperienceTab(),
@@ -2505,6 +2699,7 @@ export function AdminEditPage() {
     documents: renderDocumentsTab(),
     storage: renderStorageTab(),
     vectorize: renderVectorizeTab(),
+    colors: renderColorsTab(),
   };
 
   return (

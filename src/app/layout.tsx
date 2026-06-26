@@ -16,7 +16,43 @@ import { AdminButton } from "@/components/admin/AdminButton";
 import { getCVData, sanitizeCVForVisitor } from "@/lib/cvStore";
 import { buildMetadata, personJsonLd, websiteJsonLd, faqJsonLd } from "@/lib/seo";
 import { CVContentWrapper } from "@/components/layout/CVContentWrapper";
-import Script from "next/script";
+import type { ThemeColors } from "@/types/cv";
+
+/**
+ * Builds an inline CSS block that overrides design-token custom properties
+ * for light and dark themes based on admin-saved colors from Cloudflare R2.
+ * Injected server-side so there is zero flash on first paint.
+ */
+function buildThemeColorsCss(colors: ThemeColors): string {
+  const { light: l, dark: d } = colors;
+  return [
+    `[data-theme="light"] {`,
+    l.accent      ? `  --accent: ${l.accent};` : "",
+    l.accentOrange ? `  --accent-orange: ${l.accentOrange};` : "",
+    l.bg          ? `  --bg: ${l.bg};` : "",
+    l.surface     ? `  --surface: ${l.surface};` : "",
+    l.ink         ? `  --ink: ${l.ink};` : "",
+    l.ink2        ? `  --ink2: ${l.ink2};` : "",
+    l.muted       ? `  --muted: ${l.muted};` : "",
+    `}`,
+    `[data-theme="dark"] {`,
+    d.accent      ? `  --accent: ${d.accent};` : "",
+    d.accentOrange ? `  --accent-orange: ${d.accentOrange};` : "",
+    d.bg          ? `  --bg: ${d.bg};` : "",
+    d.surface     ? `  --surface: ${d.surface};` : "",
+    d.ink         ? `  --ink: ${d.ink};` : "",
+    d.ink2        ? `  --ink2: ${d.ink2};` : "",
+    d.muted       ? `  --muted: ${d.muted};` : "",
+    `}`,
+    // Also override :root for system-default (before next-themes sets data-theme)
+    `:root {`,
+    l.accent      ? `  --accent: ${l.accent};` : "",
+    l.accentOrange ? `  --accent-orange: ${l.accentOrange};` : "",
+    `}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
 
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
@@ -56,6 +92,10 @@ export default async function RootLayout({
   const jsonLdList = [personJsonLd(initialCvData), websiteJsonLd(), faqJsonLd()];
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
+  // Build server-side color CSS if admin has saved custom colors
+  const themeColors = cv.adminSettings?.themeColors;
+  const colorCss = themeColors ? buildThemeColorsCss(themeColors) : null;
+
   return (
     <html
       lang="en"
@@ -67,6 +107,13 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdList) }}
         />
+        {/* Inject admin-controlled color overrides before any other CSS */}
+        {colorCss && (
+          <style
+            id="admin-theme-colors"
+            dangerouslySetInnerHTML={{ __html: colorCss }}
+          />
+        )}
         {gaId && (
           <>
             <script

@@ -1,5 +1,20 @@
 // src/types/cv.ts
 
+export interface ThemeColorSet {
+  accent: string;
+  accentOrange: string;
+  bg: string;
+  surface: string;
+  ink: string;
+  ink2: string;
+  muted: string;
+}
+
+export interface ThemeColors {
+  light: ThemeColorSet;
+  dark: ThemeColorSet;
+}
+
 export interface Profile {
   name: { first: string; last: string };
   title: string;
@@ -102,6 +117,8 @@ export interface AdminSettings {
   contactSubtext?: string;
   contactIntro?: string;
   contactSteps?: { step: string; title: string; desc: string }[];
+  /** Admin-controlled color palette stored in Cloudflare R2 */
+  themeColors?: ThemeColors;
 }
 
 export interface DocumentItem {
