@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useTheme } from "./useTheme";
 import type { ThemeColorSet, ThemeColors } from "@/types/cv";
+import type { VisitorPalette } from "@/lib/visitorPalettes";
 
 // Default colors matching globals.css
 export const DEFAULT_LIGHT_COLORS: ThemeColorSet = {
@@ -26,11 +27,10 @@ export const DEFAULT_DARK_COLORS: ThemeColorSet = {
 };
 
 /**
- * Maps ThemeColorSet keys to CSS variable names on :root / [data-theme].
- * The server-side injected <style> tag handles first-paint; this hook
- * handles live updates after hydration (e.g. after admin saves new colors).
+ * Applies a ThemeColorSet as CSS custom properties on <html>.
+ * Also derives rule/border/tag colors from the base palette.
  */
-function applyColorSet(colors: ThemeColorSet, theme: "light" | "dark") {
+export function applyColorSet(colors: ThemeColorSet, theme: "light" | "dark") {
   const el = document.documentElement;
   el.style.setProperty("--accent", colors.accent);
   el.style.setProperty("--accent-orange", colors.accentOrange);
@@ -60,17 +60,36 @@ function applyColorSet(colors: ThemeColorSet, theme: "light" | "dark") {
   }
 }
 
-export function useThemeColors(themeColors?: ThemeColors | null) {
+/**
+ * Priority (highest → lowest):
+ *   1. Visitor palette (localStorage choice)
+ *   2. Admin palette  (R2 / cv.json)
+ *   3. Hardcoded defaults (globals.css)
+ */
+export function useThemeColors(
+  adminColors?: ThemeColors | null,
+  visitorPalette?: VisitorPalette | null,
+) {
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
-    if (!themeColors) return;
-
     const isDark = resolvedTheme === "dark";
-    const activeColors = isDark
-      ? { ...DEFAULT_DARK_COLORS, ...themeColors.dark }
-      : { ...DEFAULT_LIGHT_COLORS, ...themeColors.light };
+    const theme = isDark ? "dark" : "light";
 
-    applyColorSet(activeColors, isDark ? "dark" : "light");
-  }, [themeColors, resolvedTheme]);
+    // Start from hardcoded defaults
+    let base: ThemeColorSet = isDark ? { ...DEFAULT_DARK_COLORS } : { ...DEFAULT_LIGHT_COLORS };
+
+    // Layer admin colors on top (if admin has saved custom colors)
+    if (adminColors) {
+      base = { ...base, ...(isDark ? adminColors.dark : adminColors.light) };
+    }
+
+    // Layer visitor palette on top (highest priority — visitor's own choice)
+    if (visitorPalette && visitorPalette.id !== "default") {
+      const vColors = isDark ? visitorPalette.dark : visitorPalette.light;
+      base = { ...base, ...vColors };
+    }
+
+    applyColorSet(base, theme);
+  }, [adminColors, visitorPalette, resolvedTheme]);
 }

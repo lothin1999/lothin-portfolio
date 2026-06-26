@@ -1,6 +1,8 @@
 "use client";
 
 import { useSettings } from "./SettingsContext";
+import { VISITOR_PALETTES } from "@/lib/visitorPalettes";
+import { useTheme } from "@/hooks/useTheme";
 
 export function SettingsModal() {
   const {
@@ -12,16 +14,23 @@ export function SettingsModal() {
     setScrambleText,
     smoothScroll,
     setSmoothScroll,
+    visitorPalette,
+    setVisitorPalette,
   } = useSettings();
+
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const handleClose = () => setSettingsOpen(false);
 
   if (!settingsOpen) return null;
 
+  const activePaletteId = visitorPalette?.id ?? "default";
+
   return (
     <div className="overlay-dialog" role="dialog" aria-modal="true">
       <div className="overlay-dialog__backdrop" onClick={handleClose} />
-      <div className="overlay-dialog__content max-w-[380px] p-6 z-10 rounded border bg-surface flex flex-col gap-5">
+      <div className="overlay-dialog__content max-w-[440px] p-6 z-10 rounded border bg-surface flex flex-col gap-5">
         <header className="flex items-center justify-between border-b border-rule pb-3">
           <h2 className="font-mono text-[14px] text-ink font-semibold">// site.settings</h2>
           <button
@@ -33,6 +42,7 @@ export function SettingsModal() {
           </button>
         </header>
 
+        {/* ── Toggle Switches ─────────────────────────────────────── */}
         <div className="flex flex-col gap-4 font-mono text-[13px]">
           {/* Custom Cursor Option */}
           <div className="flex justify-between items-center py-1">
@@ -90,6 +100,105 @@ export function SettingsModal() {
               />
             </button>
           </div>
+        </div>
+
+        {/* ── Color Palette Picker ─────────────────────────────────── */}
+        <div className="border-t border-rule pt-4 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-mono text-[11px] tracking-[1.5px] uppercase text-muted">// color.palette</p>
+              <p className="font-mono text-[10px] text-muted/70 mt-0.5">Saved locally in your browser</p>
+            </div>
+            {activePaletteId !== "default" && (
+              <button
+                onClick={() => setVisitorPalette(null)}
+                className="font-mono text-[9px] uppercase tracking-wide text-muted hover:text-accent transition-colors border border-rule rounded px-2 py-0.5 cursor-pointer bg-transparent"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-4 gap-2">
+            {VISITOR_PALETTES.map((palette) => {
+              const colors = isDark ? palette.dark : palette.light;
+              const isActive = activePaletteId === palette.id;
+
+              return (
+                <button
+                  key={palette.id}
+                  title={palette.name}
+                  onClick={() => setVisitorPalette(palette.id === "default" ? null : palette)}
+                  className={`group relative flex flex-col items-center gap-1.5 p-2 rounded-lg border transition-all cursor-pointer focus:outline-none ${
+                    isActive
+                      ? "border-accent bg-accent/5"
+                      : "border-rule hover:border-ink/30 bg-transparent"
+                  }`}
+                  aria-pressed={isActive}
+                  aria-label={`${palette.name} color palette`}
+                >
+                  {/* Color swatches */}
+                  <div className="flex gap-0.5">
+                    <div
+                      className="w-4 h-4 rounded-sm"
+                      style={{ backgroundColor: colors.accent }}
+                    />
+                    <div
+                      className="w-4 h-4 rounded-sm"
+                      style={{ backgroundColor: colors.bg }}
+                    />
+                    <div
+                      className="w-4 h-4 rounded-sm"
+                      style={{ backgroundColor: colors.surface }}
+                    />
+                  </div>
+
+                  {/* Palette name */}
+                  <span
+                    className={`font-mono text-[8px] leading-tight text-center transition-colors ${
+                      isActive ? "text-accent" : "text-muted group-hover:text-ink"
+                    }`}
+                  >
+                    {palette.emoji}
+                  </span>
+                  <span
+                    className={`font-mono text-[8px] leading-tight text-center transition-colors ${
+                      isActive ? "text-accent" : "text-muted group-hover:text-ink"
+                    }`}
+                  >
+                    {palette.name}
+                  </span>
+
+                  {/* Active indicator */}
+                  {isActive && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full flex items-center justify-center">
+                      <svg width="7" height="7" viewBox="0 0 7 7" fill="none">
+                        <path d="M1 3.5l1.5 1.5 3-3" stroke="#fff" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active palette preview */}
+          {activePaletteId !== "default" && visitorPalette && (
+            <div
+              className="rounded-md p-3 border text-[11px] font-mono transition-all"
+              style={{
+                backgroundColor: isDark ? visitorPalette.dark.bg : visitorPalette.light.bg,
+                borderColor: "rgba(128,128,128,0.15)",
+              }}
+            >
+              <span style={{ color: isDark ? visitorPalette.dark.muted : visitorPalette.light.muted }}>
+                // active:{" "}
+              </span>
+              <span style={{ color: isDark ? visitorPalette.dark.accent : visitorPalette.light.accent }}>
+                {visitorPalette.emoji} {visitorPalette.name}
+              </span>
+            </div>
+          )}
         </div>
 
         <footer className="border-t border-rule pt-4 flex justify-end gap-2 font-mono text-[11.5px]">
