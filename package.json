@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cp README.md public/README.md && next dev",
-    "build": "cp README.md public/README.md && next build",
+    "dev": "rm -rf .next && cp README.md public/README.md && next dev",
+    "build": "rm -rf .next && cp README.md public/README.md && next build",
     "start": "next start",
     "lint": "next lint",
+    "clean": "rm -rf .next .vercel",
     "pages:build": "pnpm dlx @cloudflare/next-on-pages",
     "preview": "pnpm pages:build && pnpm wrangler pages dev .vercel/output/static",
     "deploy": "pnpm pages:build && pnpm wrangler pages deploy .vercel/output/static"
