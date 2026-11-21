@@ -5,11 +5,11 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "node scripts/prepare.mjs && next dev",
-    "build": "node scripts/prepare.mjs && next build",
+    "build": "node scripts/build.mjs",
     "start": "next start",
     "lint": "next lint",
     "clean": "node scripts/clean.mjs",
-    "pages:build": "pnpm dlx @cloudflare/next-on-pages",
+    "pages:build": "next-on-pages",
     "preview": "pnpm pages:build && pnpm wrangler pages dev .vercel/output/static",
     "deploy": "pnpm pages:build && pnpm wrangler pages deploy .vercel/output/static"
   },
