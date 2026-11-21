@@ -1,0 +1,19 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: lothin-portfolio-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - path: .env.local
+        required: false
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    restart: unless-stopped
