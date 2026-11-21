@@ -188,7 +188,7 @@ export function personJsonLd(cv: any): object {
     },
     worksFor: {
       "@type": "Organization",
-      "name": "IDG Technology Solutions"
+      "name": "Amret Bank"
     },
     sameAs: [profile.telegram, profile.linkedin, profile.facebook].filter(Boolean),
     address: {

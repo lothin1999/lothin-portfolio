@@ -169,12 +169,15 @@ export async function getCVData(): Promise<CVData> {
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
       const res = await fetch(`${siteUrl}/api/cv/local-save`, { cache: "no-store" });
-      if (res.ok) {
+      const contentType = res.headers.get("content-type") || "";
+      if (res.ok && contentType.includes("application/json")) {
         const parsed = await res.json();
-        decrypted = await ensureDecrypted(parsed);
+        if (parsed && !parsed.error) {
+          decrypted = await ensureDecrypted(parsed);
+        }
       }
-    } catch (err) {
-      console.error("Failed to load CV from local-save:", err);
+    } catch {
+      // Gracefully continue to fallback data
     }
   }
 

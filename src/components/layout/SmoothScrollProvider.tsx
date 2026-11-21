@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -12,7 +13,20 @@ if (typeof window !== "undefined") {
 
 export function SmoothScrollProvider({ children }: { children: React.ReactNode }) {
   const { smoothScroll } = useSettings();
+  const pathname = usePathname();
   const lenisRef = useRef<Lenis | null>(null);
+
+  // Smoothly reset scroll to top on page / route transition
+  useEffect(() => {
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(0, { immediate: true });
+    } else if (typeof window !== "undefined") {
+      window.scrollTo(0, 0);
+    }
+    if (typeof window !== "undefined") {
+      ScrollTrigger.refresh();
+    }
+  }, [pathname]);
 
   useEffect(() => {
     if (!smoothScroll) {

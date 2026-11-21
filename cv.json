@@ -4,9 +4,9 @@
       "first": "Thoeun",
       "last": "Lothin"
     },
-    "title": "Full-Stack Web Developer",
-    "tagline": "3+ Years · Production Systems",
-    "summary": "Full-stack web developer across Vue/Nuxt, React/Next.js, and Angular — with NestJS, Laravel, and Spring Boot on the back end. Delivered nationwide rental marketplaces, enterprise POS, banking, and loan platforms. Specialised in Cloudflare edge infrastructure, Firebase real-time systems, and Cambodia-native Bakong KHQR payment integration.",
+    "title": "Senior Officer, Printing Tools Developments and Support",
+    "tagline": "Senior Officer · Amret Bank HQ",
+    "summary": "Senior Officer, Printing Tools Developments and Support at Amret Bank (HQ, Toul Kork). Specialized in core banking printing tools, document generation, and enterprise system support with C# .NET, ESB, Oracle, and SQL Server, alongside 3+ years of full-stack engineering across Vue/Nuxt, React/Next.js, NestJS, and Spring Boot.",
     "location": "Phnom Penh, Cambodia",
     "website": "https://lothin-portfolio.pages.dev",
     "telegram": "https://t.me/lothindev",
@@ -36,11 +36,35 @@
   },
   "experiences": [
     {
+      "id": "exp-amret",
+      "title": "Senior Officer, Printing Tools Developments and Support",
+      "company": "Amret Bank",
+      "location": "Toul Kork Head Office (HQ), Phnom Penh, Cambodia",
+      "period": "03-08-2026 – Present",
+      "bullets": [
+        "Develop, optimize, and maintain enterprise printing tools and automated financial document generation systems using C# and .NET",
+        "Integrate and support Enterprise Service Bus (ESB) middleware services for reliable financial communication and data exchange between core banking systems",
+        "Design, manage, and optimize complex database operations, stored procedures, triggers, and analytical queries across Oracle and Microsoft SQL Server",
+        "Provide tier-2 and tier-3 technical support, troubleshooting, and production incident resolution for printing solutions across Head Office (HQ) and nationwide branches",
+        "Collaborate with banking operations and IT infrastructure teams at Toul Kork Head Office (HQ) to ensure 24/7 high availability, performance, and data security"
+      ],
+      "tags": [
+        "C#",
+        ".NET",
+        "ESB",
+        "Oracle",
+        "SQL Server",
+        "Printing Tools",
+        "Support & Development",
+        "Banking Systems"
+      ]
+    },
+    {
       "id": "exp-1",
       "title": "Full-Stack Web Developer — AALL Rental Platform",
       "company": "IDG Technology Solutions",
       "location": "Phnom Penh, Cambodia",
-      "period": "2025 – Present",
+      "period": "2025 – 2026",
       "bullets": [
         "Architected the front-end with Nuxt 4 SSR for full SEO-optimised server-side rendering",
         "Built province-based filtering across 25+ Cambodian provinces, merchant selection, and brand filtering",
@@ -183,6 +207,8 @@
     {
       "label": "Back-End",
       "skills": [
+        "C# / .NET",
+        "ESB (Enterprise Service Bus)",
         "NestJS",
         "Laravel",
         "Spring Boot",
@@ -196,9 +222,10 @@
     {
       "label": "Databases",
       "skills": [
+        "Oracle",
+        "Microsoft SQL Server",
         "MySQL",
         "PostgreSQL",
-        "Oracle",
         "MongoDB",
         "Firestore",
         "Realtime DB"

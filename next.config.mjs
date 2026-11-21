@@ -1,4 +1,17 @@
 /** @type {import('next').NextConfig} */
+
+// Guard against Node.js 23 internal TransformStream race conditions on closed client connections
+if (typeof process !== "undefined") {
+  process.on("unhandledRejection", (reason) => {
+    if (reason && typeof reason === "object" && "message" in reason) {
+      const msg = String(reason.message);
+      if (msg.includes("transformAlgorithm") || msg.includes("kState")) {
+        return;
+      }
+    }
+  });
+}
+
 const nextConfig = {
   images: {
     remotePatterns: [
