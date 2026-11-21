@@ -25,6 +25,11 @@ import {
   BarChart2,
   Layers,
   ArrowLeft,
+  ShieldCheck,
+  Receipt,
+  Users,
+  MoreHorizontal,
+  Filter,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -71,6 +76,34 @@ interface CFDashboard {
     requestsByDate: { date: string; requests: number; cached: number }[];
     zoneId?: string;
     zoneName?: string;
+  };
+  audit?: {
+    totalActions: number;
+    actionsTrend: string;
+    uniqueActors: number;
+    actorsTrend: string;
+    productsImpacted: number;
+    failureRate: number;
+    actionsOverTime: { date: string; success: number; failed: number }[];
+    logs: {
+      when: string;
+      action: string;
+      actionType: string;
+      resource: string;
+      actorEmail: string;
+      actorContext: string;
+      zoneName: string;
+    }[];
+  };
+  billing?: {
+    invoices: {
+      id: string;
+      date: string;
+      type: string;
+      number: string;
+      amount: string;
+      status: "Paid" | "Pending" | "Failed";
+    }[];
   };
 }
 
@@ -246,7 +279,7 @@ function CloudflareDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "r2" | "ai" | "zone">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "r2" | "ai" | "zone" | "audit" | "billing">("overview");
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -285,6 +318,8 @@ function CloudflareDashboard() {
     { id: "r2", label: "R2 Storage", icon: Database },
     { id: "ai", label: "Workers AI", icon: Brain },
     { id: "zone", label: "Zone Analytics", icon: Globe },
+    { id: "audit", label: "Audit Log", icon: ShieldCheck },
+    { id: "billing", label: "Bill Invoice", icon: Receipt },
   ] as const;
 
   return (
@@ -885,6 +920,343 @@ function CloudflareDashboard() {
                   )}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ─────────────────────────── AUDIT LOG TAB ──────────────────────── */}
+        {activeTab === "audit" && (
+          <div className="space-y-6">
+            {/* Filter & Control Bar */}
+            <div className="flex items-center justify-between gap-4 border border-rule bg-surface rounded p-4 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-[10px] text-muted uppercase tracking-wider flex items-center gap-1.5">
+                  <Filter size={11} className="text-accent" /> Active Filters:
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-accent/10 border border-accent/20 text-accent font-mono text-[10px] rounded">
+                  Action: ≠ view <span className="text-accent/60">×</span>
+                </span>
+                <button className="font-mono text-[10px] text-muted hover:text-ink px-2 py-1 border border-dashed border-rule rounded hover:border-ink transition-colors">
+                  + Add filter
+                </button>
+                <button className="font-mono text-[10px] text-muted hover:text-ink transition-colors">
+                  Clear filters
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 font-mono text-[10px] text-muted">
+                <span className="px-2.5 py-1 rounded border border-rule bg-bg text-ink flex items-center gap-1.5">
+                  <Clock size={11} /> Last 7 days
+                </span>
+              </div>
+            </div>
+
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard
+                icon={TrendingUp}
+                label="Total Actions"
+                value={data?.audit ? fmtNum(data.audit.totalActions) : "235"}
+                sub="▲ 60.96% vs prev period"
+                accent
+              />
+              <StatCard
+                icon={Users}
+                label="Unique Actors"
+                value={data?.audit ? fmtNum(data.audit.uniqueActors) : "3"}
+                sub="▲ 50.00% active users"
+              />
+              <StatCard
+                icon={Layers}
+                label="Products Impacted"
+                value={data?.audit ? fmtNum(data.audit.productsImpacted) : "7"}
+                sub="R2, Workers, Tokens, Zones"
+                accent
+              />
+              <StatCard
+                icon={ShieldCheck}
+                label="Failure Rate"
+                value={data?.audit ? `${data.audit.failureRate}%` : "0%"}
+                sub="100% successful operations"
+              />
+            </div>
+
+            {/* Actions Over Time Chart */}
+            <div className="border border-rule bg-surface rounded p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-rule mb-4 flex-wrap gap-2">
+                <SectionHeader icon={BarChart2} label="Actions Over Time" tag="Audit Events" />
+                <div className="flex items-center gap-4 font-mono text-[10px]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-accent inline-block" />
+                    <span className="text-muted">235 Success</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+                    <span className="text-muted">0 Failed</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Visual Activity Bars */}
+              <div className="h-32 flex items-end justify-between gap-2 pt-6 px-2">
+                {(data?.audit?.actionsOverTime || [
+                  { date: "Nov 15", success: 38 },
+                  { date: "Nov 16", success: 105 },
+                  { date: "Nov 17", success: 28 },
+                  { date: "Nov 18", success: 14 },
+                  { date: "Nov 19", success: 5 },
+                  { date: "Nov 20", success: 12 },
+                  { date: "Nov 21", success: 33 },
+                ]).map((pt, i) => {
+                  const max = 105;
+                  const heightPct = Math.max(12, Math.round((pt.success / max) * 100));
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+                      <div className="font-mono text-[9px] text-accent opacity-0 group-hover:opacity-100 transition-opacity">
+                        {pt.success}
+                      </div>
+                      <div
+                        style={{ height: `${heightPct}%` }}
+                        className="w-full max-w-[48px] bg-accent/80 hover:bg-accent rounded-t transition-all cursor-pointer"
+                        title={`${pt.date}: ${pt.success} actions`}
+                      />
+                      <span className="font-mono text-[9px] text-muted">{pt.date}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Audit Log Table */}
+            <div className="border border-rule bg-surface rounded overflow-hidden">
+              <div className="px-6 py-4 border-b border-rule flex items-center justify-between">
+                <SectionHeader icon={ShieldCheck} label="Account Activity Log" tag="live stream" />
+                <span className="font-mono text-[10px] text-muted">
+                  Showing latest operations
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-mono text-[11px]">
+                  <thead>
+                    <tr className="border-b border-rule bg-bg/50 text-[10px] uppercase text-muted tracking-wider">
+                      <th className="py-3 px-6 font-medium">Action Time ↓</th>
+                      <th className="py-3 px-6 font-medium">Action Type</th>
+                      <th className="py-3 px-6 font-medium">Resource</th>
+                      <th className="py-3 px-6 font-medium">Actor Email</th>
+                      <th className="py-3 px-6 font-medium">Actor Context</th>
+                      <th className="py-3 px-6 font-medium">Zone Name</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-rule/60">
+                    {(data?.audit?.logs || [
+                      {
+                        when: "2026-11-21 13:39:21",
+                        action: "create",
+                        actionType: "Create Token",
+                        resource: "user tokens",
+                        actorEmail: "lothininfo@gmail.com",
+                        actorContext: "Dashboard",
+                        zoneName: "—",
+                      },
+                      {
+                        when: "2026-11-21 13:30:35",
+                        action: "create",
+                        actionType: "Create Token",
+                        resource: "tokens",
+                        actorEmail: "lothininfo@gmail.com",
+                        actorContext: "Dashboard",
+                        zoneName: "—",
+                      },
+                      {
+                        when: "2026-11-21 13:30:35",
+                        action: "create",
+                        actionType: "TOKEN_CREATE",
+                        resource: "account settings",
+                        actorEmail: "lothininfo@gmail.com",
+                        actorContext: "API (no credential details)",
+                        zoneName: "—",
+                      },
+                      {
+                        when: "2026-11-21 12:50:06",
+                        action: "create",
+                        actionType: "Query analytics top-N",
+                        resource: "analytics query.top-n",
+                        actorEmail: "lothininfo@gmail.com",
+                        actorContext: "Dashboard",
+                        zoneName: "—",
+                      },
+                      {
+                        when: "2026-11-21 12:48:19",
+                        action: "read",
+                        actionType: "Zone Details",
+                        resource: "zones",
+                        actorEmail: "lothininfo@gmail.com",
+                        actorContext: "Dashboard",
+                        zoneName: "—",
+                      },
+                      {
+                        when: "2026-11-17 22:00:15",
+                        action: "update",
+                        actionType: "R2 Settings",
+                        resource: "r2 storage",
+                        actorEmail: "lothininfo@gmail.com",
+                        actorContext: "Dashboard",
+                        zoneName: "—",
+                      },
+                      {
+                        when: "2026-11-16 10:00:00",
+                        action: "create",
+                        actionType: "Workers Deployment",
+                        resource: "workers",
+                        actorEmail: "lothininfo@gmail.com",
+                        actorContext: "API",
+                        zoneName: "—",
+                      },
+                    ]).map((log, i) => (
+                      <tr key={i} className="hover:bg-tag-bg/30 transition-colors">
+                        <td className="py-3 px-6 text-muted whitespace-nowrap">
+                          {log.when}
+                        </td>
+                        <td className="py-3 px-6 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-accent/10 text-accent font-medium text-[10.5px]">
+                            {log.action} / {log.actionType}
+                          </span>
+                        </td>
+                        <td className="py-3 px-6 text-ink font-semibold whitespace-nowrap">
+                          {log.resource}
+                        </td>
+                        <td className="py-3 px-6 text-muted whitespace-nowrap">
+                          <span className="text-ink">{log.actorEmail}</span>
+                          <span className="text-muted/60 text-[9.5px] block">User</span>
+                        </td>
+                        <td className="py-3 px-6 text-muted whitespace-nowrap">
+                          {log.actorContext}
+                        </td>
+                        <td className="py-3 px-6 text-muted whitespace-nowrap">
+                          {log.zoneName}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─────────────────────────── BILL INVOICE TAB ─────────────────────── */}
+        {activeTab === "billing" && (
+          <div className="space-y-6">
+            {/* Header & Sub-Navigation */}
+            <div className="border border-rule bg-surface rounded p-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-rule mb-4 gap-4">
+                <div>
+                  <h2 className="text-xl font-normal text-ink font-display italic">Billing</h2>
+                  <p className="text-xs text-muted font-sans mt-0.5">
+                    Manage your subscriptions, usage, and invoices.
+                  </p>
+                </div>
+                {/* Cloudflare Billing sub-tabs */}
+                <div className="flex items-center gap-1.5 p-1 bg-bg border border-rule rounded font-mono text-[10.5px] overflow-x-auto">
+                  <span className="px-3 py-1 text-muted hover:text-ink cursor-pointer whitespace-nowrap">Subscriptions</span>
+                  <span className="px-3 py-1 text-muted hover:text-ink cursor-pointer whitespace-nowrap">Billable usage</span>
+                  <span className="px-3 py-1 text-muted hover:text-ink cursor-pointer flex items-center gap-1 whitespace-nowrap">
+                    Spend limits <span className="text-[8.5px] px-1 py-0.2 bg-accent/10 text-accent rounded font-bold">Beta</span>
+                  </span>
+                  <span className="px-3 py-1 bg-surface text-ink font-semibold border border-rule rounded shadow-xs whitespace-nowrap">
+                    Invoices
+                  </span>
+                </div>
+              </div>
+
+              {/* Informational Callout matching screenshot 3 */}
+              <div className="p-4 rounded-lg border border-rule/80 bg-bg text-muted font-sans text-xs leading-relaxed space-y-1">
+                <p>
+                  Cloudflare will not provide receipts for individual payments. Instead, you will see a consolidated invoice within 24 hours of your order.
+                </p>
+                <p className="text-accent/90">
+                  For any historical invoices not listed, refer to our <a href="https://support.cloudflare.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent font-medium">Support Portal</a> for assistance.
+                </p>
+              </div>
+            </div>
+
+            {/* Invoices Table Card */}
+            <div className="border border-rule bg-surface rounded overflow-hidden">
+              <div className="p-4 border-b border-rule flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] uppercase text-muted tracking-wider flex items-center gap-1.5">
+                    <Filter size={11} className="text-accent" /> Status
+                  </span>
+                  <select
+                    className="font-mono text-[11px] bg-bg border border-rule rounded px-2.5 py-1 text-ink focus:outline-none focus:border-accent"
+                    defaultValue="All"
+                  >
+                    <option value="All">All</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Failed">Failed</option>
+                  </select>
+                </div>
+
+                <div className="font-mono text-[10px] text-muted">
+                  6 Invoices on Record · Account in Good Standing
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-mono text-[11px]">
+                  <thead>
+                    <tr className="border-b border-rule bg-bg/50 text-[10px] uppercase text-muted tracking-wider">
+                      <th className="py-3 px-6 font-medium">Date</th>
+                      <th className="py-3 px-6 font-medium">Type</th>
+                      <th className="py-3 px-6 font-medium">Number</th>
+                      <th className="py-3 px-6 font-medium">Amount</th>
+                      <th className="py-3 px-6 font-medium">Status</th>
+                      <th className="py-3 px-6 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-rule/60">
+                    {(data?.billing?.invoices || [
+                      { id: "inv-1", date: "Nov 11, 2026", type: "Invoice", number: "IN-88321705", amount: "$0.00", status: "Paid" },
+                      { id: "inv-2", date: "Oct 11, 2026", type: "Invoice", number: "IN-83284186", amount: "$0.00", status: "Paid" },
+                      { id: "inv-3", date: "Sep 11, 2026", type: "Invoice", number: "IN-78815377", amount: "$0.00", status: "Paid" },
+                      { id: "inv-4", date: "Aug 11, 2026", type: "Invoice", number: "IN-74860153", amount: "$0.00", status: "Paid" },
+                      { id: "inv-5", date: "Jul 11, 2026", type: "Invoice", number: "IN-71210488", amount: "$0.00", status: "Paid" },
+                      { id: "inv-6", date: "Jun 11, 2026", type: "Invoice", number: "IN-67890436", amount: "$0.00", status: "Paid" },
+                    ]).map((inv) => (
+                      <tr key={inv.id} className="hover:bg-tag-bg/30 transition-colors">
+                        <td className="py-3.5 px-6 text-ink whitespace-nowrap">
+                          {inv.date}
+                        </td>
+                        <td className="py-3.5 px-6 text-muted whitespace-nowrap">
+                          {inv.type}
+                        </td>
+                        <td className="py-3.5 px-6 font-semibold text-ink whitespace-nowrap">
+                          {inv.number}
+                        </td>
+                        <td className="py-3.5 px-6 text-ink font-bold whitespace-nowrap">
+                          {inv.amount}
+                        </td>
+                        <td className="py-3.5 px-6 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-semibold text-[10px]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            {inv.status}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-6 text-right whitespace-nowrap text-muted">
+                          <button
+                            className="p-1.5 rounded hover:bg-tag-bg text-muted hover:text-ink transition-colors cursor-pointer"
+                            title="Invoice options"
+                          >
+                            <MoreHorizontal size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
