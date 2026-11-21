@@ -54,6 +54,7 @@ export function InstantNavProvider({ children }: { children: React.ReactNode }) 
       const currentPath = window.location.pathname;
       if (SPA_ROUTES.includes(currentPath)) {
         setActivePath(currentPath);
+        window.scrollTo({ top: 0, behavior: "instant" });
       }
     };
     window.addEventListener("popstate", handlePopState);
@@ -122,15 +123,15 @@ export function InstantPageView({ children }: { children?: React.ReactNode }) {
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={activePath}
-        initial={{ opacity: 0, y: 8, filter: "blur(2px)" }}
+        initial={{ opacity: 0, y: 10, filter: "blur(2px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        exit={{ opacity: 0, y: -6, filter: "blur(2px)" }}
+        exit={{ opacity: 0, y: -8, filter: "blur(2px)" }}
         transition={{
-          duration: 0.16,
+          duration: 0.22,
           ease: [0.16, 1, 0.3, 1], // Cloudflare / Apple snappy deceleration curve
         }}
         style={{ willChange: "transform, opacity, filter" }}
-        className="w-full"
+        className="w-full page-transition-container"
       >
         {renderView()}
       </motion.div>
