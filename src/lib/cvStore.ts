@@ -7,6 +7,24 @@ import { decryptData } from "./encryption";
 let memCache: CVData | null = null;
 const R2_FILE_KEY = "cv.json";
 
+interface GlobalCVCache {
+  data: CVData | null;
+  timestamp: number;
+}
+
+const globalStore = globalThis as unknown as { __cvGlobalCache?: GlobalCVCache };
+if (!globalStore.__cvGlobalCache) {
+  globalStore.__cvGlobalCache = { data: null, timestamp: 0 };
+}
+
+export function invalidateCVCache() {
+  memCache = null;
+  if (globalStore.__cvGlobalCache) {
+    globalStore.__cvGlobalCache.data = null;
+    globalStore.__cvGlobalCache.timestamp = 0;
+  }
+}
+
 interface MinimalR2Bucket {
   get(key: string): Promise<{ json(): Promise<any> } | null>;
   put(key: string, value: string): Promise<any>;
@@ -187,6 +205,11 @@ async function loadFromR2API(): Promise<any | null> {
 }
 
 export async function getCVData(): Promise<CVData> {
+  const CACHE_TTL_MS = 60_000; // 60s memory cache for instant subpage rendering
+  const now = Date.now();
+  if (globalStore.__cvGlobalCache?.data && (now - globalStore.__cvGlobalCache.timestamp < CACHE_TTL_MS)) {
+    return globalStore.__cvGlobalCache.data;
+  }
   if (memCache) return memCache;
 
   let decrypted: CVData | null = null;
@@ -387,6 +410,10 @@ export async function getCVData(): Promise<CVData> {
   }
 
   memCache = decrypted;
+  if (globalStore.__cvGlobalCache) {
+    globalStore.__cvGlobalCache.data = decrypted;
+    globalStore.__cvGlobalCache.timestamp = Date.now();
+  }
   return memCache;
 }
 
@@ -419,6 +446,10 @@ async function saveToR2API(jsonData: any): Promise<boolean> {
 export async function saveCVData(data: CVData): Promise<void> {
   const updatedData = { ...data, updatedAt: new Date().toISOString() };
   memCache = updatedData;
+  if (globalStore.__cvGlobalCache) {
+    globalStore.__cvGlobalCache.data = updatedData;
+    globalStore.__cvGlobalCache.timestamp = Date.now();
+  }
 
   try {
     await saveToFirebase(updatedData);

@@ -135,17 +135,31 @@ export function Navbar() {
 
           <div className="hidden md:flex items-center gap-6">
             <ul className="flex items-center gap-6 list-none" role="list">
-              {navLinks.map((link) => (
-                <li key={link.sectionId}>
-                  <Link
-                    href={link.href}
-                    onClick={handleNavClick}
-                    className={cn("nav-link font-sans text-xs uppercase tracking-wider", isActive(link) && "active")}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+              {navLinks.map((link) => {
+                const active = isActive(link);
+                return (
+                  <li key={link.sectionId} className="relative py-1">
+                    <Link
+                      href={link.href}
+                      prefetch={true}
+                      onClick={handleNavClick}
+                      className={cn(
+                        "relative font-sans text-xs uppercase tracking-wider transition-colors duration-200 py-1 px-1 block",
+                        active ? "text-accent font-semibold" : "text-muted hover:text-ink"
+                      )}
+                    >
+                      {link.label}
+                      {active && (
+                        <motion.span
+                          layoutId="navbar-indicator"
+                          className="absolute -bottom-1 left-0 right-0 h-[2px] bg-accent rounded-full pointer-events-none"
+                          transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                        />
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
             {cv.profile?.cvPdfUrl && (
               <a
@@ -281,6 +295,7 @@ export function Navbar() {
                         >
                           <Link
                             href={link.href}
+                            prefetch={true}
                             onClick={handleNavClick}
                             className={cn(
                               "group flex items-baseline py-1 font-display italic text-3xl font-light text-ink/80 hover:text-accent transition-all duration-200 relative",

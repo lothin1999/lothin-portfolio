@@ -16,16 +16,19 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const lenisRef = useRef<Lenis | null>(null);
 
-  // Smoothly reset scroll to top on page / route transition
+  // Smoothly reset scroll to top on page / route transition without layout jump
   useEffect(() => {
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(0, { immediate: true });
-    } else if (typeof window !== "undefined") {
-      window.scrollTo(0, 0);
-    }
-    if (typeof window !== "undefined") {
-      ScrollTrigger.refresh();
-    }
+    const frameId = requestAnimationFrame(() => {
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { immediate: true });
+      } else if (typeof window !== "undefined") {
+        window.scrollTo(0, 0);
+      }
+      if (typeof window !== "undefined") {
+        ScrollTrigger.refresh();
+      }
+    });
+    return () => cancelAnimationFrame(frameId);
   }, [pathname]);
 
   useEffect(() => {
