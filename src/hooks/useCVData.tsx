@@ -9,6 +9,7 @@ interface CVContextValue {
   cv: CVData;
   isAdmin: boolean;
   isLoading: boolean;
+  isAuthChecking: boolean;
   isLocked: boolean;
   setAdmin: (v: boolean) => void;
   updateCV: (data: CVData) => Promise<void>;
@@ -22,6 +23,7 @@ export function CVProvider({ children, initialData }: { children: React.ReactNod
   const [cv, setCV] = useState<CVData>(initialData && initialData.profile ? initialData : defaultCV);
   const [isAdmin, setAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(!initialData?.profile);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
   const [ciphertext, setCiphertext] = useState<string | null>(null);
 
@@ -68,14 +70,15 @@ export function CVProvider({ children, initialData }: { children: React.ReactNod
 
       if (authRes.ok) {
         const authData = await authRes.json();
-        if (authData.authorized) {
-          setAdmin(true);
-        }
+        setAdmin(!!authData.authorized);
+      } else {
+        setAdmin(false);
       }
     } catch (err) {
       console.error("Error loading CV/auth data:", err);
     } finally {
       setIsLoading(false);
+      setIsAuthChecking(false);
     }
   }, []);
 
@@ -114,7 +117,7 @@ export function CVProvider({ children, initialData }: { children: React.ReactNod
   }, []);
 
   return (
-    <CVContext.Provider value={{ cv, isAdmin, isLoading, isLocked, setAdmin, updateCV, refreshCV, unlock }}>
+    <CVContext.Provider value={{ cv, isAdmin, isLoading, isAuthChecking, isLocked, setAdmin, updateCV, refreshCV, unlock }}>
       {children}
     </CVContext.Provider>
   );
@@ -127,6 +130,7 @@ export function useCVData() {
       cv: defaultCV,
       isAdmin: false,
       isLoading: false,
+      isAuthChecking: false,
       isLocked: false,
       setAdmin: () => {},
       updateCV: async () => {},

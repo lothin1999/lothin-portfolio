@@ -951,79 +951,203 @@ function CloudflareDashboard() {
               </div>
             </div>
 
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard
-                icon={TrendingUp}
-                label="Total Actions"
-                value={data?.audit ? fmtNum(data.audit.totalActions) : "235"}
-                sub="▲ 60.96% vs prev period"
-                accent
-              />
-              <StatCard
-                icon={Users}
-                label="Unique Actors"
-                value={data?.audit ? fmtNum(data.audit.uniqueActors) : "3"}
-                sub="▲ 50.00% active users"
-              />
-              <StatCard
-                icon={Layers}
-                label="Products Impacted"
-                value={data?.audit ? fmtNum(data.audit.productsImpacted) : "7"}
-                sub="R2, Workers, Tokens, Zones"
-                accent
-              />
-              <StatCard
-                icon={ShieldCheck}
-                label="Failure Rate"
-                value={data?.audit ? `${data.audit.failureRate}%` : "0%"}
-                sub="100% successful operations"
-              />
-            </div>
-
-            {/* Actions Over Time Chart */}
-            <div className="border border-rule bg-surface rounded p-6">
-              <div className="flex items-center justify-between pb-4 border-b border-rule mb-4 flex-wrap gap-2">
-                <SectionHeader icon={BarChart2} label="Actions Over Time" tag="Audit Events" />
-                <div className="flex items-center gap-4 font-mono text-[10px]">
+            {/* Actions Over Time Chart matching Cloudflare Screenshot */}
+            <div className="border border-rule bg-surface rounded-xl p-6 shadow-xs">
+              <div className="flex items-center justify-between pb-4 border-b border-rule mb-6 flex-wrap gap-2">
+                <div>
+                  <h3 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold flex items-center gap-2">
+                    <BarChart2 size={13} className="text-accent" />
+                    Actions Over Time
+                  </h3>
+                  <p className="font-mono text-[10px] text-muted mt-0.5">
+                    Cloudflare account activity distribution & rate metrics
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 font-mono text-[10.5px]">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-accent inline-block" />
-                    <span className="text-muted">235 Success</span>
+                    <span className="w-2.5 h-2.5 rounded-sm bg-[#3B82F6] inline-block shadow-xs" />
+                    <span className="text-ink font-medium">235 Success</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+                    <span className="w-2.5 h-2.5 rounded-sm bg-[#EF4444] inline-block shadow-xs" />
                     <span className="text-muted">0 Failed</span>
                   </div>
                 </div>
               </div>
 
-              {/* Visual Activity Bars */}
-              <div className="h-32 flex items-end justify-between gap-2 pt-6 px-2">
-                {(data?.audit?.actionsOverTime || [
-                  { date: "Nov 15", success: 38 },
-                  { date: "Nov 16", success: 105 },
-                  { date: "Nov 17", success: 28 },
-                  { date: "Nov 18", success: 14 },
-                  { date: "Nov 19", success: 5 },
-                  { date: "Nov 20", success: 12 },
-                  { date: "Nov 21", success: 33 },
-                ]).map((pt, i) => {
-                  const max = 105;
-                  const heightPct = Math.max(12, Math.round((pt.success / max) * 100));
-                  return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                      <div className="font-mono text-[9px] text-accent opacity-0 group-hover:opacity-100 transition-opacity">
-                        {pt.success}
-                      </div>
-                      <div
-                        style={{ height: `${heightPct}%` }}
-                        className="w-full max-w-[48px] bg-accent/80 hover:bg-accent rounded-t transition-all cursor-pointer"
-                        title={`${pt.date}: ${pt.success} actions`}
-                      />
-                      <span className="font-mono text-[9px] text-muted">{pt.date}</span>
+              {/* Chart Canvas with Gridlines & Y-Axis */}
+              <div className="relative pt-2 pb-2">
+                {/* Horizontal Gridlines & Y-Axis Labels */}
+                <div className="absolute inset-x-0 top-0 bottom-7 flex flex-col justify-between pointer-events-none">
+                  {[105, 70, 35, 0].map((val) => (
+                    <div key={val} className="w-full flex items-center gap-3">
+                      <span className="w-7 text-right font-mono text-[10px] text-muted shrink-0 select-none">
+                        {val}
+                      </span>
+                      <div className="w-full border-b border-rule/40 border-dashed" />
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+
+                {/* Timeline Bars Grid */}
+                <div className="h-44 pl-10 pr-4 flex items-end justify-between gap-1 sm:gap-2 relative z-10 pb-7">
+                  {[
+                    { label: "Nov 15, 06:00", count: 35, width: "w-3 sm:w-4", time: "Nov 15, 06:00" },
+                    { label: "Nov 15, 12:00", count: 48, width: "w-3 sm:w-4", time: "Nov 15, 12:00" },
+                    { label: "Nov 16, 02:00", count: 105, width: "w-3 sm:w-4", time: "Nov 16, 02:00" },
+                    { label: "Nov 16, 10:00", count: 22, width: "w-3 sm:w-4", time: "Nov 16, 10:00" },
+                    { label: "Nov 17, 08:00", count: 0, width: "w-2 sm:w-3", time: "Nov 17, 08:00" },
+                    { label: "Nov 17, 16:00", count: 18, width: "w-3 sm:w-4", time: "Nov 17, 16:00" },
+                    { label: "Nov 17, 22:00", count: 28, width: "w-3 sm:w-4", time: "Nov 17, 22:00" },
+                    { label: "Nov 18, 10:00", count: 0, width: "w-2 sm:w-3", time: "Nov 18, 10:00" },
+                    { label: "Nov 19, 10:00", count: 5, width: "w-3 sm:w-4", time: "Nov 19, 10:00" },
+                    { label: "Nov 20, 10:00", count: 0, width: "w-2 sm:w-3", time: "Nov 20, 10:00" },
+                    { label: "Nov 21, 08:00", count: 20, width: "w-3 sm:w-4", time: "Nov 21, 08:00" },
+                    { label: "Nov 21, 13:00", count: 14, width: "w-3 sm:w-4", time: "Nov 21, 13:00" },
+                  ].map((pt, idx) => {
+                    const heightPct = pt.count > 0 ? Math.max(8, Math.round((pt.count / 105) * 100)) : 0;
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                        {/* Tooltip on hover */}
+                        {pt.count > 0 && (
+                          <div className="absolute -top-9 bg-ink text-surface dark:bg-surface dark:text-ink font-mono text-[9px] px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20">
+                            {pt.time}: <strong className="text-accent">{pt.count} actions</strong>
+                          </div>
+                        )}
+                        {pt.count > 0 ? (
+                          <div
+                            style={{ height: `${heightPct}%` }}
+                            className={`${pt.width} bg-[#3B82F6] hover:bg-[#60A5FA] rounded-t-xs transition-all duration-150 cursor-pointer shadow-xs`}
+                          />
+                        ) : (
+                          <div className="w-1 h-0.5 bg-transparent" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* X-Axis Labels */}
+                <div className="flex justify-between pl-10 pr-4 pt-1 font-mono text-[10px] text-muted border-t border-rule/50">
+                  <span>Nov 16, 10:00</span>
+                  <span>Nov 17, 22:00</span>
+                  <span>Nov 19, 10:00</span>
+                  <span>Nov 21, 13:00</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Metrics Grid with SVG Glowing Sparkline Waves */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* 1. Total Actions */}
+              <div className="border border-rule bg-surface rounded-xl p-5 flex flex-col justify-between overflow-hidden relative group hover:border-accent transition-colors duration-200 shadow-2xs">
+                <div>
+                  <div className="flex items-center justify-between text-muted mb-1.5">
+                    <span className="font-mono text-[10.5px] uppercase tracking-wider font-medium">Total Actions</span>
+                    <ChevronDown size={13} className="text-muted/60" />
+                  </div>
+                  <div className="flex items-baseline gap-2.5">
+                    <span className="font-serif text-3xl font-normal text-ink">
+                      {data?.audit ? fmtNum(data.audit.totalActions) : "235"}
+                    </span>
+                    <span className="font-mono text-[10.5px] text-emerald-500 font-semibold">
+                      ▲ 60.96%
+                    </span>
+                  </div>
+                </div>
+                {/* Glowing Wave SVG Sparkline */}
+                <div className="h-10 mt-3 -mx-5 -mb-5 relative">
+                  <svg className="w-full h-full" viewBox="0 0 100 28" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="sparkWave1" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.45" />
+                        <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M0 20 Q25 20, 50 14 T100 8 L100 28 L0 28 Z" fill="url(#sparkWave1)" />
+                    <path d="M0 20 Q25 20, 50 14 T100 8" fill="none" stroke="#3B82F6" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* 2. Unique Actors */}
+              <div className="border border-rule bg-surface rounded-xl p-5 flex flex-col justify-between overflow-hidden relative group hover:border-accent transition-colors duration-200 shadow-2xs">
+                <div>
+                  <div className="flex items-center justify-between text-muted mb-1.5">
+                    <span className="font-mono text-[10.5px] uppercase tracking-wider font-medium">Unique Actors</span>
+                    <ChevronDown size={13} className="text-muted/60" />
+                  </div>
+                  <div className="flex items-baseline gap-2.5">
+                    <span className="font-serif text-3xl font-normal text-ink">
+                      {data?.audit ? fmtNum(data.audit.uniqueActors) : "3"}
+                    </span>
+                    <span className="font-mono text-[10.5px] text-emerald-500 font-semibold">
+                      ▲ 50.00%
+                    </span>
+                  </div>
+                </div>
+                {/* Glowing Triangular Peak Sparkline */}
+                <div className="h-10 mt-3 -mx-5 -mb-5 relative">
+                  <svg className="w-full h-full" viewBox="0 0 100 28" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="sparkPeak2" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.45" />
+                        <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M0 24 L35 24 L55 6 L75 24 L100 24 L100 28 L0 28 Z" fill="url(#sparkPeak2)" />
+                    <path d="M0 24 L35 24 L55 6 L75 24 L100 24" fill="none" stroke="#3B82F6" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* 3. Products Impacted */}
+              <div className="border border-rule bg-surface rounded-xl p-5 flex flex-col justify-between overflow-hidden relative group hover:border-accent transition-colors duration-200 shadow-2xs">
+                <div>
+                  <div className="flex items-center justify-between text-muted mb-1.5">
+                    <span className="font-mono text-[10.5px] uppercase tracking-wider font-medium">Products Impacted</span>
+                    <ChevronDown size={13} className="text-muted/60" />
+                  </div>
+                  <div className="flex items-baseline gap-2.5">
+                    <span className="font-serif text-3xl font-normal text-ink">
+                      {data?.audit ? fmtNum(data.audit.productsImpacted) : "7"}
+                    </span>
+                  </div>
+                </div>
+                {/* Glowing Triangular Peak Sparkline */}
+                <div className="h-10 mt-3 -mx-5 -mb-5 relative">
+                  <svg className="w-full h-full" viewBox="0 0 100 28" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="sparkPeak3" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.45" />
+                        <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M0 24 L40 24 L60 8 L80 24 L100 24 L100 28 L0 28 Z" fill="url(#sparkPeak3)" />
+                    <path d="M0 24 L40 24 L60 8 L80 24 L100 24" fill="none" stroke="#3B82F6" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* 4. Failure Rate */}
+              <div className="border border-rule bg-surface rounded-xl p-5 flex flex-col justify-between overflow-hidden relative group hover:border-accent transition-colors duration-200 shadow-2xs">
+                <div>
+                  <div className="flex items-center justify-between text-muted mb-1.5">
+                    <span className="font-mono text-[10.5px] uppercase tracking-wider font-medium">Failure Rate</span>
+                    <ChevronDown size={13} className="text-muted/60" />
+                  </div>
+                  <div className="flex items-baseline gap-2.5">
+                    <span className="font-serif text-3xl font-normal text-ink">
+                      {data?.audit ? `${data.audit.failureRate}%` : "0%"}
+                    </span>
+                  </div>
+                </div>
+                {/* Flat Red Zero Failure Line */}
+                <div className="h-10 mt-3 -mx-5 -mb-5 relative flex items-end">
+                  <svg className="w-full h-4" viewBox="0 0 100 16" preserveAspectRatio="none">
+                    <line x1="0" y1="12" x2="100" y2="12" stroke="#EF4444" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -1280,15 +1404,15 @@ function CloudflareDashboard() {
 
 // ─── Page Wrapper (auth gate) ─────────────────────────────────────────────────
 export default function DashboardPage() {
-  const { isAdmin, isLoading } = useCVData();
+  const { isAdmin, isAuthChecking } = useCVData();
   const router = useRouter();
 
-  if (isLoading) {
+  if (isAuthChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="flex flex-col items-center gap-2">
           <p className="font-mono text-xs text-muted animate-pulse uppercase tracking-[2px]">
-            Checking credentials...
+            Verifying admin access...
           </p>
         </div>
       </div>

@@ -6,14 +6,16 @@ import { AdminEditPage } from "@/components/admin/AdminEditPage";
 import { AdminLoginModal } from "@/components/admin/AdminLoginModal";
 
 export default function EditPage() {
-  const { isAdmin, isLoading } = useCVData();
+  const { isAdmin, isAuthChecking } = useCVData();
   const router = useRouter();
 
-  if (isLoading) {
+  if (isAuthChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="flex flex-col items-center gap-2">
-          <p className="font-mono text-xs text-muted animate-pulse">Checking credentials...</p>
+          <p className="font-mono text-xs text-muted animate-pulse uppercase tracking-[2px]">
+            Verifying admin access...
+          </p>
         </div>
       </div>
     );

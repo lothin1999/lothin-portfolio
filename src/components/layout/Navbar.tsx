@@ -35,11 +35,11 @@ export function Navbar() {
   } = useSettings();
   const navLinks = cv.adminSettings?.navLinks || DEFAULT_NAV_LINKS;
   const pathname = usePathname();
+  const [optimisticPath, setOptimisticPath] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [menuTime, setMenuTime] = useState("");
-
   const [alertState, setAlertState] = useState<{
     isOpen: boolean;
     title: string;
@@ -50,55 +50,21 @@ export function Navbar() {
     message: "",
   });
 
-  const handleDownloadCV = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!cv.profile?.cvPdfUrl) {
-      e.preventDefault();
-      setAlertState({
-        isOpen: true,
-        title: "CV Not Found",
-        message: "The CV PDF document has not been uploaded to Cloudflare R2 yet. Please contact me directly or check back later.",
-      });
-    }
-  };
-
-  const handleDownloadCoverLetter = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!cv.profile?.coverLetterPdfUrl) {
-      e.preventDefault();
-      setAlertState({
-        isOpen: true,
-        title: "Letter Not Found",
-        message: "The Cover Letter PDF document has not been uploaded to Cloudflare R2 yet. Please contact me directly or check back later.",
-      });
-    }
-  };
+  const handleNavClick = () => setMobileOpen(false);
 
   // Track scroll shadow and progress
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
-      
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
       setScrollProgress(Math.round(Math.min(100, Math.max(0, progress))));
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Initial check
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Update clock time for menu telemetry
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const updateTime = () => {
-      const now = new Date();
-      const pad = (num: number) => String(num).padStart(2, "0");
-      setMenuTime(`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`);
-    };
-    updateTime();
-    const id = setInterval(updateTime, 1000);
-    return () => clearInterval(id);
-  }, [mobileOpen]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -106,16 +72,18 @@ export function Navbar() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  // No anchor-based intersection observers needed — all sections are now separate pages.
-  // (previously: IntersectionObserver to highlight active section on homepage)
+  // Sync optimistic path with actual route when router settles
+  useEffect(() => {
+    setOptimisticPath(pathname);
+  }, [pathname]);
 
-  const handleNavClick = () => setMobileOpen(false);
+  const currentPath = optimisticPath ?? pathname;
 
   const isActive = (link: (typeof navLinks)[0]) => {
-    if (!pathname) return false;
-    if (link.pathMatch === "/") return pathname === "/";
-    if (link.pathMatch === "/articles") return pathname.startsWith("/articles");
-    return pathname.startsWith(link.pathMatch);
+    if (!currentPath) return false;
+    if (link.pathMatch === "/") return currentPath === "/";
+    if (link.pathMatch === "/articles") return currentPath.startsWith("/articles");
+    return currentPath.startsWith(link.pathMatch);
   };
 
   return (
@@ -142,9 +110,13 @@ export function Navbar() {
                     <Link
                       href={link.href}
                       prefetch={true}
-                      onClick={handleNavClick}
+                      onPointerDown={() => setOptimisticPath(link.href)}
+                      onClick={() => {
+                        setOptimisticPath(link.href);
+                        handleNavClick();
+                      }}
                       className={cn(
-                        "relative font-sans text-xs uppercase tracking-wider transition-colors duration-200 py-1 px-1 block",
+                        "relative font-sans text-xs uppercase tracking-wider transition-colors duration-150 py-1 px-1 block",
                         active ? "text-accent font-semibold" : "text-muted hover:text-ink"
                       )}
                     >
@@ -296,7 +268,11 @@ export function Navbar() {
                           <Link
                             href={link.href}
                             prefetch={true}
-                            onClick={handleNavClick}
+                            onPointerDown={() => setOptimisticPath(link.href)}
+                            onClick={() => {
+                              setOptimisticPath(link.href);
+                              handleNavClick();
+                            }}
                             className={cn(
                               "group flex items-baseline py-1 font-display italic text-3xl font-light text-ink/80 hover:text-accent transition-all duration-200 relative",
                               active && "text-accent font-normal"
