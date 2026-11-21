@@ -36,4 +36,4 @@ yarn-error.log*
 
 # generated public files
 /public/README.md
-
+pnpm-lock.yaml

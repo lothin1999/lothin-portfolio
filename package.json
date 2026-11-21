@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "rm -rf .next && cp README.md public/README.md && next dev",
-    "build": "rm -rf .next && cp README.md public/README.md && next build",
+    "dev": "node scripts/prepare.mjs && next dev",
+    "build": "node scripts/prepare.mjs && next build",
     "start": "next start",
     "lint": "next lint",
-    "clean": "rm -rf .next .vercel",
+    "clean": "node scripts/clean.mjs",
     "pages:build": "pnpm dlx @cloudflare/next-on-pages",
     "preview": "pnpm pages:build && pnpm wrangler pages dev .vercel/output/static",
     "deploy": "pnpm pages:build && pnpm wrangler pages deploy .vercel/output/static"
@@ -48,5 +48,6 @@
     "tailwindcss": "^3.4.4",
     "typescript": "^5",
     "wrangler": "^3"
-  }
+  },
+  "packageManager": "pnpm@12.21.0+sha512.66fd8278ee28935ce951792d34367ff3af5c432a2756445823029533835b8da529bbe0be5130afd56ed0713fb8789e47bad82d93bd5ae2fe54b15562d6276ef0"
 }
