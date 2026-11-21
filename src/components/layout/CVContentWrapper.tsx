@@ -344,6 +344,36 @@ function ThemeColorsApplier() {
   return null;
 }
 
+function ThemeStylesApplier() {
+  const { cv } = useCVData();
+  const styles = cv.adminSettings?.themeStyles;
+
+  useEffect(() => {
+    if (!styles) return;
+    const root = document.documentElement;
+    if (styles.fontDisplay) {
+      root.style.setProperty("--font-display", styles.fontDisplay);
+      root.style.setProperty("--font-instrument", styles.fontDisplay);
+    }
+    if (styles.fontBody) {
+      root.style.setProperty("--font-body", styles.fontBody);
+      root.style.setProperty("--font-dm-sans", styles.fontBody);
+    }
+    if (styles.fontMono) {
+      root.style.setProperty("--font-mono", styles.fontMono);
+      root.style.setProperty("--font-dm-mono", styles.fontMono);
+    }
+    if (styles.boxShadow) {
+      root.style.setProperty("--box-shadow", styles.boxShadow);
+    }
+    if (styles.borderRadius) {
+      root.style.setProperty("--card-radius", styles.borderRadius);
+    }
+  }, [styles]);
+
+  return null;
+}
+
 export function CVContentWrapper({ children }: { children: React.ReactNode }) {
   const { isLocked, isLoading } = useCVData();
 
@@ -352,6 +382,7 @@ export function CVContentWrapper({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ThemeColorsApplier />
+      <ThemeStylesApplier />
       {children}
     </>
   );

@@ -108,6 +108,58 @@ async function listR2Files(): Promise<R2Object[]> {
   return [];
 }
 
+async function loadFromFirebase(): Promise<any | null> {
+  const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
+  const projectId = clean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+  const apiKey = clean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
+  if (!projectId || !apiKey) return null;
+
+  try {
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/portfolio/cv?key=${apiKey}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (res.ok) {
+      const doc = await res.json();
+      const raw = doc.fields?.data?.stringValue;
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return raw;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to load CV from Firebase Firestore:", err);
+  }
+  return null;
+}
+
+async function saveToFirebase(jsonData: any): Promise<boolean> {
+  const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
+  const projectId = clean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+  const apiKey = clean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
+  if (!projectId || !apiKey) return false;
+
+  try {
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/portfolio/cv?key=${apiKey}`;
+    const payloadStr = typeof jsonData === "string" ? jsonData : JSON.stringify(jsonData);
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fields: {
+          data: { stringValue: payloadStr },
+          updatedAt: { stringValue: new Date().toISOString() },
+        },
+      }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn("Failed to save to Firebase Firestore:", err);
+    return false;
+  }
+}
+
 async function loadFromR2API(): Promise<any | null> {
   const clean = (val?: string) => val ? val.replace(/['"]/g, "") : "";
   const accountId = clean(process.env.CLOUDFLARE_ACCOUNT_ID);
@@ -140,7 +192,17 @@ export async function getCVData(): Promise<CVData> {
   let decrypted: CVData | null = null;
 
   try {
-    const context = await getCFContext();
+    const parsed = await loadFromFirebase();
+    if (parsed) {
+      decrypted = await ensureDecrypted(parsed);
+    }
+  } catch {
+    // Continue to R2 / local fallback
+  }
+
+  if (!decrypted) {
+    try {
+      const context = await getCFContext();
     const env = context?.env as any;
     const bucket = env?.R2_BUCKET_NAME as MinimalR2Bucket | undefined;
     if (bucket) {
@@ -153,6 +215,7 @@ export async function getCVData(): Promise<CVData> {
   } catch (err) {
     console.error("Failed to load CV from R2 bucket:", err);
   }
+}
 
   if (!decrypted) {
     try {
@@ -356,6 +419,12 @@ async function saveToR2API(jsonData: any): Promise<boolean> {
 export async function saveCVData(data: CVData): Promise<void> {
   const updatedData = { ...data, updatedAt: new Date().toISOString() };
   memCache = updatedData;
+
+  try {
+    await saveToFirebase(updatedData);
+  } catch (err) {
+    console.warn("Firebase save warning:", err);
+  }
 
   try {
     const context = await getCFContext();

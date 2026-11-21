@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import {
   Plus, Trash2, Save, Upload, RefreshCw, Check, ArrowLeft,
   ChevronDown, ChevronRight, FileText, Globe, CheckCircle, Edit, List, Info, Folder,
-  AlertTriangle
+  AlertTriangle, ArrowUp, ArrowDown, Type, Sliders, Compass
 } from "lucide-react";
-import type { CVData, Article, DocumentItem, ThemeColorSet } from "@/types/cv";
+import type { CVData, Article, DocumentItem, ThemeColorSet, ThemeStyles, NavLink } from "@/types/cv";
 import { useCVData } from "@/hooks/useCVData";
 import { DragDropUploader } from "./DragDropUploader";
 import { DEFAULT_LIGHT_COLORS, DEFAULT_DARK_COLORS } from "@/hooks/useThemeColors";
@@ -89,15 +89,18 @@ type Tab =
   | "skills"
   | "education"
   | "references"
+  | "navigation"
+  | "typography"
+  | "colors"
   | "home"
   | "about"
   | "portfolio"
   | "services"
+  | "contact"
   | "articles"
   | "documents"
   | "storage"
-  | "vectorize"
-  | "colors";
+  | "vectorize";
 
 const CV_TABS: { id: Tab; label: string }[] = [
   { id: "profile", label: "Profile" },
@@ -108,15 +111,18 @@ const CV_TABS: { id: Tab; label: string }[] = [
 ];
 
 const ADMIN_TABS: { id: Tab; label: string }[] = [
+  { id: "navigation", label: "🧭 Menu Links" },
+  { id: "typography", label: "✨ Fonts & Shadows" },
+  { id: "colors", label: "🎨 Colors" },
   { id: "home", label: "Homepage" },
   { id: "about", label: "About Page" },
   { id: "portfolio", label: "Work Page" },
   { id: "services", label: "Services Page" },
+  { id: "contact", label: "Contact & Footer" },
   { id: "articles", label: "Articles" },
   { id: "documents", label: "Documents" },
   { id: "storage", label: "Storage" },
   { id: "vectorize", label: "Vectorize" },
-  { id: "colors", label: "🎨 Colors" },
 ];
 
 // ── Default Fallbacks ────────────────────────────────────────────────────────
@@ -2685,21 +2691,528 @@ export function AdminEditPage() {
     );
   };
 
+  // ── Navigation Menu Manager Tab ──────────────────────────────────────────
+  const renderNavigationTab = () => {
+    const DEFAULT_NAV: NavLink[] = [
+      { href: "/", label: "Home", sectionId: "home", pathMatch: "/" },
+      { href: "/about", label: "About", sectionId: "about", pathMatch: "/about" },
+      { href: "/portfolio", label: "Work", sectionId: "work", pathMatch: "/portfolio" },
+      { href: "/services", label: "Services", sectionId: "services", pathMatch: "/services" },
+      { href: "/articles", label: "Writing", sectionId: "writing", pathMatch: "/articles" },
+      { href: "/documents", label: "Documents", sectionId: "documents", pathMatch: "/documents" },
+      { href: "/contact", label: "Reach Out", sectionId: "contact", pathMatch: "/contact" },
+    ];
+
+    const navLinks = (draft.adminSettings?.navLinks && draft.adminSettings.navLinks.length > 0)
+      ? draft.adminSettings.navLinks
+      : DEFAULT_NAV;
+
+    const updateLink = (index: number, field: keyof NavLink, val: string) => {
+      const next = [...navLinks];
+      next[index] = { ...next[index], [field]: val };
+      setDraft((d) => ({
+        ...d,
+        adminSettings: { ...d.adminSettings, navLinks: next },
+      }));
+    };
+
+    const addLink = () => {
+      const newLink: NavLink = {
+        label: "New Page",
+        href: "/new-page",
+        sectionId: `nav-${Date.now()}`,
+        pathMatch: "/new-page",
+      };
+      setDraft((d) => ({
+        ...d,
+        adminSettings: { ...d.adminSettings, navLinks: [...navLinks, newLink] },
+      }));
+    };
+
+    const removeLink = (index: number) => {
+      const next = navLinks.filter((_, i) => i !== index);
+      setDraft((d) => ({
+        ...d,
+        adminSettings: { ...d.adminSettings, navLinks: next },
+      }));
+    };
+
+    const moveLink = (index: number, dir: -1 | 1) => {
+      const target = index + dir;
+      if (target < 0 || target >= navLinks.length) return;
+      const next = [...navLinks];
+      const temp = next[index];
+      next[index] = next[target];
+      next[target] = temp;
+      setDraft((d) => ({
+        ...d,
+        adminSettings: { ...d.adminSettings, navLinks: next },
+      }));
+    };
+
+    const resetDefaults = () => {
+      setDraft((d) => ({
+        ...d,
+        adminSettings: { ...d.adminSettings, navLinks: DEFAULT_NAV },
+      }));
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between pb-3 border-b border-rule flex-wrap gap-2">
+          <div>
+            <h2 className="text-[16px] font-medium text-ink mb-1">Navigation Menu Links</h2>
+            <p className="font-mono text-[10px] text-muted tracking-wide">
+              Customize navbar and mobile menu links. Changes are saved to Firebase and update in real-time.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={resetDefaults}
+              className="text-[11px] font-mono border border-rule rounded px-3 py-1.5 text-muted hover:text-ink hover:bg-tag-bg/40 transition-colors cursor-pointer"
+            >
+              Reset to Defaults
+            </button>
+            <button
+              onClick={addLink}
+              className="inline-flex items-center gap-1.5 text-[11px] font-mono bg-accent text-white rounded px-3 py-1.5 hover:bg-accent/90 transition-colors cursor-pointer"
+            >
+              <Plus size={13} /> Add Menu Item
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {navLinks.map((link, idx) => (
+            <div
+              key={link.sectionId || idx}
+              className="p-4 rounded-lg border border-rule bg-surface/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+            >
+              <div className="flex items-center gap-2 text-muted">
+                <span className="font-mono text-[11px] font-bold text-accent w-6 text-center">
+                  #{idx + 1}
+                </span>
+                <div className="flex flex-col gap-0.5">
+                  <button
+                    disabled={idx === 0}
+                    onClick={() => moveLink(idx, -1)}
+                    className="p-1 hover:text-ink disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                    title="Move Up"
+                  >
+                    <ArrowUp size={12} />
+                  </button>
+                  <button
+                    disabled={idx === navLinks.length - 1}
+                    onClick={() => moveLink(idx, 1)}
+                    className="p-1 hover:text-ink disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                    title="Move Down"
+                  >
+                    <ArrowDown size={12} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1 w-full">
+                <div>
+                  <label className="font-mono text-[9px] uppercase tracking-wider text-muted block mb-1">
+                    Label (Display Text)
+                  </label>
+                  <input
+                    type="text"
+                    value={link.label}
+                    onChange={(e) => updateLink(idx, "label", e.target.value)}
+                    placeholder="Menu label"
+                    className="w-full px-2.5 py-1.5 border border-rule rounded text-[12px] bg-bg text-ink focus:outline-none focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <label className="font-mono text-[9px] uppercase tracking-wider text-muted block mb-1">
+                    Destination URL / Href
+                  </label>
+                  <input
+                    type="text"
+                    value={link.href}
+                    onChange={(e) => updateLink(idx, "href", e.target.value)}
+                    placeholder="/portfolio or https://..."
+                    className="w-full px-2.5 py-1.5 border border-rule rounded text-[12px] bg-bg text-ink focus:outline-none focus:border-accent font-mono text-[11px]"
+                  />
+                </div>
+                <div>
+                  <label className="font-mono text-[9px] uppercase tracking-wider text-muted block mb-1">
+                    Section Identifier
+                  </label>
+                  <input
+                    type="text"
+                    value={link.sectionId}
+                    onChange={(e) => updateLink(idx, "sectionId", e.target.value)}
+                    placeholder="e.g. work"
+                    className="w-full px-2.5 py-1.5 border border-rule rounded text-[12px] bg-bg text-ink focus:outline-none focus:border-accent font-mono text-[11px]"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={() => removeLink(idx)}
+                className="p-2 text-muted hover:text-red-500 rounded border border-transparent hover:border-red-500/20 transition-colors cursor-pointer shrink-0 self-end md:self-center"
+                title="Delete Link"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-4 rounded-lg border border-rule bg-surface/30">
+          <p className="font-mono text-[10px] text-muted tracking-wide flex items-start gap-2">
+            <span className="text-accent shrink-0">ℹ</span>
+            Navigation links control both the desktop sticky navbar, mobile drawer menu, and footer directory index.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Typography, Fonts & Box Shadow Manager Tab ────────────────────────────
+  const renderTypographyTab = () => {
+    const styles = draft.adminSettings?.themeStyles || {
+      fontDisplay: '"Instrument Serif", Georgia, serif',
+      fontBody: '"DM Sans", system-ui, sans-serif',
+      fontMono: '"DM Mono", "JetBrains Mono", monospace',
+      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+      borderRadius: "8px",
+    };
+
+    const updateStyle = (key: keyof ThemeStyles, val: string) => {
+      setDraft((d) => ({
+        ...d,
+        adminSettings: {
+          ...d.adminSettings,
+          themeStyles: {
+            ...(d.adminSettings?.themeStyles || styles),
+            [key]: val,
+          },
+        },
+      }));
+    };
+
+    const DISPLAY_FONTS = [
+      { label: "Instrument Serif (Default Elegant)", value: '"Instrument Serif", Georgia, serif' },
+      { label: "Playfair Display (Editorial High-Contrast)", value: '"Playfair Display", Georgia, serif' },
+      { label: "Cormorant Garamond (Classic Luxury)", value: '"Cormorant Garamond", Georgia, serif' },
+      { label: "Cinzel (Cinematic Classical)", value: '"Cinzel", serif' },
+      { label: "Space Grotesk (Modern Tech Display)", value: '"Space Grotesk", sans-serif' },
+      { label: "Georgia (System Serif)", value: "Georgia, serif" },
+    ];
+
+    const BODY_FONTS = [
+      { label: "DM Sans (Default Geometric)", value: '"DM Sans", system-ui, -apple-system, sans-serif' },
+      { label: "Inter (Ultra-Clean UI Sans)", value: '"Inter", system-ui, sans-serif' },
+      { label: "Plus Jakarta Sans (Modern Editorial)", value: '"Plus Jakarta Sans", system-ui, sans-serif' },
+      { label: "Outfit (Balanced Contemporary)", value: '"Outfit", system-ui, sans-serif' },
+      { label: "Roboto (Clean Neutral)", value: '"Roboto", system-ui, sans-serif' },
+      { label: "System UI (Native OS)", value: "system-ui, -apple-system, sans-serif" },
+    ];
+
+    const MONO_FONTS = [
+      { label: "DM Mono (Default Tech)", value: '"DM Mono", "JetBrains Mono", monospace' },
+      { label: "JetBrains Mono (Developer Ligatures)", value: '"JetBrains Mono", monospace' },
+      { label: "Fira Code (Developer Code Font)", value: '"Fira Code", monospace' },
+      { label: "Space Mono (Retro Sci-Fi)", value: '"Space Mono", monospace' },
+      { label: "Monospace (System Default)", value: "monospace" },
+    ];
+
+    const SHADOW_PRESETS = [
+      { label: "Clean Elevation", value: "0 10px 25px -5px rgba(0, 0, 0, 0.08)" },
+      { label: "Subtle Float", value: "0 2px 10px rgba(0, 0, 0, 0.04)" },
+      { label: "Deep Focus", value: "0 20px 45px -10px rgba(0, 0, 0, 0.14)" },
+      { label: "Blue Accent Glow", value: "0 0 25px rgba(27, 93, 239, 0.20)" },
+      { label: "Warm Amber Glow", value: "0 0 25px rgba(226, 83, 39, 0.22)" },
+      { label: "Brutalist Retro", value: "4px 4px 0px var(--ink)" },
+      { label: "None / Flat", value: "none" },
+    ];
+
+    const RADIUS_PRESETS = [
+      { label: "Sharp (0px)", value: "0px" },
+      { label: "Subtle (4px)", value: "4px" },
+      { label: "Default (8px)", value: "8px" },
+      { label: "Modern (14px)", value: "14px" },
+      { label: "Pill (9999px)", value: "9999px" },
+    ];
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-[16px] font-medium text-ink mb-1">Typography & Box Shadows</h2>
+          <p className="font-mono text-[10px] text-muted tracking-wide">
+            Control global font families, box-shadow depth, and card border radiuses across all site pages. Stored in Firebase.
+          </p>
+        </div>
+
+        {/* Font Families Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-2 p-4 rounded-lg border border-rule bg-surface/30">
+            <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-accent font-bold block">
+              Display / Heading Font
+            </label>
+            <p className="text-[10px] text-muted mb-2">Used for headers, titles, and section numbers.</p>
+            <select
+              value={styles.fontDisplay || DISPLAY_FONTS[0].value}
+              onChange={(e) => updateStyle("fontDisplay", e.target.value)}
+              className="w-full px-2.5 py-2 border border-rule rounded text-[12px] bg-bg text-ink focus:outline-none focus:border-accent"
+            >
+              {DISPLAY_FONTS.map((f) => (
+                <option key={f.value} value={f.value}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2 p-4 rounded-lg border border-rule bg-surface/30">
+            <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-accent font-bold block">
+              Body / Content Font
+            </label>
+            <p className="text-[10px] text-muted mb-2">Used for paragraphs, descriptions, and UI text.</p>
+            <select
+              value={styles.fontBody || BODY_FONTS[0].value}
+              onChange={(e) => updateStyle("fontBody", e.target.value)}
+              className="w-full px-2.5 py-2 border border-rule rounded text-[12px] bg-bg text-ink focus:outline-none focus:border-accent"
+            >
+              {BODY_FONTS.map((f) => (
+                <option key={f.value} value={f.value}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2 p-4 rounded-lg border border-rule bg-surface/30">
+            <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-accent font-bold block">
+              Monospace / Code Font
+            </label>
+            <p className="text-[10px] text-muted mb-2">Used for telemetry chips, tags, and timestamps.</p>
+            <select
+              value={styles.fontMono || MONO_FONTS[0].value}
+              onChange={(e) => updateStyle("fontMono", e.target.value)}
+              className="w-full px-2.5 py-2 border border-rule rounded text-[12px] bg-bg text-ink focus:outline-none focus:border-accent"
+            >
+              {MONO_FONTS.map((f) => (
+                <option key={f.value} value={f.value}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Box Shadow & Card Radius */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-3 p-4 rounded-lg border border-rule bg-surface/30">
+            <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-accent font-bold block">
+              Box Shadow Presets
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {SHADOW_PRESETS.map((p) => {
+                const active = (styles.boxShadow || SHADOW_PRESETS[0].value) === p.value;
+                return (
+                  <button
+                    key={p.label}
+                    onClick={() => updateStyle("boxShadow", p.value)}
+                    className={`px-3 py-2 text-[11px] rounded border text-left transition-all cursor-pointer ${
+                      active
+                        ? "border-accent bg-accent/10 text-accent font-medium"
+                        : "border-rule text-muted hover:border-ink hover:text-ink bg-bg"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="pt-2">
+              <label className="font-mono text-[9px] uppercase tracking-wider text-muted block mb-1">
+                Custom CSS Box Shadow
+              </label>
+              <input
+                type="text"
+                value={styles.boxShadow || ""}
+                onChange={(e) => updateStyle("boxShadow", e.target.value)}
+                placeholder="0 10px 25px -5px rgba(0,0,0,0.08)"
+                className="w-full px-2.5 py-1.5 border border-rule rounded text-[11px] font-mono bg-bg text-ink focus:outline-none focus:border-accent"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 p-4 rounded-lg border border-rule bg-surface/30">
+            <label className="font-mono text-[10px] tracking-[1.5px] uppercase text-accent font-bold block">
+              Card Corner Radius
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {RADIUS_PRESETS.map((r) => {
+                const active = (styles.borderRadius || RADIUS_PRESETS[2].value) === r.value;
+                return (
+                  <button
+                    key={r.label}
+                    onClick={() => updateStyle("borderRadius", r.value)}
+                    className={`px-3 py-2 text-[11px] rounded border text-left transition-all cursor-pointer ${
+                      active
+                        ? "border-accent bg-accent/10 text-accent font-medium"
+                        : "border-rule text-muted hover:border-ink hover:text-ink bg-bg"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="pt-2">
+              <label className="font-mono text-[9px] uppercase tracking-wider text-muted block mb-1">
+                Custom Border Radius Value
+              </label>
+              <input
+                type="text"
+                value={styles.borderRadius || ""}
+                onChange={(e) => updateStyle("borderRadius", e.target.value)}
+                placeholder="8px or 1rem"
+                className="w-full px-2.5 py-1.5 border border-rule rounded text-[11px] font-mono bg-bg text-ink focus:outline-none focus:border-accent"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Live Interactive Preview */}
+        <div className="p-6 rounded-lg border border-rule bg-bg space-y-4">
+          <span className="font-mono text-[9px] uppercase tracking-[1.5px] text-muted font-bold block">
+            // Live Styling Preview
+          </span>
+          <div
+            className="p-6 bg-surface border border-rule transition-all"
+            style={{
+              boxShadow: styles.boxShadow || "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+              borderRadius: styles.borderRadius || "8px",
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2 font-mono text-[10px] uppercase tracking-[2px] text-accent">
+              <span className="w-2 h-2 rounded-full bg-accent" />
+              <span>Preview Card · Interactive</span>
+            </div>
+            <h3
+              className="text-2xl font-normal text-ink mb-2"
+              style={{ fontFamily: styles.fontDisplay || "inherit" }}
+            >
+              Crafting Mission-Critical Architecture
+            </h3>
+            <p
+              className="text-[13.5px] text-muted leading-relaxed mb-4"
+              style={{ fontFamily: styles.fontBody || "inherit" }}
+            >
+              This live preview updates in real-time as you switch font families and shadow depth. When saved, it applies seamlessly across all visitor routes.
+            </p>
+            <div className="flex items-center gap-2">
+              <span
+                className="px-3 py-1 bg-accent text-white text-[11px] font-medium"
+                style={{ borderRadius: styles.borderRadius || "6px" }}
+              >
+                Button Sample
+              </span>
+              <span
+                className="px-2.5 py-1 border border-rule font-mono text-[10px] text-ink"
+                style={{ fontFamily: styles.fontMono || "monospace", borderRadius: styles.borderRadius || "6px" }}
+              >
+                status: 200 OK
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Contact & Footer Text Manager Tab ─────────────────────────────────────
+  const renderContactTab = () => {
+    const s = draft.adminSettings || {};
+    const setS = (field: string, val: any) => {
+      setDraft((d) => ({
+        ...d,
+        adminSettings: { ...d.adminSettings, [field]: val },
+      }));
+    };
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-[16px] font-medium text-ink mb-1">Contact & Footer Texts</h2>
+          <p className="font-mono text-[10px] text-muted tracking-wide">
+            Manage static copy across the Contact page and global site footer. Stored in Firebase.
+          </p>
+        </div>
+
+        <SectionHeading>Contact Page Header & Intro</SectionHeading>
+        <div className="space-y-4">
+          <AdminField
+            label="Contact Subtitle / Telemetry Line"
+            value={s.contactSubtext || ""}
+            onChange={(v) => setS("contactSubtext", v)}
+            placeholder="// establish.connection · socket.handshake · channel.open"
+            explanation="Shown in monospace below the big 'Contact' heading."
+          />
+          <AdminField
+            label="Contact Intro Paragraph"
+            value={s.contactIntro || ""}
+            onChange={(v) => setS("contactIntro", v)}
+            multiline
+            placeholder="Let's build something stable together. You can reach out through any of these communication channels..."
+            explanation="Introductory invitation text on the contact page."
+          />
+        </div>
+
+        <SectionHeading>Global Footer Information</SectionHeading>
+        <div className="space-y-4">
+          <AdminField
+            label="Footer Bio Tagline"
+            value={s.footerTagline || ""}
+            onChange={(v) => setS("footerTagline", v)}
+            multiline
+            placeholder="Senior Officer, Printing Tools Developments and Support at Amret Bank. Full-Stack Web Developer building high-performance systems with Next.js, Nuxt, NestJS, and C# .NET."
+            explanation="Short bio description displayed below 'lothin.dev' logo in the footer."
+          />
+          <AdminField
+            label="Footer Copyright Text"
+            value={s.footerCopyright || ""}
+            onChange={(v) => setS("footerCopyright", v)}
+            placeholder="© 2026 Thoeun Lothin · Phnom Penh, Cambodia"
+            explanation="Copyright attribution line in the footer."
+          />
+          <AdminField
+            label="Footer Availability Note"
+            value={s.footerNote || ""}
+            onChange={(v) => setS("footerNote", v)}
+            placeholder="Available for select enterprise consulting & architecture advisory"
+            explanation="Optional availability badge in the footer."
+          />
+        </div>
+      </div>
+    );
+  };
+
   const tabContent: Record<Tab, React.ReactNode> = {
     profile: renderProfileTab(),
     experience: renderExperienceTab(),
     skills: renderSkillsTab(),
     education: renderEducationTab(),
     references: renderReferencesTab(),
+    navigation: renderNavigationTab(),
+    typography: renderTypographyTab(),
+    colors: renderColorsTab(),
     home: renderHomeTab(),
     about: renderAboutTab(),
     portfolio: renderPortfolioTab(),
     services: renderServicesTab(),
+    contact: renderContactTab(),
     articles: renderArticlesTab(),
     documents: renderDocumentsTab(),
     storage: renderStorageTab(),
     vectorize: renderVectorizeTab(),
-    colors: renderColorsTab(),
   };
 
   return (

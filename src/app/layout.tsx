@@ -15,42 +15,56 @@ import { AdminButton } from "@/components/admin/AdminButton";
 import { getCVData, sanitizeCVForVisitor } from "@/lib/cvStore";
 import { buildMetadata, personJsonLd, websiteJsonLd, faqJsonLd } from "@/lib/seo";
 import { CVContentWrapper } from "@/components/layout/CVContentWrapper";
-import type { ThemeColors } from "@/types/cv";
+import type { ThemeColors, ThemeStyles } from "@/types/cv";
 
 /**
  * Builds an inline CSS block that overrides design-token custom properties
- * for light and dark themes based on admin-saved colors from Cloudflare R2.
+ * for fonts, shadows, and light/dark theme colors.
  * Injected server-side so there is zero flash on first paint.
  */
-function buildThemeColorsCss(colors: ThemeColors): string {
-  const { light: l, dark: d } = colors;
-  return [
+function buildThemeStylesCss(colors?: ThemeColors, styles?: ThemeStyles): string {
+  const fontDisplay = styles?.fontDisplay || `"Instrument Serif", Georgia, serif`;
+  const fontBody = styles?.fontBody || `"DM Sans", system-ui, -apple-system, sans-serif`;
+  const fontMono = styles?.fontMono || `"DM Mono", "JetBrains Mono", monospace`;
+  const boxShadow = styles?.boxShadow || `0 10px 25px -5px rgba(0, 0, 0, 0.08)`;
+  const cardRadius = styles?.borderRadius || `8px`;
+
+  const colorParts = colors ? [
     `[data-theme="light"] {`,
-    l.accent      ? `  --accent: ${l.accent};` : "",
-    l.accentOrange ? `  --accent-orange: ${l.accentOrange};` : "",
-    l.bg          ? `  --bg: ${l.bg};` : "",
-    l.surface     ? `  --surface: ${l.surface};` : "",
-    l.ink         ? `  --ink: ${l.ink};` : "",
-    l.ink2        ? `  --ink2: ${l.ink2};` : "",
-    l.muted       ? `  --muted: ${l.muted};` : "",
+    colors.light.accent      ? `  --accent: ${colors.light.accent};` : "",
+    colors.light.accentOrange ? `  --accent-orange: ${colors.light.accentOrange};` : "",
+    colors.light.bg          ? `  --bg: ${colors.light.bg};` : "",
+    colors.light.surface     ? `  --surface: ${colors.light.surface};` : "",
+    colors.light.ink         ? `  --ink: ${colors.light.ink};` : "",
+    colors.light.ink2        ? `  --ink2: ${colors.light.ink2};` : "",
+    colors.light.muted       ? `  --muted: ${colors.light.muted};` : "",
     `}`,
     `[data-theme="dark"] {`,
-    d.accent      ? `  --accent: ${d.accent};` : "",
-    d.accentOrange ? `  --accent-orange: ${d.accentOrange};` : "",
-    d.bg          ? `  --bg: ${d.bg};` : "",
-    d.surface     ? `  --surface: ${d.surface};` : "",
-    d.ink         ? `  --ink: ${d.ink};` : "",
-    d.ink2        ? `  --ink2: ${d.ink2};` : "",
-    d.muted       ? `  --muted: ${d.muted};` : "",
+    colors.dark.accent      ? `  --accent: ${colors.dark.accent};` : "",
+    colors.dark.accentOrange ? `  --accent-orange: ${colors.dark.accentOrange};` : "",
+    colors.dark.bg          ? `  --bg: ${colors.dark.bg};` : "",
+    colors.dark.surface     ? `  --surface: ${colors.dark.surface};` : "",
+    colors.dark.ink         ? `  --ink: ${colors.dark.ink};` : "",
+    colors.dark.ink2        ? `  --ink2: ${colors.dark.ink2};` : "",
+    colors.dark.muted       ? `  --muted: ${colors.dark.muted};` : "",
     `}`,
-    // Also override :root for system-default (before next-themes sets data-theme)
+  ].filter(Boolean).join("\n") : "";
+
+  return [
     `:root {`,
-    l.accent      ? `  --accent: ${l.accent};` : "",
-    l.accentOrange ? `  --accent-orange: ${l.accentOrange};` : "",
+    `  --font-display: ${fontDisplay};`,
+    `  --font-body: ${fontBody};`,
+    `  --font-mono: ${fontMono};`,
+    `  --font-instrument: var(--font-display);`,
+    `  --font-dm-sans: var(--font-body);`,
+    `  --font-dm-mono: var(--font-mono);`,
+    `  --box-shadow: ${boxShadow};`,
+    `  --card-radius: ${cardRadius};`,
+    colors?.light.accent ? `  --accent: ${colors.light.accent};` : "",
+    colors?.light.accentOrange ? `  --accent-orange: ${colors.light.accentOrange};` : "",
     `}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
+    colorParts
+  ].filter(Boolean).join("\n");
 }
 
 export const dynamic = "force-dynamic";
@@ -71,9 +85,8 @@ export default async function RootLayout({
   const jsonLdList = [personJsonLd(initialCvData), websiteJsonLd(), faqJsonLd()];
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
-  // Build server-side color CSS if admin has saved custom colors
-  const themeColors = cv.adminSettings?.themeColors;
-  const colorCss = themeColors ? buildThemeColorsCss(themeColors) : null;
+  // Build server-side styling CSS (fonts, shadows, colors)
+  const colorCss = buildThemeStylesCss(cv.adminSettings?.themeColors, cv.adminSettings?.themeStyles);
 
   return (
     <html
@@ -83,6 +96,10 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Fira+Code:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdList) }}

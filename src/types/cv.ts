@@ -82,6 +82,14 @@ export interface Article {
   readingTime?: string;
 }
 
+export interface ThemeStyles {
+  fontDisplay?: string;
+  fontBody?: string;
+  fontMono?: string;
+  boxShadow?: string;
+  borderRadius?: string;
+}
+
 export interface NavLink {
   href: string;
   label: string;
@@ -117,8 +125,13 @@ export interface AdminSettings {
   contactSubtext?: string;
   contactIntro?: string;
   contactSteps?: { step: string; title: string; desc: string }[];
-  /** Admin-controlled color palette stored in Cloudflare R2 */
+  /** Admin-controlled color palette */
   themeColors?: ThemeColors;
+  /** Admin-controlled typography and styling stored in Firebase */
+  themeStyles?: ThemeStyles;
+  footerTagline?: string;
+  footerCopyright?: string;
+  footerNote?: string;
 }
 
 export interface DocumentItem {

@@ -28,12 +28,17 @@ export function Footer() {
             <span className="font-mono text-[14px] text-ink font-semibold tracking-tight">
               lothin.dev
             </span>
-            <p className="text-xs text-muted leading-relaxed font-sans max-w-[240px]">
-              Full-Stack Web Developer building high-performance systems with Next.js, Nuxt, NestJS, and Cloudflare edge architecture.
+            <p className="text-xs text-muted leading-relaxed font-sans max-w-[280px]">
+              {cv.adminSettings?.footerTagline || "Senior Officer, Printing Tools Developments and Support at Amret Bank. Full-Stack Web Developer building high-performance systems."}
             </p>
             <p className="font-mono text-[10px] text-muted tracking-wide mt-2">
-              © {new Date().getFullYear()} {profile.name.first} {profile.name.last} · {profile.location}
+              {cv.adminSettings?.footerCopyright || `© ${new Date().getFullYear()} ${profile.name.first} ${profile.name.last} · ${profile.location}`}
             </p>
+            {cv.adminSettings?.footerNote && (
+              <p className="font-mono text-[9px] text-accent/80 tracking-wide mt-1">
+                // {cv.adminSettings.footerNote}
+              </p>
+            )}
           </div>
 
           {/* Links grid container - side-by-side on mobile */}

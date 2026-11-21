@@ -98,6 +98,19 @@ export function CVProvider({ children, initialData }: { children: React.ReactNod
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error("Save failed");
+
+    // Also sync directly to Firebase Firestore client-side if user is authenticated
+    try {
+      const { getFirestore, doc, setDoc } = await import("firebase/firestore");
+      const { app } = await import("@/lib/firebase");
+      const db = getFirestore(app);
+      await setDoc(doc(db, "portfolio", "cv"), {
+        data: JSON.stringify(data),
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch {
+      // Ignored if offline or server-handled
+    }
   }, []);
 
   return (
