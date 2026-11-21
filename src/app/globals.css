@@ -79,6 +79,20 @@
   --z-cursor-ring: 9999;
 }
 
+/* Top Scroll & Progress Bars */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform-origin: 0% 50%;
+  transform: scaleX(0);
+  z-index: 100;
+  pointer-events: none;
+}
+
 * {
   margin: 0;
   padding: 0;

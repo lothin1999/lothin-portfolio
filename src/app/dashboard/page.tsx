@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCVData } from "@/hooks/useCVData";
 import { AdminLoginModal } from "@/components/admin/AdminLoginModal";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Database,
   Brain,
@@ -280,6 +281,7 @@ function CloudflareDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "r2" | "ai" | "zone" | "audit" | "billing">("overview");
+  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -370,23 +372,44 @@ function CloudflareDashboard() {
         </div>
       </div>
 
-      {/* ── Tabs ── */}
-      <div className="border-b border-rule bg-surface">
-        <div className="max-w-7xl mx-auto px-6 flex gap-0">
-          {tabs.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id as typeof activeTab)}
-              className={`flex items-center gap-1.5 px-4 py-3 font-mono text-[10.5px] uppercase tracking-wider border-b-2 transition-colors ${
-                activeTab === id
-                  ? "border-accent text-accent"
-                  : "border-transparent text-muted hover:text-ink"
-              }`}
-            >
-              <Icon size={11} strokeWidth={1.5} />
-              <span className="hidden sm:inline">{label}</span>
-            </button>
-          ))}
+      {/* ── Tabs (Cloudflare Dashboard Style) ── */}
+      <div className="border-b border-rule bg-surface/90 backdrop-blur-md sticky top-[58px] z-30 shadow-xs">
+        <div
+          className="max-w-7xl mx-auto px-6 flex gap-1 overflow-x-auto relative"
+          onMouseLeave={() => setHoveredTab(null)}
+        >
+          {tabs.map(({ id, label, icon: Icon }) => {
+            const active = activeTab === id;
+            return (
+              <button
+                key={id}
+                onMouseEnter={() => setHoveredTab(id)}
+                onClick={() => setActiveTab(id as typeof activeTab)}
+                className={`relative flex items-center gap-1.5 px-3.5 py-3 font-mono text-[10.5px] uppercase tracking-wider transition-colors duration-150 shrink-0 select-none ${
+                  active
+                    ? "text-accent font-semibold"
+                    : "text-muted hover:text-ink"
+                }`}
+              >
+                {hoveredTab === id && (
+                  <motion.span
+                    layoutId="cf-dash-hover"
+                    className="absolute inset-x-1 inset-y-1.5 rounded bg-ink/[0.04] dark:bg-white/[0.06] -z-10 pointer-events-none"
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
+                <Icon size={12} strokeWidth={1.75} />
+                <span className="hidden sm:inline">{label}</span>
+                {active && (
+                  <motion.span
+                    layoutId="cf-dash-active"
+                    className="absolute bottom-0 left-2 right-2 h-[2.5px] bg-accent rounded-full shadow-[0_0_8px_var(--accent)]"
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -403,6 +426,15 @@ function CloudflareDashboard() {
             </div>
           </div>
         )}
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+          >
 
         {/* ─────────────────────────── OVERVIEW TAB ───────────────────────── */}
         {activeTab === "overview" && (
@@ -1384,6 +1416,8 @@ function CloudflareDashboard() {
             </div>
           </div>
         )}
+        </motion.div>
+        </AnimatePresence>
 
         {/* Footer */}
         <div className="mt-10 pt-6 border-t border-rule flex items-center justify-between">

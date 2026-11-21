@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Menu, X, Sparkles, FileText, Mail, AlertCircle } from "lucide-react";
 import { DarkModeToggle } from "@/components/ui/DarkModeToggle";
 import { ScrollProgressBar } from "@/components/ui/ScrollProgressBar";
 import { useCVData } from "@/hooks/useCVData";
 import { useSettings } from "@/components/layout/SettingsContext";
+import { useInstantNav } from "@/components/layout/InstantPageSwitcher";
 import { motion, AnimatePresence } from "framer-motion";
 
 const DEFAULT_NAV_LINKS = [
@@ -33,9 +34,14 @@ export function Navbar() {
     smoothScroll,
     setSmoothScroll,
   } = useSettings();
+  const { activePath: instantActivePath, navigate: instantNavigate, isInstantRoute } = useInstantNav();
   const navLinks = cv.adminSettings?.navLinks || DEFAULT_NAV_LINKS;
   const pathname = usePathname();
+  const router = useRouter();
   const [optimisticPath, setOptimisticPath] = useState<string | null>(null);
+  const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+  const [navProgress, setNavProgress] = useState<number>(0);
+  const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -51,6 +57,38 @@ export function Navbar() {
   });
 
   const handleNavClick = () => setMobileOpen(false);
+
+  // Warm up Next.js router cache for all topbar links on idle (Cloudflare-fast prefetching)
+  useEffect(() => {
+    const prefetchRoutes = () => {
+      navLinks.forEach((link) => {
+        try {
+          router.prefetch(link.href);
+        } catch {
+          // ignore
+        }
+      });
+    };
+
+    if (typeof window !== "undefined") {
+      if ("requestIdleCallback" in window) {
+        (window as any).requestIdleCallback(prefetchRoutes, { timeout: 1500 });
+      } else {
+        setTimeout(prefetchRoutes, 200);
+      }
+    }
+  }, [navLinks, router]);
+
+  const startNavigation = (href: string) => {
+    if (href !== currentPath) {
+      setOptimisticPath(href);
+      setIsNavigating(true);
+      setNavProgress(70);
+      if (isInstantRoute(href)) {
+        instantNavigate(href);
+      }
+    }
+  };
 
   // Track scroll shadow and progress
   useEffect(() => {
@@ -72,12 +110,20 @@ export function Navbar() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  // Sync optimistic path with actual route when router settles
+  // Sync optimistic path with actual route when router settles and finish beam
   useEffect(() => {
-    setOptimisticPath(pathname);
-  }, [pathname]);
+    setOptimisticPath(instantActivePath ?? pathname);
+    if (isNavigating || navProgress > 0) {
+      setNavProgress(100);
+      const timer = setTimeout(() => {
+        setNavProgress(0);
+        setIsNavigating(false);
+      }, 160);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname, instantActivePath]);
 
-  const currentPath = optimisticPath ?? pathname;
+  const currentPath = optimisticPath ?? instantActivePath ?? pathname;
 
   const isActive = (link: (typeof navLinks)[0]) => {
     if (!currentPath) return false;
@@ -88,44 +134,100 @@ export function Navbar() {
 
   return (
     <>
+      {/* Cloudflare-style Lightning Top Navigation Beam */}
+      <div className="fixed top-0 left-0 right-0 h-[2.5px] overflow-hidden pointer-events-none z-[101]">
+        <motion.div
+          className="h-full bg-accent shadow-[0_0_12px_var(--accent)] origin-left"
+          initial={{ scaleX: 0, opacity: 0 }}
+          animate={{
+            scaleX: navProgress > 0 ? navProgress / 100 : 0,
+            opacity: navProgress > 0 ? (navProgress === 100 ? 0 : 1) : 0,
+          }}
+          transition={{
+            scaleX: {
+              duration: navProgress === 100 ? 0.12 : 0.22,
+              ease: navProgress === 100 ? "easeOut" : [0.16, 1, 0.3, 1],
+            },
+            opacity: { duration: 0.18 },
+          }}
+        />
+      </div>
+
       <ScrollProgressBar />
       <nav className={cn(
-        "sticky top-0 z-40 h-[58px] bg-bg border-b border-rule transition-shadow duration-200",
+        "sticky top-0 z-40 h-[58px] bg-bg/90 backdrop-blur-md border-b border-rule transition-shadow duration-200",
         scrolled && "shadow-sm"
       )} aria-label="Main navigation">
         <div className={cn(
           "h-full flex items-center justify-between gap-6",
           pathname === "/edit" ? "w-full px-6 md:px-12" : "max-w-6xl mx-auto px-6"
         )}>
-          <Link href="/" className="font-mono text-[14px] text-ink font-semibold tracking-tight hover:text-accent transition-colors shrink-0">
+          <Link
+            href="/"
+            onPointerDown={() => startNavigation("/")}
+            onClick={(e) => {
+              if (isInstantRoute("/")) {
+                e.preventDefault();
+                instantNavigate("/");
+              }
+              startNavigation("/");
+            }}
+            className="font-mono text-[14px] text-ink font-semibold tracking-tight hover:text-accent transition-colors shrink-0"
+          >
             lothin.dev
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
-            <ul className="flex items-center gap-6 list-none" role="list">
+            <ul
+              className="flex items-center gap-1 list-none p-1 rounded-lg bg-surface/40 border border-rule/40 backdrop-blur-sm relative"
+              role="list"
+              onMouseLeave={() => setHoveredPath(null)}
+            >
               {navLinks.map((link) => {
                 const active = isActive(link);
                 return (
-                  <li key={link.sectionId} className="relative py-1">
+                  <li
+                    key={link.sectionId}
+                    className="relative"
+                    onMouseEnter={() => {
+                      setHoveredPath(link.href);
+                      router.prefetch(link.href);
+                    }}
+                  >
+                    {/* Cloudflare Magnetic Hover Pill */}
+                    {hoveredPath === link.href && (
+                      <motion.span
+                        layoutId="navbar-hover-pill"
+                        className="absolute inset-0 rounded-md bg-ink/[0.05] dark:bg-white/[0.07] pointer-events-none"
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+
                     <Link
                       href={link.href}
                       prefetch={true}
-                      onPointerDown={() => setOptimisticPath(link.href)}
-                      onClick={() => {
-                        setOptimisticPath(link.href);
+                      onPointerDown={() => startNavigation(link.href)}
+                      onClick={(e) => {
+                        if (isInstantRoute(link.href)) {
+                          e.preventDefault();
+                          instantNavigate(link.href);
+                        }
+                        startNavigation(link.href);
                         handleNavClick();
                       }}
                       className={cn(
-                        "relative font-sans text-xs uppercase tracking-wider transition-colors duration-150 py-1 px-1 block",
+                        "relative z-10 font-sans text-xs uppercase tracking-wider transition-colors duration-150 py-1.5 px-3 block rounded-md select-none",
                         active ? "text-accent font-semibold" : "text-muted hover:text-ink"
                       )}
                     >
                       {link.label}
+
+                      {/* Active Indicator Underline / Glow */}
                       {active && (
                         <motion.span
                           layoutId="navbar-indicator"
-                          className="absolute -bottom-1 left-0 right-0 h-[2px] bg-accent rounded-full pointer-events-none"
-                          transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                          className="absolute -bottom-[1px] left-2 right-2 h-[2px] bg-accent rounded-full pointer-events-none shadow-[0_0_8px_var(--accent)]"
+                          transition={{ type: "spring", stiffness: 500, damping: 35 }}
                         />
                       )}
                     </Link>
@@ -268,9 +370,13 @@ export function Navbar() {
                           <Link
                             href={link.href}
                             prefetch={true}
-                            onPointerDown={() => setOptimisticPath(link.href)}
-                            onClick={() => {
-                              setOptimisticPath(link.href);
+                            onPointerDown={() => startNavigation(link.href)}
+                            onClick={(e) => {
+                              if (isInstantRoute(link.href)) {
+                                e.preventDefault();
+                                instantNavigate(link.href);
+                              }
+                              startNavigation(link.href);
                               handleNavClick();
                             }}
                             className={cn(

@@ -15,6 +15,7 @@ import { AdminButton } from "@/components/admin/AdminButton";
 import { getCVData, sanitizeCVForVisitor } from "@/lib/cvStore";
 import { buildMetadata, personJsonLd, websiteJsonLd, faqJsonLd } from "@/lib/seo";
 import { CVContentWrapper } from "@/components/layout/CVContentWrapper";
+import { InstantNavProvider, InstantPageView } from "@/components/layout/InstantPageSwitcher";
 import type { ThemeColors, ThemeStyles } from "@/types/cv";
 
 /**
@@ -143,15 +144,19 @@ export default async function RootLayout({
             <SettingsProvider>
               <SmoothScrollProvider>
                 <CVContentWrapper>
-                  <CustomCursor />
-                  <Navbar />
-                  <main id="main">{children}</main>
-                  <Footer />
-                  <StatusBar />
-                  <ShortcutsModal />
-                  <SettingsModal />
-                  <AIChatDrawer />
-                  <AdminButton />
+                  <InstantNavProvider>
+                    <CustomCursor />
+                    <Navbar />
+                    <main id="main">
+                      <InstantPageView>{children}</InstantPageView>
+                    </main>
+                    <Footer />
+                    <StatusBar />
+                    <ShortcutsModal />
+                    <SettingsModal />
+                    <AIChatDrawer />
+                    <AdminButton />
+                  </InstantNavProvider>
                 </CVContentWrapper>
               </SmoothScrollProvider>
             </SettingsProvider>
