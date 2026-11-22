@@ -147,7 +147,7 @@ export function Navbar() {
 
           <div className="hidden md:flex items-center gap-4 lg:gap-6">
             <ul
-              className="flex items-center gap-0.5 lg:gap-1 list-none p-1 rounded-lg bg-surface/40 border border-rule/40 backdrop-blur-sm relative"
+              className="flex items-center gap-0.5 lg:gap-1 list-none relative"
               role="list"
               onMouseLeave={() => setHoveredPath(null)}
             >
